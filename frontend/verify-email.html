@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar Email — Pet Spa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #2c7a2c; --green-dark: #1e5a1e; --green-light: #e8f5e8;
+      --red: #e74c3c; --orange: #e67e22;
+      --text: #2d3748; --muted: #718096; --border: #e2e8f0;
+      --bg: #f0f7f0; --white: #ffffff;
+      --radius: 12px; --shadow: 0 10px 40px rgba(44,122,44,0.12);
+    }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .card {
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      animation: fadeUp 0.4s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+    h1 { color: var(--green); font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.2rem; color: var(--text); font-weight: 700; margin-bottom: 0.5rem; }
+    #statusMessage { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.2rem; }
+
+    /* Spinner */
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid var(--green-light);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--green);
+      color: white;
+      padding: 0.75rem 1.8rem;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
+    .btn-primary:hover { background: var(--green-dark); }
+    .btn-primary:disabled { background: #a8d5a8; cursor: not-allowed; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.5rem 0;
+    }
+    .divider-label {
+      display: flex; align-items: center; gap: 10px; margin: 1.5rem 0;
+    }
+    .divider-label::before, .divider-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .divider-label span { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+
+    /* ── Sección código de 6 dígitos ── */
+    .code-section {
+      background: var(--green-light);
+      border: 1.5px solid #b7ddb7;
+      border-radius: var(--radius);
+      padding: 1.2rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .code-section p {
+      font-size: 0.88rem;
+      color: var(--text);
+      margin-bottom: 0.85rem;
+      font-weight: 600;
+    }
+    .code-inputs {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .code-input {
+      width: 44px; height: 52px;
+      border: 2px solid #b7ddb7;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
+      color: var(--green-dark);
+      background: white;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .code-input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(44,122,44,.15);
+    }
+    .code-input.filled { border-color: var(--green); background: var(--green-light); }
+
+    #codeAlert {
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      min-height: 1.2rem;
+      display: none;
+    }
+    #codeAlert.show { display: block; }
+    #codeAlert.ok  { color: var(--green); }
+    #codeAlert.err { color: var(--red); }
+
+    /* ── Sección reenvío ── */
+    .resend-section { margin-top: 0.5rem; text-align: left; }
+    .resend-section p { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.75rem; text-align: center; }
+    .resend-section strong { color: var(--text); }
+    .input-group { display: flex; gap: 0.5rem; }
+    .input-group input {
+      flex: 1;
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+    .input-group input:focus { outline: none; border-color: var(--green); }
+    .btn-resend {
+      background: var(--orange);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-resend:hover { background: #d35400; }
+    .btn-resend:disabled { background: #ccc; cursor: not-allowed; }
+    #resendMsg { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2rem; text-align: center; }
+
+    .back-link {
+      display: block; margin-top: 1rem;
+      color: var(--muted); font-size: 0.85rem; text-decoration: none;
+      text-align: center;
+    }
+    .back-link:hover { color: var(--green); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="icon" id="statusIcon">🐾</div>
+  <h1>Pet Spa</h1>
+  <h2 id="statusTitle">Verificando tu email...</h2>
+  <div class="spinner" id="spinner"></div>
+  <p id="statusMessage"></p>
+  <div id="actionArea"></div>
+
+  <!-- ── Código de 6 dígitos (oculto hasta necesitarse) ── -->
+  <div id="codeSection" style="display:none;">
+    <div class="divider-label"><span>o ingresa tu código de verificación</span></div>
+    <div class="code-section">
+      <p>📋 Escribe el código de 6 dígitos que recibiste en tu email</p>
+      <div class="code-inputs">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+      </div>
+      <button class="btn-primary" id="verifyCodeBtn" disabled>✅ Verificar código</button>
+      <div id="codeAlert"></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── Reenviar verificación (siempre visible) ── -->
+  <div class="resend-section">
+    <p><strong>¿No llegó el email o el enlace expiró?</strong><br>Ingresa tu correo y te enviamos uno nuevo.</p>
+    <div class="input-group">
+      <input type="email" id="resendEmail" placeholder="tu@email.com">
+      <button class="btn-resend" id="resendBtn">Reenviar</button>
+    </div>
+    <div id="resendMsg"></div>
+  </div>
+
+  <a href="index.html" class="back-link">← Volver al inicio de sesión</a>
+</div>
+
+<script type="module">
+import { API_URL } from './js/auth.js';
+
+const statusIcon    = document.getElementById('statusIcon');
+const statusTitle   = document.getElementById('statusTitle');
+const statusMessage = document.getElementById('statusMessage');
+const spinner       = document.getElementById('spinner');
+const actionArea    = document.getElementById('actionArea');
+const codeSection   = document.getElementById('codeSection');
+
+// ══════════════════════════════════════
+// 1. VERIFICAR POR TOKEN DE URL
+// ══════════════════════════════════════
+const params = new URLSearchParams(window.location.search);
+const token  = params.get('token');
+
+async function verificarPorToken(t) {
+  try {
+    const res  = await fetch(`${API_URL}/verify-email/${encodeURIComponent(t)}`);
+    const data = await res.json();
+    spinner.style.display = 'none';
+
+    if (res.ok) {
+      statusIcon.textContent  = '✅';
+      statusTitle.textContent = '¡Email verificado!';
+      statusMessage.textContent = data.message || 'Tu cuenta ha sido activada correctamente.';
+      statusMessage.style.color = '#2c7a2c';
+      actionArea.innerHTML = `<a href="index.html" class="btn-primary" style="margin-top:0.5rem;">Ir a iniciar sesión →</a>`;
+    } else {
+      statusIcon.textContent  = '❌';
+      statusTitle.textContent = 'Enlace inválido o expirado';
+      statusMessage.textContent = data.message || 'Este enlace ya no es válido. Usa el código o solicita uno nuevo.';
+      statusMessage.style.color = '#e74c3c';
+      codeSection.style.display = 'block'; // Mostrar formulario de código como alternativa
+    }
+  } catch {
+    spinner.style.display   = 'none';
+    statusIcon.textContent  = '⚠️';
+    statusTitle.textContent = 'Error de conexión';
+    statusMessage.textContent = 'No se pudo conectar con el servidor.';
+    statusMessage.style.color = '#e67e22';
+    codeSection.style.display = 'block';
+  }
+}
+
+if (token) {
+  verificarPorToken(token);
+} else {
+  // Sin token en URL → mostrar formulario de código directamente
+  spinner.style.display   = 'none';
+  statusIcon.textContent  = '📧';
+  statusTitle.textContent = 'Verifica tu cuenta';
+  statusMessage.textContent = 'Ingresa el código de 6 dígitos que recibiste en tu email, o usa el enlace del correo.';
+  codeSection.style.display = 'block';
+}
+
+// ══════════════════════════════════════
+// 2. INPUTS DE CÓDIGO: auto-avance y paste
+// ══════════════════════════════════════
+const inputs     = document.querySelectorAll('.code-input');
+const verifyBtn  = document.getElementById('verifyCodeBtn');
+const codeAlert  = document.getElementById('codeAlert');
+
+function getCode() {
+  return [...inputs].map(el => el.value).join('');
+}
+
+function checkCodeFull() {
+  verifyBtn.disabled = getCode().length < 6;
+}
+
+inputs.forEach((input, i) => {
+  input.addEventListener('input', () => {
+    input.value = input.value.replace(/\D/g, ''); // solo números
+    input.classList.toggle('filled', input.value !== '');
+    if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
+    checkCodeFull();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !input.value && i > 0) {
+      inputs[i - 1].focus();
+    }
+  });
+
+  input.addEventListener('paste', e => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData)
+      .getData('text').replace(/\D/g, '').slice(0, 6);
+    [...pasted].forEach((char, j) => {
+      if (inputs[j]) { inputs[j].value = char; inputs[j].classList.add('filled'); }
+    });
+    checkCodeFull();
+    if (pasted.length >= 6) inputs[5].focus();
+  });
+});
+
+// ══════════════════════════════════════
+// 3. VERIFICAR POR CÓDIGO MANUAL
+// ══════════════════════════════════════
+verifyBtn.addEventListener('click', async () => {
+  const code = getCode();
+  if (code.length < 6) return;
+
+  verifyBtn.disabled    = true;
+  verifyBtn.textContent = 'Verificando...';
+  codeAlert.className   = '';
+  codeAlert.style.display = 'none';
+
+  try {
+    const res  = await fetch(`${API_URL}/verify-email/${encodeURIComponent(code)}`);
+    const data = await res.json();
+
+    if (res.ok) {
+      codeAlert.textContent = '✅ ' + (data.message || '¡Cuenta verificada!');
+      codeAlert.className   = 'show ok';
+      statusIcon.textContent  = '✅';
+      statusTitle.textContent = '¡Cuenta verificada!';
+      statusMessage.textContent = 'Redirigiendo al inicio de sesión...';
+      statusMessage.style.color = '#2c7a2c';
+      setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+    } else {
+      codeAlert.textContent = '❌ ' + (data.message || 'Código incorrecto o expirado.');
+      codeAlert.className   = 'show err';
+      verifyBtn.disabled    = false;
+      verifyBtn.textContent = '✅ Verificar código';
+    }
+  } catch {
+    codeAlert.textContent = '❌ Error de conexión. Intenta de nuevo.';
+    codeAlert.className   = 'show err';
+    verifyBtn.disabled    = false;
+    verifyBtn.textContent = '✅ Verificar código';
+  }
+});
+
+// ══════════════════════════════════════
+// 4. REENVIAR VERIFICACIÓN (original)
+// ══════════════════════════════════════
+const resendBtn = document.getElementById('resendBtn');
+const resendMsg = document.getElementById('resendMsg');
+
+resendBtn.addEventListener('click', async () => {
+  const email = document.getElementById('resendEmail').value.trim();
+  if (!email) {
+    resendMsg.innerHTML = '<span style="color:red">Ingresa tu email primero</span>';
+    return;
+  }
+
+  resendBtn.disabled    = true;
+  resendBtn.textContent = 'Enviando...';
+  resendMsg.innerHTML   = '';
+
+  try {
+    const res  = await fetch(`${API_URL}/resend-verification`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    resendMsg.innerHTML = `<span style="color:green">✅ ${data.message}</span>`;
+  } catch {
+    resendMsg.innerHTML = '<span style="color:red">Error al enviar. Intenta de nuevo.</span>';
+  } finally {
+    // Cooldown 30s para evitar spam
+    let seg = 30;
+    const iv = setInterval(() => {
+      resendBtn.textContent = `Espera ${seg}s`;
+      seg--;
+      if (seg < 0) {
+        clearInterval(iv);
+        resendBtn.disabled    = false;
+        resendBtn.textContent = 'Reenviar';
+      }
+    }, 1000);
+  }
+});
+</script>
+</body>
+</html>

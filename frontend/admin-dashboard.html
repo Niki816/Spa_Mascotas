@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Pet Spa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--shadow-md:0 6px 24px rgba(30,58,47,.12);--radius:16px;--radius-sm:10px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
+
+    /* SIDEBAR */
+    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;overflow-y:auto;}
+    .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
+    .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:12px;display:grid;place-items:center;font-size:20px;}
+    .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
+    .logo-text span{display:block;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--green-light);letter-spacing:.08em;text-transform:uppercase;}
+    .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-light);padding:0 8px;margin:16px 0 4px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-sm);color:var(--green-light);cursor:pointer;font-size:13px;margin-bottom:2px;transition:all .2s;text-decoration:none;}
+    .nav-item:hover,.nav-item.active{background:var(--green-mid);color:white;}
+    .nav-icon{font-size:16px;width:18px;text-align:center;}
+    .sidebar-footer{margin-top:auto;padding:14px;background:rgba(255,255,255,.05);border-radius:var(--radius-sm);}
+    .user-card{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:36px;height:36px;background:var(--amber);border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0;}
+    .user-name{font-size:12px;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .user-role{font-size:10px;color:var(--green-light);}
+    .logout-btn{background:none;border:none;color:var(--green-light);cursor:pointer;font-size:16px;margin-left:auto;}
+    .logout-btn:hover{color:#ff7b7b;}
+
+    /* MAIN */
+    .main{margin-left:240px;flex:1;padding:32px 36px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+    .page-title{font-family:'Playfair Display',serif;font-size:26px;}
+    .page-sub{font-size:13px;color:var(--text-light);margin-top:2px;}
+    .badge-admin{background:rgba(212,132,90,.15);color:var(--amber);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;}
+
+    /* STATS */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .stat{background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+    .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .stat:nth-child(1)::before{background:var(--green-soft);}
+    .stat:nth-child(2)::before{background:var(--amber);}
+    .stat:nth-child(3)::before{background:#7b9de0;}
+    .stat:nth-child(4)::before{background:#c47bb5;}
+    .stat-icon{font-size:24px;margin-bottom:8px;}
+    .stat-val{font-family:'Playfair Display',serif;font-size:28px;line-height:1;}
+    .stat-lbl{font-size:12px;color:var(--text-light);margin-top:3px;}
+
+    /* CARD */
+    .card{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+    .card-title{font-family:'Playfair Display',serif;font-size:17px;}
+    .card-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--green-pale);color:var(--green-soft);}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+
+    /* FORM */
+    .form-group{margin-bottom:13px;}
+    .form-label{display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;}
+    .form-input{width:100%;padding:9px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-dark);background:var(--cream);outline:none;transition:border-color .2s;}
+    .form-input:focus{border-color:var(--green-soft);background:white;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .pass-wrap{position:relative;}
+    .pass-wrap .form-input{padding-right:40px;}
+    .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-light);}
+
+    /* BTNS */
+    .btn{padding:9px 20px;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:var(--green-deep);color:white;width:100%;justify-content:center;}
+    .btn-primary:hover{background:var(--green-mid);}
+    .btn-amber{background:var(--amber);color:white;}
+    .btn-amber:hover{background:#c0714a;}
+    .btn-outline{background:transparent;border:1.5px solid #d0e4da;color:var(--text-mid);}
+    .btn-outline:hover{border-color:var(--green-soft);color:var(--green-soft);}
+    .btn-danger{background:#fee2e2;color:#dc2626;border:none;padding:4px 10px;font-size:11px;}
+    .btn-danger:hover{background:#fecaca;}
+    .btn-sm{padding:5px 12px;font-size:12px;}
+
+    /* ALERT */
+    .alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;margin-top:10px;display:none;}
+    .alert.show{display:block;}
+    .alert-success{background:#e8f5ed;color:#2d5a45;border:1px solid #a8d5b5;}
+    .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
+
+    /* TABLE */
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light);border-bottom:1.5px solid #f0f5f2;}
+    td{padding:11px 12px;border-bottom:1px solid #f8f9fa;vertical-align:middle;}
+    tr:hover td{background:#fafffe;}
+    .rol-badge{padding:3px 9px;border-radius:12px;font-size:11px;font-weight:500;}
+    .rol-admin{background:rgba(212,132,90,.15);color:var(--amber);}
+    .rol-groomer{background:#e8f0fd;color:#3456a0;}
+    .rol-cliente{background:var(--green-pale);color:var(--green-soft);}
+    .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;}
+    .dot-active{background:#22c55e;}.dot-inactive{background:#ef4444;}
+
+    /* LOG FILTERS */
+    .log-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+    .form-select{padding:8px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cream);outline:none;cursor:pointer;}
+    .form-select:focus{border-color:var(--green-soft);}
+    .log-pagination{display:flex;align-items:center;gap:8px;margin-top:12px;justify-content:center;}
+    .log-pagination span{font-size:12px;color:var(--text-light);}
+
+    /* 2FA */
+    .twofa-box{background:var(--green-pale);border:1px dashed var(--green-light);border-radius:var(--radius-sm);padding:14px;text-align:center;margin:12px 0;}
+    .twofa-box img{max-width:160px;border-radius:8px;}
+    .secret-box{font-family:monospace;font-size:11px;background:white;padding:8px 12px;border-radius:8px;border:1px solid #d0e4da;word-break:break-all;margin-top:8px;color:var(--green-deep);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:white;border-radius:var(--radius);padding:28px;width:100%;max-width:420px;box-shadow:var(--shadow-md);}
+    .modal-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:12px;}
+
+    .paw-bg{position:fixed;right:-60px;bottom:-60px;font-size:200px;opacity:.03;pointer-events:none;}
+    @media(max-width:1100px){.stats{grid-template-columns:1fr 1fr;}}
+    @media(max-width:900px){.grid-2{grid-template-columns:1fr;}.main{padding:20px 16px;}}
+    @media(max-width:700px){.sidebar{display:none;}.main{margin-left:0;}}
+    .horario-display {
+  background: var(--green-pale);
+  border: 1.5px solid var(--green-light);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--green-deep);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.password-strength {
+  font-size: 11px;
+  margin-top: 4px;
+  transition: all 0.2s;
+}
+  </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🐾</div>
+    <div class="logo-text">Pet Spa <span>Administrador</span></div>
+  </div>
+
+  <div class="nav-label">Inicio</div>
+  <a class="nav-item active" href="#" data-section="inicio"><span class="nav-icon">🏠</span> Dashboard</a>
+
+<div class="nav-label">Personal & Clientes</div>
+<a class="nav-item" href="#" data-section="crear-groomer"><span class="nav-icon">✂️</span> Crear Groomer</a>
+<a class="nav-item" href="#" data-section="crear-recepcion"><span class="nav-icon">📞</span> Crear Recepcionista</a>  <!-- NUEVO -->
+<a class="nav-item" href="#" data-section="crear-cliente"><span class="nav-icon">🐶</span> Crear Cliente</a>
+<a class="nav-item" href="#" data-section="usuarios"><span class="nav-icon">👥</span> Ver Usuarios</a>
+
+  <div class="nav-label">Auditoría</div>
+  <a class="nav-item" href="#" data-section="auth-logs"><span class="nav-icon">🔍</span> Auth Logs</a>
+
+  <div class="nav-label">Cuenta</div>
+  <a class="nav-item" href="#" data-section="seguridad"><span class="nav-icon">🔐</span> Seguridad &amp; 2FA</a>
+  <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">🛡️</div>
+      <div style="flex:1;min-width:0;">
+        <div class="user-name" id="sidebarName">—</div>
+        <div class="user-role">Administrador</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn2">✕</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Panel Admin 🛡️</div>
+      <div class="page-sub" id="adminEmail">—</div>
+    </div>
+    <span class="badge-admin">🛡️ Administrador</span>
+  </div>
+
+  <!-- ═══ INICIO ═══ -->
+  <div id="section-inicio">
+    <div class="stats">
+      <div class="stat"><div class="stat-icon">👥</div><div class="stat-val" id="totalUsuarios">—</div><div class="stat-lbl">Usuarios totales</div></div>
+      <div class="stat"><div class="stat-icon">✂️</div><div class="stat-val" id="totalGroomers">—</div><div class="stat-lbl">Groomers</div></div>
+      <div class="stat"><div class="stat-icon">🐶</div><div class="stat-val" id="totalClientes">—</div><div class="stat-lbl">Clientes</div></div>
+      <div class="stat"><div class="stat-icon">📅</div><div class="stat-val" id="totalCitas">—</div><div class="stat-lbl">Citas hoy</div></div>
+    </div>
+    <div class="card" id="card2fa" style="border:2px solid #fde68a;background:#fffbeb;">
+      <div class="card-head">
+        <div class="card-title">⚠️ Autenticación de dos factores</div>
+        <span class="card-badge" style="background:rgba(212,132,90,.15);color:var(--amber);">Obligatorio para admin</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">El 2FA es obligatorio para tu cuenta. Escanea el QR con Google Authenticator o Authy.</p>
+      <button class="btn btn-amber" id="generate2FABtn">📱 Generar código QR</button>
+      <div id="qrContainer"></div>
+      <form id="enable2FAForm" style="display:none;margin-top:14px;">
+        <div class="form-group">
+          <label class="form-label">Código TOTP (6 dígitos)</label>
+          <input type="text" id="totpCode" class="form-input" placeholder="123456" maxlength="6" style="letter-spacing:.3em;font-size:20px;text-align:center;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">✅ Activar 2FA</button>
+          <button type="button" class="btn btn-outline" id="cancel2FA">Cancelar</button>
+        </div>
+        <div class="alert" id="tfaMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ CREAR GROOMER ═══ -->
+ <!-- ═══ CREAR GROOMER ═══ -->
+<div id="section-crear-groomer" style="display:none;">
+  <div class="card" style="max-width:580px;">
+    <div class="card-head">
+      <div class="card-title">✂️ Crear Groomer</div>
+      <span class="card-badge">Solo admin</span>
+    </div>
+    <form id="createGroomerForm" novalidate>
+      <!-- Nombre y Apellido (solo letras) -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input type="text" id="groomerNombre" class="form-input" required
+                 pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+" title="Solo letras">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apellido</label>
+          <input type="text" id="groomerApellido" class="form-input" required
+                 pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+" title="Solo letras">
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="groomerEmail" class="form-input" required>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label class="form-label">Contraseña temporal</label>
+        <div class="pass-wrap">
+          <input type="password" id="groomerPassword" class="form-input" required>
+          <button type="button" class="eye-btn" onclick="togglePass('groomerPassword',this)">👁️</button>
+        </div>
+        <div id="groomerPasswordStrength" class="password-strength"></div>
+      </div>
+
+      <!-- Teléfono y Especialidad -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input type="tel" id="groomerTelefono" class="form-input" placeholder="Ej: 591 70012345">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Especialidad</label>
+          <input type="text" id="groomerEspecialidad" class="form-input" placeholder="Corte fino">
+        </div>
+      </div>
+
+      <!-- Sucursal -->
+      <div class="form-group">
+        <label class="form-label">Sucursal</label>
+        <select id="groomerSucursal" class="form-select">
+          <option value="">Seleccionar sucursal</option>
+        </select>
+      </div>
+
+      <!-- Turno y Capacidad -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Turno</label>
+          <select id="groomerTurno" class="form-select">
+            <option value="">— Selecciona un turno —</option>
+            <option value="mañana">Mañana</option>
+            <option value="tarde">Tarde</option>
+            <option value="completo">Completo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Capacidad simultánea</label>
+          <input type="number" id="groomerCapacidad" class="form-input" value="1" min="1" max="10">
+        </div>
+      </div>
+
+      <!-- Horario (solo visual + campo oculto) -->
+      <div id="groomerHorarioWrap" style="display:none;">
+        <label class="form-label">Horario de trabajo</label>
+        <div id="groomerHorarioDisplay" class="horario-display">
+          🕐 <span id="groomerHorarioTexto">—</span>
+        </div>
+        <input type="hidden" id="groomerHorarioJSON">
+      </div>
+
+      <button type="submit" class="btn btn-primary">➕ Crear groomer</button>
+      <div class="alert" id="groomerMessage"></div>
+    </form>
+  </div>
+</div>
+<!-- Input oculto que guarda el JSON para enviarlo al backend -->
+<input type="hidden" id="groomerHorarioJSON">
+
+  <!-- ═══ CREAR CLIENTE ═══ -->
+  <div id="section-crear-cliente" style="display:none;">
+    <div class="card" style="max-width:580px;">
+      <div class="card-head"><div class="card-title">🐶 Crear Cliente</div><span class="card-badge">Solo admin</span></div>
+      <form id="createClienteForm">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nombre</label><input type="text" id="clienteNombre" class="form-input" required></div>
+          <div class="form-group"><label class="form-label">Apellido</label><input type="text" id="clienteApellido" class="form-input" required></div>
+        </div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" id="clienteEmail" class="form-input" required></div>
+        <div class="form-group">
+          <label class="form-label">Contraseña temporal</label>
+          <div class="pass-wrap">
+            <input type="password" id="clientePassword" class="form-input" required placeholder="Mínimo 8 caracteres, mayúscula, número y símbolo">
+            <button type="button" class="eye-btn" onclick="togglePass('clientePassword',this)">👁️</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">CI (cédula)</label><input type="text" id="clienteCI" class="form-input" required></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" id="clienteTelefono" class="form-input"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Dirección (opcional)</label><input type="text" id="clienteDireccion" class="form-input"></div>
+        <button type="submit" class="btn btn-primary">➕ Crear cliente</button>
+        <div class="alert" id="clienteMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ CREAR RECEPCIONISTA ═══ -->
+<div id="section-crear-recepcion" style="display:none;">
+  <div class="card" style="max-width:580px;">
+    <div class="card-head"><div class="card-title">📞 Crear Recepcionista</div><span class="card-badge">Solo admin</span></div>
+    <form id="createRecepcionForm">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre</label><input type="text" id="recepcionNombre" class="form-input" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+" title="Solo letras"></div>
+        <div class="form-group"><label class="form-label">Apellido</label><input type="text" id="recepcionApellido" class="form-input" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+" title="Solo letras"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="recepcionEmail" class="form-input" required></div>
+      <div class="form-group">
+        <label class="form-label">Contraseña temporal</label>
+        <div class="pass-wrap">
+          <input type="password" id="recepcionPassword" class="form-input" required minlength="8">
+          <button type="button" class="eye-btn" onclick="togglePass('recepcionPassword',this)">👁️</button>
+        </div>
+        <small class="text-muted">Mínimo 8 caracteres, una mayúscula, una minúscula, un número y un símbolo</small>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono (opcional)</label>
+        <input type="tel" id="recepcionTelefono" class="form-input" pattern="[0-9+\-\s]{7,20}" title="Solo números, espacios, + y -">
+      </div>
+      <button type="submit" class="btn btn-primary">➕ Crear recepcionista</button>
+      <div class="alert" id="recepcionMessage"></div>
+    </form>
+  </div>
+</div>
+
+
+  <!-- ═══ AUTH LOGS ═══ -->
+  <div id="section-auth-logs" style="display:none;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">🔍 Registros de Autenticación</div>
+        <span class="card-badge" id="logsTotal">—</span>
+      </div>
+      <div class="log-toolbar">
+        <select id="filtroAccion" class="form-select">
+          <option value="">Todas las acciones</option>
+          <option value="login_exitoso">✅ Login exitoso</option>
+          <option value="login_fallido">❌ Login fallido</option>
+          <option value="logout">🚪 Logout</option>
+          <option value="bloqueo_cuenta">🔒 Bloqueo de cuenta</option>
+          <option value="registro_cuenta">👤 Registro</option>
+          <option value="verificacion_email">📧 Verificación email</option>
+          <option value="solicitud_reset_password">🔑 Reset solicitado</option>
+          <option value="reset_password_exitoso">✅ Reset exitoso</option>
+          <option value="cambio_password">🔐 Cambio de contraseña</option>
+          <option value="activacion_2fa">📱 2FA activado</option>
+          <option value="verificacion_2fa_fallida">❌ 2FA fallido</option>
+          <option value="verificacion_2fa_exitosa">✅ 2FA exitoso</option>
+          <option value="oauth_login">🔗 OAuth login</option>
+        </select>
+        <button class="btn btn-outline btn-sm" id="btnRefreshLogs">🔄 Actualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Acción</th>
+              <th>Email</th>
+              <th>IP</th>
+              <th>Detalle</th>
+            </tr>
+          </thead>
+          <tbody id="logsTable">
+            <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-light);">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="log-pagination">
+        <button class="btn btn-outline btn-sm" id="btnPrevLogs" disabled>← Anterior</button>
+        <span id="logsPageInfo">Página 1</span>
+        <button class="btn btn-outline btn-sm" id="btnNextLogs" disabled>Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ USUARIOS ═══ -->
+  <!-- ═══ USUARIOS CON PAGINACIÓN Y FILTROS ═══ -->
+<div id="section-usuarios" style="display:none;">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">👥 Todos los Usuarios</div>
+      <span class="card-badge" id="usersCount">—</span>
+    </div>
+    <!-- Barra de filtros y búsqueda -->
+    <div class="log-toolbar">
+      <select id="userEstadoFiltro" class="form-select">
+        <option value="todos">Todos</option>
+        <option value="activo">Activos</option>
+        <option value="inactivo">Inactivos</option>
+      </select>
+      <input type="text" id="userSearchInput" placeholder="Buscar por email o nombre..." class="form-input" style="width:200px;">
+      <button class="btn btn-outline btn-sm" id="userSearchBtn">🔍 Buscar</button>
+    </div>
+    <!-- Tabla -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Email</th><th>Rol</th><th>Verificado</th><th>Estado</th><th>Último acceso</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="usersTable">
+          <tr><td colspan="6" style="text-align:center;">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Paginación -->
+    <div class="log-pagination" style="justify-content:space-between;">
+      <button class="btn btn-outline btn-sm" id="userPrevPage" disabled>← Anterior</button>
+      <span id="userPageInfo">Página 1</span>
+      <button class="btn btn-outline btn-sm" id="userNextPage" disabled>Siguiente →</button>
+    </div>
+    <!-- Mensajes de éxito/error -->
+    <div class="alert" id="usersMessage"></div>
+  </div>
+</div>
+
+  <!-- ═══ SEGURIDAD ═══ -->
+  <div id="section-seguridad" style="display:none;">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Mi Perfil</div><span class="card-badge">Cuenta</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid #f0f5f2;">
+          <div style="font-size:11px;color:var(--text-light);text-transform:uppercase;">Email</div>
+          <div style="font-size:14px;font-weight:500;margin-top:3px;" id="profileEmail">—</div>
+        </div>
+        <div style="padding:8px 0;border-bottom:1px solid #f0f5f2;margin-top:8px;">
+          <div style="font-size:11px;color:var(--text-light);text-transform:uppercase;">Rol</div>
+          <div style="font-size:14px;font-weight:500;margin-top:3px;">Administrador 🛡️</div>
+        </div>
+        <div style="padding:8px 0;margin-top:8px;">
+          <div style="font-size:11px;color:var(--text-light);text-transform:uppercase;">2FA</div>
+          <div style="font-size:14px;font-weight:500;margin-top:3px;" id="status2FA">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Cambiar Contraseña</div><span class="card-badge">Seguridad</span></div>
+        <form id="changePasswordForm">
+          <div class="form-group"><label class="form-label">Contraseña actual</label><input type="password" id="oldPassword" class="form-input" required></div>
+          <div class="form-group"><label class="form-label">Nueva contraseña</label><input type="password" id="newPassword" class="form-input" required></div>
+          <button type="submit" class="btn btn-primary">🔒 Actualizar contraseña</button>
+          <div class="alert" id="pwMessage"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="paw-bg">🐾</div>
+
+<!-- Modal desactivar usuario -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-title">¿Desactivar usuario?</div>
+    <p style="font-size:13px;color:var(--text-mid);margin-bottom:18px;">El usuario quedará inactivo. No se elimina permanentemente y puede reactivarse.</p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-danger" id="confirmDeactivate" style="flex:1;padding:10px;">Desactivar</button>
+      <button class="btn btn-outline" id="cancelDeactivate" style="flex:1;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Función global para toggle de contraseñas
+function togglePass(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+}
+</script>
+
+<script type="module">
+import { authFetch, getAccessToken, getUser, clearTokens, API_URL } from './js/auth.js';
+
+// ── Proteger ruta ──
+const token = getAccessToken();
+const user  = getUser();
+if (!token || !user)       { window.location.href = 'index.html'; }
+if (user?.rol !== 'admin') { window.location.href = 'dashboard.html'; }
+
+// ── Verificar cambio obligatorio de contraseña ──
+if (user?.debeCambiarPassword) {
+  window.location.href = 'change-password-required.html';
+  throw new Error('Debe cambiar contraseña');
+}
+
+// ── Forzar activación de 2FA si no está habilitado ──
+async function verificar2FAObligatorio() {
+  try {
+    const res = await authFetch(`${API_URL}/me`);
+    if (!res.ok) {
+      // Solo si la respuesta es 401 (no autorizado), entonces limpiamos tokens
+      if (res.status === 401) {
+        clearTokens();
+        window.location.href = 'index.html';
+      }
+      throw new Error('Error al obtener perfil');
+    }
+    const data = await res.json();
+    if (!data.twoFactorEnabled) {
+      window.location.href = '2fa-verify.html';
+    }
+  } catch (err) {
+    console.error('Error verificando 2FA:', err);
+    // Si hay error (ej. token inválido), redirigir al login
+    clearTokens();
+
+    window.location.href = 'index.html';
+  }
+}
+verificar2FAObligatorio();
+
+// ── Resto del código de admin-dashboard.js (copiar aquí o importar desde archivo externo) ──
+// Por simplicidad, asumimos que admin-dashboard.js contiene toda la lógica de UI.
+// Si tienes un archivo externo, asegúrate de que no contenga las verificaciones duplicadas.
+// Aquí importamos el resto del código desde el archivo original.
+import './js/admin-dashboard.js';
+// ── Horarios predefinidos por turno ──
+const HORARIOS_TURNO = {
+  'mañana': {
+    texto: 'Turno mañana: 08:00 – 14:00',
+    json: {
+      lunes:     { inicio: '08:00', fin: '14:00' },
+      martes:    { inicio: '08:00', fin: '14:00' },
+      miercoles: { inicio: '08:00', fin: '14:00' },
+      jueves:    { inicio: '08:00', fin: '14:00' },
+      viernes:   { inicio: '08:00', fin: '14:00' },
+      sabado:    { inicio: '08:00', fin: '13:00' },
+    },
+  },
+  'tarde': {
+    texto: 'Turno tarde: 14:00 – 20:00',
+    json: {
+      lunes:     { inicio: '14:00', fin: '20:00' },
+      martes:    { inicio: '14:00', fin: '20:00' },
+      miercoles: { inicio: '14:00', fin: '20:00' },
+      jueves:    { inicio: '14:00', fin: '20:00' },
+      viernes:   { inicio: '14:00', fin: '20:00' },
+      sabado:    { inicio: '14:00', fin: '19:00' },
+    },
+  },
+  'completo': {
+    texto: 'Turno completo: 08:00 – 20:00',
+    json: {
+      lunes:     { inicio: '08:00', fin: '20:00' },
+      martes:    { inicio: '08:00', fin: '20:00' },
+      miercoles: { inicio: '08:00', fin: '20:00' },
+      jueves:    { inicio: '08:00', fin: '20:00' },
+      viernes:   { inicio: '08:00', fin: '20:00' },
+      sabado:    { inicio: '08:00', fin: '18:00' },
+    },
+  },
+};
+ 
+function actualizarHorarioAutomatico() {
+  const turno = document.getElementById('groomerTurno').value;
+  const wrap  = document.getElementById('groomerHorarioWrap');
+  const texto = document.getElementById('groomerHorarioTexto');
+  const hidden = document.getElementById('groomerHorarioJSON');
+ 
+  if (HORARIOS_TURNO[turno]) {
+    texto.textContent = HORARIOS_TURNO[turno].texto;
+    hidden.value      = JSON.stringify(HORARIOS_TURNO[turno].json);
+    wrap.style.display = 'block';
+  } else {
+    texto.textContent  = '—';
+    hidden.value       = '';
+    wrap.style.display = 'none';
+  }
+}
+ 
+// Llamar al cargar para que se muestre el horario del turno por defecto
+document.addEventListener('DOMContentLoaded', () => {
+  actualizarHorarioAutomatico();
+});
+ 
+// ── Validar JSON del textarea ──
+function validarJsonHorario(el) {
+  const errEl = document.getElementById('groomerHorarioError');
+  if (!el.value.trim()) {
+    errEl.style.display = 'none';
+    el.style.borderColor = '';
+    return;
+  }
+  try {
+    JSON.parse(el.value);
+    errEl.style.display = 'none';
+    el.style.borderColor = '#a8d5b5'; // verde suave = OK
+  } catch {
+    errEl.style.display = 'block';
+    el.style.borderColor = '#dc2626'; // rojo = error
+  }
+}
+ 
+// ── Solo letras (nombre, apellido, especialidad) ──
+function soloLetras(el) {
+  // Permitir letras, tildes, ñ y espacios
+  el.value = el.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ\s]/g, '');
+}
+ 
+function soloLetrasEspacios(el) {
+  el.value = el.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ\s]/g, '');
+}
+ 
+// ── Solo teléfono: números, +, -, espacios ──
+function soloTelefono(el) {
+  el.value = el.value.replace(/[^0-9+\-\s]/g, '');
+}
+ 
+// ── Solo números (capacidad) con rango ──
+function soloNumeros(el, min, max) {
+  // Eliminar no-dígitos
+  el.value = el.value.replace(/[^0-9]/g, '');
+  const val = parseInt(el.value);
+  if (!isNaN(val)) {
+    if (val < min) el.value = min;
+    if (val > max) el.value = max;
+  }
+}
+ 
+// ── Indicador de fortaleza de contraseña ──
+function validarPassword(el) {
+  const val = el.value;
+  const div = document.getElementById('groomerPasswordStrength');
+  if (!val) { div.textContent = ''; return; }
+ 
+  const checks = {
+    largo:     val.length >= 8,
+    mayuscula: /[A-Z]/.test(val),
+    minuscula: /[a-z]/.test(val),
+    numero:    /[0-9]/.test(val),
+    simbolo:   /[^A-Za-z0-9]/.test(val),
+  };
+  const passed = Object.values(checks).filter(Boolean).length;
+ 
+  const mensajes = [];
+  if (!checks.largo)     mensajes.push('mín. 8 caracteres');
+  if (!checks.mayuscula) mensajes.push('una mayúscula');
+  if (!checks.minuscula) mensajes.push('una minúscula');
+  if (!checks.numero)    mensajes.push('un número');
+  if (!checks.simbolo)   mensajes.push('un símbolo (!@#...)');
+ 
+  if (passed === 5) {
+    div.style.color = '#2d5a45';
+    div.textContent = '✅ Contraseña segura';
+    el.style.borderColor = '#a8d5b5';
+  } else {
+    div.style.color = '#92400e';
+    div.textContent = `Falta: ${mensajes.join(', ')}`;
+    el.style.borderColor = '#fbbf24';
+  }
+}
+</script>
+<!-- Modal para editar usuario -->
+<div class="modal-overlay" id="editUserModal">
+  <div class="modal" style="max-width: 600px;">
+    <div class="modal-title">✏️ Administrar Usuario</div>
+    <form id="editUserForm">
+      <input type="hidden" id="editUserId">
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="editEmail" class="form-input" required></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre</label><input type="text" id="editNombre" class="form-input" required></div>
+        <div class="form-group"><label class="form-label">Apellido</label><input type="text" id="editApellido" class="form-input" required></div>
+      </div>
+      <div class="form-row" id="editClienteFields">
+        <div class="form-group"><label class="form-label">CI</label><input type="text" id="editCi" class="form-input"></div>
+        <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" id="editTelefono" class="form-input"></div>
+      </div>
+      <div class="form-group" id="editDireccionGroup"><label class="form-label">Dirección</label><input type="text" id="editDireccion" class="form-input"></div>
+      <div class="form-group" id="editEspecialidadGroup" style="display:none;"><label class="form-label">Especialidad</label><input type="text" id="editEspecialidad" class="form-input"></div>
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+        <button type="button" class="btn btn-outline" id="closeEditModalBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+      <div class="alert" id="editUserAlert"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para eliminar permanentemente -->
+<div class="modal-overlay" id="confirmDeletePermanentModal">
+  <div class="modal">
+    <div class="modal-title">⚠️ Eliminar permanentemente</div>
+    <p>Esta acción <strong>borrará todos los datos del usuario</strong> (citas, historial, etc.) de la base de datos. No se puede deshacer.</p>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn btn-danger" id="confirmDeletePermanentBtn">Sí, eliminar</button>
+      <button class="btn btn-outline" id="cancelDeletePermanentBtn">Cancelar</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Spa - Registro</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🐾 Pet Spa</h1>
+        <h2>Registro de Cliente</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label>Contraseña:</label>
+                <input type="password" id="password" required>
+                <div id="passwordStrength" class="strength-meter"></div>
+                <small>Mínimo 8 caracteres, mayúscula, minúscula, número y símbolo.</small>
+            </div>
+            <div class="form-group">
+                <label>Nombre:</label>
+                <input type="text" id="nombre" required>
+            </div>
+            <div class="form-group">
+                <label>Apellido:</label>
+                <input type="text" id="apellido" required>
+            </div>
+            <div class="form-group">
+                <label>Cédula de Identidad (CI):</label>
+                <input type="text" id="ci" required>
+            </div>
+            <div class="form-group">
+                <label>Teléfono:</label>
+                <input type="tel" id="telefono" required>
+            </div>
+            <div class="form-group">
+                <label>Dirección (opcional):</label>
+                <input type="text" id="direccion">
+            </div>
+            <button type="submit">Registrarse</button>
+            <div id="message"></div>
+        </form>
+        <p>¿Ya tienes cuenta? <a href="index.html">Inicia sesión</a></p>
+    </div>
+    <script type="module" src="js/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,870 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model audit_log {
+  id                 BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  usuario_id         Int?             @db.UnsignedInt
+  rol_nombre         String?          @db.VarChar(50)
+  accion             audit_log_accion
+  tabla              String           @db.VarChar(60)
+  registro_id        Int?             @db.UnsignedInt
+  valores_anteriores String?          @db.LongText
+  valores_nuevos     String?          @db.LongText
+  ip_address         String?          @db.VarChar(45)
+  user_agent         String?          @db.VarChar(512)
+  creado_en          DateTime         @default(now()) @db.DateTime(0)
+  usuarios           usuarios?        @relation(fields: [usuario_id], references: [id], map: "fk_audit_usuario")
+
+  @@index([tabla, creado_en], map: "idx_audit_tabla_fecha")
+  @@index([usuario_id, creado_en], map: "idx_audit_usuario_fecha")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model auth_log {
+  id            BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  usuario_id    Int?            @db.UnsignedInt
+  email_intento String?         @db.VarChar(180)
+  accion        auth_log_accion
+  ip_address    String          @db.VarChar(45)
+  user_agent    String?         @db.VarChar(512)
+  detalle       String?         @db.VarChar(500)
+  creado_en     DateTime        @default(now()) @db.DateTime(0)
+  usuarios      usuarios?       @relation(fields: [usuario_id], references: [id], map: "fk_authlog_usuario")
+
+  @@index([accion, creado_en], map: "idx_authlog_accion")
+  @@index([ip_address, creado_en], map: "idx_authlog_ip")
+  @@index([usuario_id, creado_en], map: "idx_authlog_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model bloqueos_calendario {
+  id           Int                              @id @default(autoincrement()) @db.UnsignedInt
+  groomer_id   Int?                             @db.UnsignedInt
+  sucursal_id  Int?                             @db.UnsignedInt
+  tipo_bloqueo bloqueos_calendario_tipo_bloqueo
+  fecha_inicio DateTime                         @db.DateTime(0)
+  fecha_fin    DateTime                         @db.DateTime(0)
+  descripcion  String?                          @db.VarChar(300)
+  creado_por   Int?                             @db.UnsignedInt
+  creado_en    DateTime                         @default(now()) @db.DateTime(0)
+  usuarios     usuarios?                        @relation(fields: [creado_por], references: [id], map: "fk_bloqueo_creado_por")
+  groomers     groomers?                        @relation(fields: [groomer_id], references: [id], onDelete: Cascade, map: "fk_bloqueo_groomer")
+  sucursales   sucursales?                      @relation(fields: [sucursal_id], references: [id], map: "fk_bloqueo_sucursal")
+
+  @@index([creado_por], map: "fk_bloqueo_creado_por")
+  @@index([groomer_id], map: "fk_bloqueo_groomer")
+  @@index([sucursal_id], map: "fk_bloqueo_sucursal")
+  @@index([fecha_inicio, fecha_fin, groomer_id], map: "idx_bloqueo_fecha")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model carritos {
+  id              Int               @id @default(autoincrement()) @db.UnsignedInt
+  cliente_id      Int?              @db.UnsignedInt
+  session_token   String            @unique(map: "uq_carrito_session") @db.VarChar(128)
+  expires_at      DateTime          @db.DateTime(0)
+  creado_en       DateTime          @default(now()) @db.DateTime(0)
+  clientes        clientes?         @relation(fields: [cliente_id], references: [id], onDelete: Cascade, map: "fk_carrito_cliente")
+  detalle_carrito detalle_carrito[]
+  pedidos         pedidos[]
+
+  @@index([cliente_id], map: "idx_carrito_cliente")
+  @@index([expires_at], map: "idx_carrito_expires")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model categorias_producto {
+  id                        Int                   @id @default(autoincrement()) @db.UnsignedInt
+  nombre                    String                @db.VarChar(100)
+  descripcion               String?               @db.VarChar(300)
+  padre_id                  Int?                  @db.UnsignedInt
+  creado_en                 DateTime              @default(now()) @db.DateTime(0)
+  categorias_producto       categorias_producto?  @relation("categorias_productoTocategorias_producto", fields: [padre_id], references: [id], map: "fk_categoria_padre")
+  other_categorias_producto categorias_producto[] @relation("categorias_productoTocategorias_producto")
+  productos                 productos[]
+
+  @@index([padre_id], map: "fk_categoria_padre")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model checklist_items {
+  id                   Int                  @id @default(autoincrement()) @db.UnsignedInt
+  nombre               String               @db.VarChar(100)
+  descripcion          String?              @db.VarChar(300)
+  requiere_observacion Boolean              @default(false)
+  orden                Int                  @default(0) @db.UnsignedTinyInt
+  estado_activo        Boolean              @default(true)
+  creado_en            DateTime             @default(now()) @db.DateTime(0)
+  ficha_checklist      ficha_checklist[]
+  template_checklist   template_checklist[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model citas {
+  id                                        Int                     @id @default(autoincrement()) @db.UnsignedInt
+  mascota_id                                Int                     @db.UnsignedInt
+  groomer_id                                Int                     @db.UnsignedInt
+  servicio_id                               Int                     @db.UnsignedInt
+  sucursal_id                               Int?                    @db.UnsignedInt
+  creado_por                                Int                     @db.UnsignedInt
+  fecha_hora_inicio                         DateTime                @db.DateTime(0)
+  fecha_hora_fin                            DateTime                @db.DateTime(0)
+  duracion_estimada_min                     Int                     @db.UnsignedSmallInt
+  duracion_real_min                         Int?                    @db.UnsignedSmallInt
+  estado                                    citas_estado            @default(agendada)
+  motivo_cancelacion                        String?                 @db.VarChar(300)
+  fecha_reprogramacion                      DateTime?               @db.DateTime(0)
+  reprogramado_por                          Int?                    @db.UnsignedInt
+  precio_calculado                          Decimal                 @db.Decimal(10, 2)
+  notas                                     String?                 @db.Text
+  creado_en                                 DateTime                @default(now()) @db.DateTime(0)
+  actualizado_en                            DateTime                @default(now()) @db.DateTime(0)
+  usuarios_citas_creado_porTousuarios       usuarios                @relation("citas_creado_porTousuarios", fields: [creado_por], references: [id], map: "fk_cita_creado_por")
+  groomers                                  groomers                @relation(fields: [groomer_id], references: [id], map: "fk_cita_groomer")
+  mascotas                                  mascotas                @relation(fields: [mascota_id], references: [id], onDelete: Cascade, map: "fk_cita_mascota")
+  usuarios_citas_reprogramado_porTousuarios usuarios?               @relation("citas_reprogramado_porTousuarios", fields: [reprogramado_por], references: [id], map: "fk_cita_reprogramado_por")
+  servicios                                 servicios               @relation(fields: [servicio_id], references: [id], map: "fk_cita_servicio")
+  sucursales                                sucursales?             @relation(fields: [sucursal_id], references: [id], map: "fk_cita_sucursal")
+  encuestas_satisfaccion                    encuestas_satisfaccion?
+  facturas                                  facturas[]
+  fichas_grooming                           fichas_grooming?
+  notificaciones                            notificaciones[]
+
+  @@unique([groomer_id, fecha_hora_inicio], map: "uq_cita_groomer_inicio")
+  @@index([creado_por], map: "fk_cita_creado_por")
+  @@index([reprogramado_por], map: "fk_cita_reprogramado_por")
+  @@index([servicio_id], map: "fk_cita_servicio")
+  @@index([sucursal_id], map: "fk_cita_sucursal")
+  @@index([estado], map: "idx_cita_estado")
+  @@index([fecha_hora_inicio], map: "idx_cita_fecha")
+  @@index([groomer_id, fecha_hora_inicio], map: "idx_cita_groomer_fecha")
+  @@index([mascota_id], map: "idx_cita_mascota")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model clientes {
+  id                     Int                            @id @default(autoincrement()) @db.UnsignedInt
+  usuario_id             Int                            @unique(map: "uq_cliente_usuario") @db.UnsignedInt
+  nombre                 String                         @db.VarChar(120)
+  apellido               String                         @db.VarChar(120)
+  ci                     String?                        @unique(map: "uq_cliente_ci") @db.VarChar(20)
+  telefono               String?                        @db.VarChar(30)
+  direccion              String?                        @db.VarChar(300)
+  canal_notif_preferido  clientes_canal_notif_preferido @default(email)
+  horarios_preferidos    String?                        @db.LongText
+  creado_en              DateTime                       @default(now()) @db.DateTime(0)
+  actualizado_en         DateTime                       @default(now()) @db.DateTime(0)
+  carritos               carritos[]
+  usuarios               usuarios                       @relation(fields: [usuario_id], references: [id], onDelete: Cascade, map: "fk_cliente_usuario")
+  encuestas_satisfaccion encuestas_satisfaccion[]
+  facturas               facturas[]
+  mascota_dueno          mascota_dueno[]
+  mascotas               mascotas[]
+  notificaciones         notificaciones[]
+  pedidos                pedidos[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model consumo_insumos_ficha {
+  id                 Int                 @id @default(autoincrement()) @db.UnsignedInt
+  ficha_id           Int                 @db.UnsignedInt
+  producto_id        Int                 @db.UnsignedInt
+  variante_id        Int?                @db.UnsignedInt
+  cantidad           Decimal             @db.Decimal(8, 3)
+  descontado         Boolean             @default(false)
+  creado_en          DateTime            @default(now()) @db.DateTime(0)
+  fichas_grooming    fichas_grooming     @relation(fields: [ficha_id], references: [id], onDelete: Cascade, map: "fk_consumo_ficha")
+  productos          productos           @relation(fields: [producto_id], references: [id], map: "fk_consumo_producto")
+  variantes_producto variantes_producto? @relation(fields: [variante_id], references: [id], map: "fk_consumo_variante")
+
+  @@index([ficha_id], map: "fk_consumo_ficha")
+  @@index([producto_id], map: "fk_consumo_producto")
+  @@index([variante_id], map: "fk_consumo_variante")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model detalle_carrito {
+  id                 Int                 @id @default(autoincrement()) @db.UnsignedInt
+  carrito_id         Int                 @db.UnsignedInt
+  producto_id        Int                 @db.UnsignedInt
+  variante_id        Int?                @db.UnsignedInt
+  cantidad           Int                 @db.UnsignedSmallInt
+  precio_unitario    Decimal             @db.Decimal(10, 2)
+  creado_en          DateTime            @default(now()) @db.DateTime(0)
+  carritos           carritos            @relation(fields: [carrito_id], references: [id], onDelete: Cascade, map: "fk_detcarrito_carrito")
+  productos          productos           @relation(fields: [producto_id], references: [id], map: "fk_detcarrito_producto")
+  variantes_producto variantes_producto? @relation(fields: [variante_id], references: [id], map: "fk_detcarrito_variante")
+
+  @@index([carrito_id], map: "fk_detcarrito_carrito")
+  @@index([producto_id], map: "fk_detcarrito_producto")
+  @@index([variante_id], map: "fk_detcarrito_variante")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model detalle_factura {
+  id              Int      @id @default(autoincrement()) @db.UnsignedInt
+  factura_id      Int      @db.UnsignedInt
+  descripcion     String   @db.VarChar(300)
+  cantidad        Int      @db.UnsignedSmallInt
+  precio_unitario Decimal  @db.Decimal(10, 2)
+  subtotal        Decimal  @db.Decimal(10, 2)
+  creado_en       DateTime @default(now()) @db.DateTime(0)
+  facturas        facturas @relation(fields: [factura_id], references: [id], onDelete: Cascade, map: "fk_detfactura_factura")
+
+  @@index([factura_id], map: "fk_detfactura_factura")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model detalle_pedido {
+  id                 Int                 @id @default(autoincrement()) @db.UnsignedInt
+  pedido_id          Int                 @db.UnsignedInt
+  producto_id        Int                 @db.UnsignedInt
+  variante_id        Int?                @db.UnsignedInt
+  cantidad           Int                 @db.UnsignedSmallInt
+  precio_momento     Decimal             @db.Decimal(10, 2)
+  subtotal           Decimal             @db.Decimal(10, 2)
+  creado_en          DateTime            @default(now()) @db.DateTime(0)
+  pedidos            pedidos             @relation(fields: [pedido_id], references: [id], onDelete: Cascade, map: "fk_detpedido_pedido")
+  productos          productos           @relation(fields: [producto_id], references: [id], map: "fk_detpedido_producto")
+  variantes_producto variantes_producto? @relation(fields: [variante_id], references: [id], map: "fk_detpedido_variante")
+
+  @@index([pedido_id], map: "fk_detpedido_pedido")
+  @@index([producto_id], map: "fk_detpedido_producto")
+  @@index([variante_id], map: "fk_detpedido_variante")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model disponibilidad_groomer {
+  id                 Int      @id @default(autoincrement()) @db.UnsignedInt
+  groomer_id         Int      @db.UnsignedInt
+  dia_semana         Int      @db.UnsignedTinyInt
+  hora_inicio        DateTime @db.Time(0)
+  hora_fin           DateTime @db.Time(0)
+  intervalo_descanso String?  @db.LongText
+  buffer_minutos     Int      @default(15) @db.UnsignedSmallInt
+  creado_en          DateTime @default(now()) @db.DateTime(0)
+  groomers           groomers @relation(fields: [groomer_id], references: [id], onDelete: Cascade, map: "fk_disponibilidad_groomer")
+
+  @@unique([groomer_id, dia_semana], map: "uq_disp_groomer_dia")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model encuestas_satisfaccion {
+  id           Int      @id @default(autoincrement()) @db.UnsignedInt
+  cita_id      Int      @unique(map: "uq_encuesta_cita") @db.UnsignedInt
+  cliente_id   Int      @db.UnsignedInt
+  calificacion Int      @db.UnsignedTinyInt
+  comentario   String?  @db.Text
+  creado_en    DateTime @default(now()) @db.DateTime(0)
+  citas        citas    @relation(fields: [cita_id], references: [id], onDelete: Cascade, map: "fk_encuesta_cita")
+  clientes     clientes @relation(fields: [cliente_id], references: [id], onDelete: Cascade, map: "fk_encuesta_cliente")
+
+  @@index([cliente_id], map: "fk_encuesta_cliente")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model facturas {
+  id              Int                  @id @default(autoincrement()) @db.UnsignedInt
+  numero_factura  String               @unique(map: "uq_numero_factura") @db.VarChar(30)
+  cliente_id      Int                  @db.UnsignedInt
+  cita_id         Int?                 @db.UnsignedInt
+  pedido_id       Int?                 @db.UnsignedInt
+  fecha_emision   DateTime             @default(now()) @db.DateTime(0)
+  subtotal        Decimal              @db.Decimal(10, 2)
+  descuento       Decimal              @default(0.00) @db.Decimal(10, 2)
+  impuesto        Decimal              @default(0.00) @db.Decimal(10, 2)
+  total           Decimal              @db.Decimal(10, 2)
+  estado          facturas_estado      @default(pendiente)
+  metodo_pago     facturas_metodo_pago @default(efectivo)
+  notas           String?              @db.VarChar(300)
+  creado_en       DateTime             @default(now()) @db.DateTime(0)
+  actualizado_en  DateTime             @default(now()) @db.DateTime(0)
+  detalle_factura detalle_factura[]
+  citas           citas?               @relation(fields: [cita_id], references: [id], map: "fk_factura_cita")
+  clientes        clientes             @relation(fields: [cliente_id], references: [id], map: "fk_factura_cliente")
+  pedidos         pedidos?             @relation(fields: [pedido_id], references: [id], map: "fk_factura_pedido")
+  pagos           pagos[]
+
+  @@index([cita_id], map: "fk_factura_cita")
+  @@index([pedido_id], map: "fk_factura_pedido")
+  @@index([cliente_id], map: "idx_factura_cliente")
+  @@index([fecha_emision], map: "idx_factura_fecha")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ficha_checklist {
+  id              Int             @id @default(autoincrement()) @db.UnsignedInt
+  ficha_id        Int             @db.UnsignedInt
+  item_id         Int             @db.UnsignedInt
+  completado      Boolean         @default(false)
+  observacion     String?         @db.Text
+  completado_en   DateTime?       @db.DateTime(0)
+  fichas_grooming fichas_grooming @relation(fields: [ficha_id], references: [id], onDelete: Cascade, map: "fk_fichecklist_ficha")
+  checklist_items checklist_items @relation(fields: [item_id], references: [id], map: "fk_fichecklist_item")
+
+  @@unique([ficha_id, item_id], map: "uq_ficha_item")
+  @@index([item_id], map: "fk_fichecklist_item")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model fichas_grooming {
+  id                    Int                     @id @default(autoincrement()) @db.UnsignedInt
+  cita_id               Int                     @unique(map: "uq_ficha_cita") @db.UnsignedInt
+  raza_tama_o_momento   String?                 @map("raza_tamaño_momento") @db.VarChar(100)
+  peso_momento_kg       Decimal?                @db.Decimal(5, 2)
+  temperatura_ingreso   Decimal?                @db.Decimal(4, 1)
+  estado_inicial        String?                 @db.Text
+  estado_final          String?                 @db.Text
+  notas_internas        String?                 @db.Text
+  consumido_inventario  Boolean                 @default(false)
+  fecha_cierre          DateTime?               @db.DateTime(0)
+  creado_en             DateTime                @default(now()) @db.DateTime(0)
+  actualizado_en        DateTime                @default(now()) @db.DateTime(0)
+  consumo_insumos_ficha consumo_insumos_ficha[]
+  ficha_checklist       ficha_checklist[]
+  citas                 citas                   @relation(fields: [cita_id], references: [id], onDelete: Cascade, map: "fk_ficha_cita")
+  fotos_ficha           fotos_ficha[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model fotos_ficha {
+  id              Int              @id @default(autoincrement()) @db.UnsignedInt
+  ficha_id        Int              @db.UnsignedInt
+  url             String           @db.VarChar(500)
+  tipo            fotos_ficha_tipo
+  descripcion     String?          @db.VarChar(200)
+  creado_en       DateTime         @default(now()) @db.DateTime(0)
+  fichas_grooming fichas_grooming  @relation(fields: [ficha_id], references: [id], onDelete: Cascade, map: "fk_foto_ficha")
+
+  @@index([ficha_id], map: "fk_foto_ficha")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model groomers {
+  id                     Int                      @id @default(autoincrement()) @db.UnsignedInt
+  usuario_id             Int                      @unique(map: "uq_groomer_usuario") @db.UnsignedInt
+  sucursal_id            Int?                     @db.UnsignedInt
+  nombre                 String                   @db.VarChar(120)
+  apellido               String                   @db.VarChar(120)
+  telefono               String?                  @db.VarChar(30)
+  especialidad           String?                  @db.VarChar(200)
+  turno                  groomers_turno           @default(completo)
+  capacidad_simultanea   Int                      @default(1) @db.UnsignedTinyInt
+  horario_trabajo        String?                  @db.LongText
+  estado_activo          Boolean                  @default(true)
+  creado_en              DateTime                 @default(now()) @db.DateTime(0)
+  actualizado_en         DateTime                 @default(now()) @db.DateTime(0)
+  bloqueos_calendario    bloqueos_calendario[]
+  citas                  citas[]
+  disponibilidad_groomer disponibilidad_groomer[]
+  sucursales             sucursales?              @relation(fields: [sucursal_id], references: [id], map: "fk_groomer_sucursal")
+  usuarios               usuarios                 @relation(fields: [usuario_id], references: [id], onDelete: Cascade, map: "fk_groomer_usuario")
+
+  @@index([sucursal_id], map: "fk_groomer_sucursal")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model historial_mascota {
+  id            Int                           @id @default(autoincrement()) @db.UnsignedInt
+  mascota_id    Int                           @db.UnsignedInt
+  tipo_evento   historial_mascota_tipo_evento
+  descripcion   String?                       @db.Text
+  referencia_id Int?                          @db.UnsignedInt
+  creado_por    Int?                          @db.UnsignedInt
+  creado_en     DateTime                      @default(now()) @db.DateTime(0)
+  usuarios      usuarios?                     @relation(fields: [creado_por], references: [id], map: "fk_historial_creado_por")
+  mascotas      mascotas                      @relation(fields: [mascota_id], references: [id], onDelete: Cascade, map: "fk_historial_mascota")
+
+  @@index([creado_por], map: "fk_historial_creado_por")
+  @@index([mascota_id, creado_en], map: "idx_historial_mascota_fecha")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model log_recordatorios {
+  id              Int                         @id @default(autoincrement()) @db.UnsignedInt
+  notificacion_id Int                         @db.UnsignedInt
+  intento         Int                         @default(1) @db.UnsignedTinyInt
+  resultado       log_recordatorios_resultado
+  detalle_error   String?                     @db.Text
+  creado_en       DateTime                    @default(now()) @db.DateTime(0)
+  notificaciones  notificaciones              @relation(fields: [notificacion_id], references: [id], onDelete: Cascade, map: "fk_log_notif")
+
+  @@index([notificacion_id], map: "fk_log_notif")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mascota_dueno {
+  mascota_id   Int      @db.UnsignedInt
+  cliente_id   Int      @db.UnsignedInt
+  es_principal Boolean  @default(false)
+  creado_en    DateTime @default(now()) @db.DateTime(0)
+  clientes     clientes @relation(fields: [cliente_id], references: [id], onDelete: Cascade, map: "fk_md_cliente")
+  mascotas     mascotas @relation(fields: [mascota_id], references: [id], onDelete: Cascade, map: "fk_md_mascota")
+
+  @@id([mascota_id, cliente_id])
+  @@index([cliente_id], map: "fk_md_cliente")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mascotas {
+  id                    Int                    @id @default(autoincrement()) @db.UnsignedInt
+  dueno_principal_id    Int                    @db.UnsignedInt
+  nombre                String                 @db.VarChar(100)
+  especie               String                 @db.VarChar(60)
+  raza                  String?                @db.VarChar(100)
+  fecha_nacimiento      DateTime?              @db.Date
+  peso_kg               Decimal?               @db.Decimal(5, 2)
+  temperamento          mascotas_temperamento?
+  alergias              String?                @db.Text
+  restricciones_medicas String?                @db.Text
+  foto_url              String?                @db.VarChar(500)
+  notas_adicionales     String?                @db.Text
+  creado_en             DateTime               @default(now()) @db.DateTime(0)
+  actualizado_en        DateTime               @default(now()) @db.DateTime(0)
+  citas                 citas[]
+  historial_mascota     historial_mascota[]
+  mascota_dueno         mascota_dueno[]
+  clientes              clientes               @relation(fields: [dueno_principal_id], references: [id], onDelete: Cascade, map: "fk_mascota_dueno_principal")
+  vacunas_mascota       vacunas_mascota[]
+
+  @@index([dueno_principal_id], map: "fk_mascota_dueno_principal")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notificaciones {
+  id                 Int                        @id @default(autoincrement()) @db.UnsignedInt
+  cita_id            Int?                       @db.UnsignedInt
+  cliente_id         Int                        @db.UnsignedInt
+  tipo_canal         notificaciones_tipo_canal
+  tipo_evento        notificaciones_tipo_evento
+  destino            String                     @db.VarChar(200)
+  fecha_programacion DateTime                   @db.DateTime(0)
+  fecha_envio        DateTime?                  @db.DateTime(0)
+  estado             notificaciones_estado      @default(pendiente)
+  reintentos         Int                        @default(0) @db.UnsignedTinyInt
+  creado_en          DateTime                   @default(now()) @db.DateTime(0)
+  log_recordatorios  log_recordatorios[]
+  citas              citas?                     @relation(fields: [cita_id], references: [id], map: "fk_notif_cita")
+  clientes           clientes                   @relation(fields: [cliente_id], references: [id], onDelete: Cascade, map: "fk_notif_cliente")
+
+  @@index([cita_id], map: "fk_notif_cita")
+  @@index([cliente_id], map: "idx_notif_cliente")
+  @@index([fecha_programacion, estado], map: "idx_notif_programacion")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model oauth_cuentas {
+  id                Int                     @id @default(autoincrement()) @db.UnsignedInt
+  usuario_id        Int                     @db.UnsignedInt
+  proveedor         oauth_cuentas_proveedor
+  proveedor_user_id String                  @db.VarChar(255)
+  access_token      String?                 @db.Text
+  refresh_token     String?                 @db.Text
+  token_expira_en   DateTime?               @db.DateTime(0)
+  email_proveedor   String                  @db.VarChar(180)
+  nombre_proveedor  String?                 @db.VarChar(200)
+  foto_url          String?                 @db.VarChar(500)
+  creado_en         DateTime                @default(now()) @db.DateTime(0)
+  actualizado_en    DateTime                @default(now()) @db.DateTime(0)
+  usuarios          usuarios                @relation(fields: [usuario_id], references: [id], onDelete: Cascade, map: "fk_oauth_usuario")
+
+  @@unique([proveedor, proveedor_user_id], map: "uq_oauth_proveedor_uid")
+  @@index([usuario_id], map: "fk_oauth_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model pagos {
+  id                     Int               @id @default(autoincrement()) @db.UnsignedInt
+  factura_id             Int               @db.UnsignedInt
+  monto                  Decimal           @db.Decimal(10, 2)
+  metodo_pago            pagos_metodo_pago
+  referencia_transaccion String?           @db.VarChar(200)
+  estado                 pagos_estado      @default(pendiente)
+  registrado_por         Int?              @db.UnsignedInt
+  creado_en              DateTime          @default(now()) @db.DateTime(0)
+  facturas               facturas          @relation(fields: [factura_id], references: [id], onDelete: Cascade, map: "fk_pago_factura")
+  usuarios               usuarios?         @relation(fields: [registrado_por], references: [id], map: "fk_pago_registrado_por")
+
+  @@index([factura_id], map: "fk_pago_factura")
+  @@index([registrado_por], map: "fk_pago_registrado_por")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model pedidos {
+  id              Int                     @id @default(autoincrement()) @db.UnsignedInt
+  carrito_id      Int?                    @db.UnsignedInt
+  cliente_id      Int                     @db.UnsignedInt
+  metodo_contacto pedidos_metodo_contacto
+  estado          pedidos_estado          @default(pendiente)
+  subtotal        Decimal                 @db.Decimal(10, 2)
+  descuento       Decimal                 @default(0.00) @db.Decimal(10, 2)
+  total           Decimal                 @db.Decimal(10, 2)
+  notas           String?                 @db.Text
+  creado_en       DateTime                @default(now()) @db.DateTime(0)
+  actualizado_en  DateTime                @default(now()) @db.DateTime(0)
+  detalle_pedido  detalle_pedido[]
+  facturas        facturas[]
+  carritos        carritos?               @relation(fields: [carrito_id], references: [id], map: "fk_pedido_carrito")
+  clientes        clientes                @relation(fields: [cliente_id], references: [id], map: "fk_pedido_cliente")
+
+  @@index([carrito_id], map: "fk_pedido_carrito")
+  @@index([cliente_id, estado], map: "idx_pedido_cliente")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model productos {
+  id                    Int                     @id @default(autoincrement()) @db.UnsignedInt
+  categoria_id          Int                     @db.UnsignedInt
+  nombre                String                  @db.VarChar(200)
+  descripcion           String?                 @db.Text
+  sku                   String                  @unique(map: "uq_producto_sku") @db.VarChar(60)
+  precio_base           Decimal                 @db.Decimal(10, 2)
+  stock                 Int                     @default(0) @db.UnsignedInt
+  stock_minimo          Int                     @default(5) @db.UnsignedInt
+  imagen_url            String?                 @db.VarChar(500)
+  estado_activo         Boolean                 @default(true)
+  creado_en             DateTime                @default(now()) @db.DateTime(0)
+  actualizado_en        DateTime                @default(now()) @db.DateTime(0)
+  consumo_insumos_ficha consumo_insumos_ficha[]
+  detalle_carrito       detalle_carrito[]
+  detalle_pedido        detalle_pedido[]
+  categorias_producto   categorias_producto     @relation(fields: [categoria_id], references: [id], map: "fk_producto_categoria")
+  variantes_producto    variantes_producto[]
+
+  @@index([categoria_id], map: "idx_producto_categoria")
+  @@index([stock, stock_minimo], map: "idx_producto_stock")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model roles {
+  id             Int          @id @default(autoincrement()) @db.UnsignedInt
+  nombre         roles_nombre @unique(map: "uq_rol_nombre")
+  descripcion    String?      @db.VarChar(255)
+  permisos       String?      @db.LongText
+  creado_en      DateTime     @default(now()) @db.DateTime(0)
+  actualizado_en DateTime     @default(now()) @db.DateTime(0)
+  usuarios       usuarios[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model servicios {
+  id                           Int                  @id @default(autoincrement()) @db.UnsignedInt
+  nombre                       String               @db.VarChar(150)
+  descripcion                  String?              @db.Text
+  precio_base                  Decimal              @db.Decimal(10, 2)
+  duracion_base_minutos        Int                  @db.UnsignedSmallInt
+  permite_doble_booking        Boolean              @default(false)
+  requiere_bloqueo_consecutivo Boolean              @default(false)
+  factor_tama_o_raza           String?              @map("factor_tamaño_raza") @db.LongText
+  consumo_insumos              String?              @db.LongText
+  estado_activo                Boolean              @default(true)
+  creado_en                    DateTime             @default(now()) @db.DateTime(0)
+  actualizado_en               DateTime             @default(now()) @db.DateTime(0)
+  citas                        citas[]
+  template_checklist           template_checklist[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sucursales {
+  id                  Int                   @id @default(autoincrement()) @db.UnsignedInt
+  nombre              String                @db.VarChar(150)
+  direccion           String?               @db.VarChar(300)
+  telefono            String?               @db.VarChar(30)
+  email               String?               @db.VarChar(180)
+  estado_activo       Boolean               @default(true)
+  creado_en           DateTime              @default(now()) @db.DateTime(0)
+  actualizado_en      DateTime              @default(now()) @db.DateTime(0)
+  bloqueos_calendario bloqueos_calendario[]
+  citas               citas[]
+  groomers            groomers[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model template_checklist {
+  servicio_id     Int             @db.UnsignedInt
+  item_id         Int             @db.UnsignedInt
+  obligatorio     Boolean         @default(true)
+  orden           Int             @default(0) @db.UnsignedTinyInt
+  checklist_items checklist_items @relation(fields: [item_id], references: [id], onDelete: Cascade, map: "fk_template_item")
+  servicios       servicios       @relation(fields: [servicio_id], references: [id], onDelete: Cascade, map: "fk_template_servicio")
+
+  @@id([servicio_id, item_id])
+  @@index([item_id], map: "fk_template_item")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tokens_verificacion {
+  id           Int                      @id @default(autoincrement()) @db.UnsignedInt
+  usuario_id   Int                      @db.UnsignedInt
+  token        String                   @unique(map: "uq_token") @db.VarChar(128)
+  tipo         tokens_verificacion_tipo
+  expira_en    DateTime                 @db.DateTime(0)
+  usado        Boolean                  @default(false)
+  ip_solicitud String?                  @db.VarChar(45)
+  creado_en    DateTime                 @default(now()) @db.DateTime(0)
+  usuarios     usuarios                 @relation(fields: [usuario_id], references: [id], onDelete: Cascade, map: "fk_token_usuario")
+
+  @@index([expira_en, usado], map: "idx_token_expira")
+  @@index([usuario_id, tipo, usado], map: "idx_token_usuario_tipo")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_sessions {
+  id                 Int      @id @default(autoincrement()) @db.UnsignedInt
+  usuario_id         Int      @db.UnsignedInt
+  token_jwt          String   @db.Text
+  jti                String   @unique(map: "uq_jti") @db.VarChar(128)
+  refresh_token      String   @db.VarChar(512)
+  ip_address         String?  @db.VarChar(45)
+  user_agent         String?  @db.VarChar(512)
+  ultima_actividad   DateTime @default(now()) @db.DateTime(0)
+  fecha_expiracion   DateTime @db.DateTime(0)
+  refresh_expiracion DateTime @db.DateTime(0)
+  activa             Boolean  @default(true)
+  creado_en          DateTime @default(now()) @db.DateTime(0)
+  usuarios           usuarios @relation(fields: [usuario_id], references: [id], onDelete: Cascade, map: "fk_session_usuario")
+
+  @@index([ultima_actividad, activa], map: "idx_session_actividad")
+  @@index([usuario_id, activa], map: "idx_session_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model usuarios {
+  id                                     Int                   @id @default(autoincrement()) @db.UnsignedInt
+  rol_id                                 Int                   @db.UnsignedInt
+  email                                  String                @unique(map: "uq_usuario_email") @db.VarChar(180)
+  password_hash                          String?               @db.VarChar(255)
+  email_verificado                       Boolean               @default(false)
+  two_factor_secret                      String?               @db.VarChar(100)
+  two_factor_enabled                     Boolean               @default(false)
+  intentos_fallidos                      Int                   @default(0) @db.UnsignedTinyInt
+  bloqueado_hasta                        DateTime?             @db.DateTime(0)
+  ultimo_acceso                          DateTime?             @db.DateTime(0)
+  estado_activo                          Boolean               @default(true)
+  debe_cambiar_password                  Boolean               @default(false)
+  creado_en                              DateTime              @default(now()) @db.DateTime(0)
+  actualizado_en                         DateTime              @default(now()) @db.DateTime(0)
+  audit_log                              audit_log[]
+  auth_log                               auth_log[]
+  bloqueos_calendario                    bloqueos_calendario[]
+  citas_citas_creado_porTousuarios       citas[]               @relation("citas_creado_porTousuarios")
+  citas_citas_reprogramado_porTousuarios citas[]               @relation("citas_reprogramado_porTousuarios")
+  clientes                               clientes?
+  groomers                               groomers?
+  historial_mascota                      historial_mascota[]
+  oauth_cuentas                          oauth_cuentas[]
+  pagos                                  pagos[]
+  tokens_verificacion                    tokens_verificacion[]
+  user_sessions                          user_sessions[]
+  roles                                  roles                 @relation(fields: [rol_id], references: [id], map: "fk_usuario_rol")
+
+  @@index([rol_id], map: "fk_usuario_rol")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model vacunas_mascota {
+  id                Int       @id @default(autoincrement()) @db.UnsignedInt
+  mascota_id        Int       @db.UnsignedInt
+  nombre_vacuna     String    @db.VarChar(100)
+  fecha_aplicacion  DateTime  @db.Date
+  fecha_vencimiento DateTime? @db.Date
+  veterinario       String?   @db.VarChar(150)
+  observaciones     String?   @db.VarChar(300)
+  creado_en         DateTime  @default(now()) @db.DateTime(0)
+  mascotas          mascotas  @relation(fields: [mascota_id], references: [id], onDelete: Cascade, map: "fk_vacuna_mascota")
+
+  @@index([mascota_id], map: "fk_vacuna_mascota")
+  @@index([fecha_vencimiento, mascota_id], map: "idx_vacuna_vencimiento")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model variantes_producto {
+  id                    Int                     @id @default(autoincrement()) @db.UnsignedInt
+  producto_id           Int                     @db.UnsignedInt
+  atributo              String                  @db.VarChar(60)
+  valor                 String                  @db.VarChar(100)
+  sku_variante          String                  @unique(map: "uq_variante_sku") @db.VarChar(80)
+  precio_extra          Decimal                 @default(0.00) @db.Decimal(10, 2)
+  stock                 Int                     @default(0) @db.UnsignedInt
+  estado_activo         Boolean                 @default(true)
+  creado_en             DateTime                @default(now()) @db.DateTime(0)
+  consumo_insumos_ficha consumo_insumos_ficha[]
+  detalle_carrito       detalle_carrito[]
+  detalle_pedido        detalle_pedido[]
+  productos             productos               @relation(fields: [producto_id], references: [id], onDelete: Cascade, map: "fk_variante_producto")
+
+  @@index([producto_id], map: "idx_variante_producto")
+}
+
+enum roles_nombre {
+  admin
+  groomer
+  cliente
+  recepcion
+}
+
+enum historial_mascota_tipo_evento {
+  servicio
+  recomendacion
+  alerta
+  cancelacion
+  otro
+}
+
+enum oauth_cuentas_proveedor {
+  google
+}
+
+enum audit_log_accion {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  REGISTER
+  PASSWORD_CHANGE
+  ROLE_CHANGE
+  APPOINTMENT_CREATE
+  APPOINTMENT_CANCEL
+  INVOICE_CREATE
+  PAYMENT_REGISTER
+  GROOMING_CLOSE
+  INVENTORY_DISCOUNT
+}
+
+enum auth_log_accion {
+  login_exitoso
+  login_fallido
+  logout
+  bloqueo_cuenta
+  desbloqueo_cuenta
+  registro_cuenta
+  verificacion_email
+  solicitud_reset_password
+  reset_password_exitoso
+  cambio_password
+  activacion_2fa
+  verificacion_2fa_exitosa
+  verificacion_2fa_fallida
+  oauth_login
+  token_expirado
+  sesion_expirada_inactividad
+}
+
+enum bloqueos_calendario_tipo_bloqueo {
+  feriado
+  vacaciones
+  mantenimiento
+  ausencia
+}
+
+enum fotos_ficha_tipo {
+  antes
+  despues
+}
+
+enum log_recordatorios_resultado {
+  exito
+  fallo
+}
+
+enum notificaciones_tipo_canal {
+  email
+  whatsapp
+  sms
+}
+
+enum pagos_metodo_pago {
+  efectivo
+  qr
+  transferencia
+}
+
+enum pedidos_metodo_contacto {
+  whatsapp
+  telegram
+}
+
+enum tokens_verificacion_tipo {
+  activacion_email
+  reset_password
+  cambio_email
+}
+
+enum notificaciones_tipo_evento {
+  confirmacion
+  recordatorio_24h
+  recordatorio_2h
+  listo_recoger
+  encuesta
+  promocion
+}
+
+enum pedidos_estado {
+  pendiente
+  enviado
+  confirmado
+  pagado
+  entregado
+  cancelado
+}
+
+enum pagos_estado {
+  completado
+  pendiente
+  fallido
+}
+
+enum clientes_canal_notif_preferido {
+  email
+  whatsapp
+  sms
+}
+
+enum groomers_turno {
+  ma_ana   @map("mañana")
+  tarde
+  completo
+}
+
+enum mascotas_temperamento {
+  tranquilo
+  jugueton
+  agresivo
+  ansioso
+  otro
+}
+
+enum notificaciones_estado {
+  pendiente
+  enviado
+  fallido
+}
+
+enum citas_estado {
+  agendada
+  confirmada
+  en_progreso
+  completada
+  cancelada
+  no_asistio
+}
+
+enum facturas_estado {
+  pendiente
+  pagada
+  cancelada
+}
+
+enum facturas_metodo_pago {
+  efectivo
+  qr
+  transferencia
+}

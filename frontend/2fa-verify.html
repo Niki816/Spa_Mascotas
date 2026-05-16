@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificación 2FA — Pet Spa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #1e3a2f;
+      --green-mid:  #2d5a45;
+      --green-soft: #4a8c6f;
+      --green-light:#a8d5b5;
+      --green-pale: #e8f5ed;
+      --cream:      #faf7f2;
+      --amber:      #d4845a;
+      --text-dark:  #1a2e25;
+      --text-mid:   #4a6355;
+      --text-light: #8aab97;
+      --shadow:     0 8px 32px rgba(30,58,47,.13);
+      --radius:     18px;
+      --radius-sm:  10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem 2rem;
+      animation: fadeUp .35s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 1.6rem;
+    }
+    .logo-icon {
+      width: 52px; height: 52px;
+      background: var(--amber);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: .5rem;
+    }
+    .logo h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--green-deep); }
+    .logo p  { font-size: .85rem; color: var(--text-light); margin-top: 2px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 14px;
+      background: rgba(212,132,90,.12);
+      color: var(--amber);
+      border-radius: 20px;
+      font-size: .78rem;
+      font-weight: 500;
+      margin-bottom: 1.4rem;
+    }
+
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 1.6rem;
+    }
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #d0e4da;
+      transition: background .3s;
+    }
+    .step-dot.active { background: var(--green-soft); }
+    .step-dot.done   { background: var(--green-deep); }
+
+    .section { display: none; }
+    .section.visible { display: block; }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: var(--green-deep);
+      margin-bottom: .4rem;
+    }
+    .section-desc {
+      font-size: .87rem;
+      color: var(--text-mid);
+      line-height: 1.55;
+      margin-bottom: 1.2rem;
+    }
+
+    .qr-box {
+      background: var(--green-pale);
+      border: 1.5px dashed var(--green-light);
+      border-radius: var(--radius-sm);
+      padding: 1.2rem;
+      text-align: center;
+      margin-bottom: 1.1rem;
+      display: none;
+    }
+    .qr-box img { max-width: 170px; border-radius: 8px; }
+    .secret-box {
+      font-family: monospace;
+      font-size: .78rem;
+      background: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--green-light);
+      word-break: break-all;
+      margin-top: .7rem;
+      color: var(--green-deep);
+    }
+    .qr-hint { font-size: .75rem; color: var(--text-light); margin-top: .5rem; }
+
+    .code-inputs {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: .8rem 0 1rem;
+    }
+    .code-input {
+      width: 46px; height: 54px;
+      border: 2px solid #d0e4da;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--green-deep);
+      background: var(--cream);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .code-input:focus {
+      border-color: var(--green-soft);
+      box-shadow: 0 0 0 3px rgba(74,140,111,.15);
+      background: white;
+    }
+    .code-input.filled { border-color: var(--green-soft); background: var(--green-pale); }
+
+    .btn {
+      width: 100%;
+      padding: 11px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-primary { background: var(--green-deep); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--green-mid); }
+    .btn-primary:disabled { background: #b0c8bc; cursor: not-allowed; }
+    .btn-amber { background: var(--amber); color: white; margin-bottom: .8rem; }
+    .btn-amber:hover:not(:disabled) { background: #c0714a; }
+    .btn-amber:disabled { background: #e0b49a; cursor: not-allowed; }
+
+    .divider {
+      display: flex; align-items: center; gap: .6rem;
+      margin: 1rem 0 .5rem;
+      color: var(--text-light);
+      font-size: .8rem;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #e8ede9;
+    }
+
+    .alert {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: .84rem;
+      margin-top: .9rem;
+      display: none;
+    }
+    .alert.show { display: block; }
+    .alert-success { background: var(--green-pale); color: var(--green-mid); border: 1px solid var(--green-light); }
+    .alert-error   { background: #fdecea; color: #c0392b; border: 1px solid #f5c6c0; }
+
+    .code-label {
+      font-size: .84rem;
+      color: var(--text-mid);
+      text-align: center;
+      margin-bottom: .2rem;
+    }
+
+    .back-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-top: 1.3rem;
+      font-size: .82rem;
+      color: var(--text-light);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      padding: 0;
+    }
+    .back-btn:hover { color: var(--green-soft); }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <div class="logo">
+    <div class="logo-icon">🐾</div>
+    <h1>Pet Spa</h1>
+    <p>Panel Administrador</p>
+  </div>
+
+  <div style="text-align:center;">
+    <span class="badge">🛡️ Administrador</span>
+  </div>
+
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+  </div>
+
+  <!-- SECCIÓN A: sin 2FA — mostrar QR y activar -->
+  <div class="section" id="section-setup">
+    <div class="section-title">📱 Configura tu 2FA</div>
+    <p class="section-desc">
+      Tu cuenta requiere autenticación de dos factores.
+      Escanea el QR con <strong>Google Authenticator</strong> o <strong>Authy</strong>.
+    </p>
+
+    <button class="btn btn-amber" id="generateQRBtn">🔄 Generar código QR</button>
+
+    <div class="qr-box" id="qrBox">
+      <img id="qrImg" src="" alt="Código QR 2FA">
+      <div class="secret-box" id="secretBox"></div>
+      <p class="qr-hint">También puedes ingresar el código manualmente en tu app</p>
+    </div>
+
+    <div id="setupCodeArea" style="display:none;">
+      <div class="divider">Ingresa el código de verificación</div>
+      <p class="code-label">Código de 6 dígitos de tu app autenticadora</p>
+      <div class="code-inputs" id="setupCodeInputs">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+      </div>
+      <button class="btn btn-primary" id="activateBtn" disabled>✅ Activar y continuar</button>
+    </div>
+
+    <div class="alert" id="setupAlert"></div>
+  </div>
+
+  <!-- SECCIÓN B: ya tiene 2FA — solo verificar código -->
+  <div class="section" id="section-verify">
+    <div class="section-title">🔐 Verificación de dos factores</div>
+    <p class="section-desc">
+      Ingresa el código de 6 dígitos de tu app autenticadora para acceder al panel.
+    </p>
+
+    <p class="code-label">Código de Google Authenticator o Authy</p>
+    <div class="code-inputs" id="verifyCodeInputs">
+      <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input class="code-input" type="text" maxlength="1" inputmode="numeric" autocomplete="off">
+    </div>
+
+    <button class="btn btn-primary" id="verifyBtn" disabled>✅ Verificar y entrar</button>
+    <div class="alert" id="verifyAlert"></div>
+  </div>
+
+  <button class="back-btn" id="backBtn">← Cerrar sesión y volver al login</button>
+</div>
+
+<script type="module">
+import { getAccessToken, getUser, clearTokens, authFetch, saveUser, API_URL } from './js/auth.js';
+
+// ── Proteger ruta ──────────────────────────────────────────
+const token = getAccessToken();
+const user  = getUser();
+
+if (!token || !user || user.rol !== 'admin') {
+  clearTokens();
+  window.location.href = 'index.html';
+  throw new Error('No autorizado');
+}
+
+// ── Helpers UI ─────────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.getElementById(id).classList.add('visible');
+}
+
+function showAlert(id, msg, type = 'success') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert alert-${type} show`;
+}
+
+function clearInputs(containerId) {
+  document.querySelectorAll(`#${containerId} .code-input`).forEach(i => {
+    i.value = '';
+    i.classList.remove('filled');
+  });
+  const first = document.querySelector(`#${containerId} .code-input`);
+  if (first) first.focus();
+}
+
+// ── Setup inputs de código ─────────────────────────────────
+function setupCodeInputs(containerId, btnId, onSubmit) {
+  const inputs = document.querySelectorAll(`#${containerId} .code-input`);
+  const btn    = document.getElementById(btnId);
+
+  function getCode() { return [...inputs].map(i => i.value).join(''); }
+  function checkFull() { btn.disabled = getCode().length < 6; }
+
+  inputs.forEach((input, i) => {
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D/g, '');
+      input.classList.toggle('filled', !!input.value);
+      if (input.value && i < inputs.length - 1) inputs[i + 1].focus();
+      checkFull();
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !input.value && i > 0) inputs[i - 1].focus();
+    });
+    input.addEventListener('paste', e => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData)
+        .getData('text').replace(/\D/g, '').slice(0, 6);
+      [...pasted].forEach((char, j) => {
+        if (inputs[j]) { inputs[j].value = char; inputs[j].classList.add('filled'); }
+      });
+      checkFull();
+      if (pasted.length >= 6) inputs[5].focus();
+    });
+  });
+
+  btn.addEventListener('click', () => {
+    const code = getCode();
+    if (code.length === 6) onSubmit(code);
+  });
+}
+
+// ── Redirección post-2FA ───────────────────────────────────
+function redirect() {
+  const userData = getUser();
+  if (userData?.debeCambiarPassword) {
+    window.location.href = 'change-password-required.html';
+  } else {
+    window.location.href = 'admin-dashboard.html';
+  }
+}
+
+// ── Verificar estado 2FA del admin ────────────────────────
+async function checkTwoFactorStatus() {
+  try {
+    const res  = await authFetch(`${API_URL}/me`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    if (data.twoFactorEnabled) {
+      // Ya tiene 2FA → no debería estar aquí, ir al dashboard
+      window.location.href = 'admin-dashboard.html';
+      return;
+    }
+
+    // No tiene 2FA → mostrar formulario de activación
+    showSection('section-setup');
+    document.getElementById('dot2').classList.add('active');
+    // Ocultar la sección de verificación (si existe)
+    const verifySection = document.getElementById('section-verify');
+    if (verifySection) verifySection.style.display = 'none';
+
+  } catch (err) {
+    console.error(err);
+    clearTokens();
+    window.location.href = 'index.html';
+  }
+}
+// ── Generar QR ────────────────────────────────────────────
+document.getElementById('generateQRBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('generateQRBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generando...';
+  document.getElementById('setupAlert').className = 'alert';
+
+  try {
+    const res  = await authFetch(`${API_URL}/2fa/generate`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    document.getElementById('qrImg').src           = data.qrCode;
+    document.getElementById('secretBox').textContent = data.secret;
+    document.getElementById('qrBox').style.display  = 'block';
+    document.getElementById('setupCodeArea').style.display = 'block';
+    btn.style.display = 'none';
+
+    document.getElementById('dot2').classList.add('active');
+    setupCodeInputs('setupCodeInputs', 'activateBtn', handleActivate);
+    const first = document.querySelector('#setupCodeInputs .code-input');
+    if (first) first.focus();
+
+  } catch (err) {
+    showAlert('setupAlert', err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '🔄 Generar código QR';
+  }
+});
+
+// ── Activar 2FA ───────────────────────────────────────────
+async function handleActivate(code) {
+  const btn = document.getElementById('activateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Activando...';
+  document.getElementById('setupAlert').className = 'alert';
+
+  try {
+    const res = await authFetch(`${API_URL}/2fa/enable`, {
+      method: 'POST',
+      body: JSON.stringify({ totpCode: code }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    showAlert('setupAlert', '✅ 2FA activado. Accediendo...', 'success');
+    setTimeout(() => {
+      window.location.href = 'admin-dashboard.html';
+    }, 1200);
+  } catch (err) {
+    showAlert('setupAlert', err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '✅ Activar y continuar';
+    clearInputs('setupCodeInputs');
+  }
+}
+
+// ── Verificar código 2FA ───────────────────────────────────
+async function handleVerify(code) {
+  const btn = document.getElementById('verifyBtn');
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+  document.getElementById('verifyAlert').className = 'alert';
+
+  try {
+    const res  = await authFetch(`${API_URL}/2fa/verify`, {
+      method: 'POST',
+      body:   JSON.stringify({ totpCode: code }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    document.getElementById('dot1').classList.add('done');
+    document.getElementById('dot2').classList.add('done');
+    showAlert('verifyAlert', '✅ Verificado. Accediendo...', 'success');
+    setTimeout(() => redirect(), 1000);
+
+  } catch (err) {
+    showAlert('verifyAlert', err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '✅ Verificar y entrar';
+    clearInputs('verifyCodeInputs');
+  }
+}
+
+// ── Cerrar sesión ─────────────────────────────────────────
+document.getElementById('backBtn').addEventListener('click', () => {
+  clearTokens();
+  window.location.href = 'index.html';
+});
+
+// ── Init ──────────────────────────────────────────────────
+checkTwoFactorStatus();
+</script>
+</body>
+</html>

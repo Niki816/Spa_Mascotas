@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrar Usuario - Pet Spa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #1e3a2f;
+      --green-mid: #2d5a45;
+      --green-soft: #4a8c6f;
+      --green-light: #a8d5b5;
+      --green-pale: #e8f5ed;
+      --cream: #faf7f2;
+      --amber: #d4845a;
+      --text-dark: #1a2e25;
+      --text-mid: #4a6355;
+      --text-light: #8aab97;
+      --shadow: 0 8px 32px rgba(30,58,47,.13);
+      --radius: 18px;
+      --radius-sm: 10px;
+      --red: #dc2626;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      padding: 2rem;
+    }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--green-pale);
+      padding-bottom: 0.75rem;
+    }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--green-deep);
+    }
+    .badge {
+      background: var(--green-pale);
+      color: var(--green-mid);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      margin-bottom: 0.25rem;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1.5px solid #e0ebe5;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      background: var(--cream);
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--green-soft);
+      background: white;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary {
+      background: var(--green-deep);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--green-mid); }
+    .btn-danger {
+      background: #fee2e2;
+      color: var(--red);
+    }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--green-light);
+      color: var(--text-mid);
+    }
+    .btn-outline:hover {
+      border-color: var(--green-soft);
+      color: var(--green-soft);
+    }
+    .alert {
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      margin-top: 1rem;
+      display: none;
+    }
+    .alert.show { display: block; }
+    .alert-success {
+      background: var(--green-pale);
+      color: var(--green-mid);
+      border: 1px solid var(--green-light);
+    }
+    .alert-error {
+      background: #fdecea;
+      color: var(--red);
+      border: 1px solid #f5c6c0;
+    }
+    .status-badge {
+      display: inline-block;
+      background: #e8f5ed;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .status-active { background: #d1fae5; color: #065f46; }
+    .status-inactive { background: #fee2e2; color: #991b1b; }
+    .button-group {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    hr {
+      margin: 1rem 0;
+      border: none;
+      border-top: 1px solid var(--green-pale);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 1rem;
+      color: var(--green-soft);
+      text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">✏️ Administrar Usuario</div>
+      <span class="badge" id="userRolBadge">—</span>
+    </div>
+
+    <!-- Estado actual -->
+    <div style="margin-bottom: 1rem;">
+      <span id="userStatusBadge" class="status-badge">—</span>
+    </div>
+
+    <form id="userForm">
+      <input type="hidden" id="userId">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="email" class="form-input" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre</label><input type="text" id="nombre" class="form-input" required></div>
+        <div class="form-group"><label class="form-label">Apellido</label><input type="text" id="apellido" class="form-input" required></div>
+      </div>
+
+      <!-- Campos extra que se muestran según el rol -->
+      <div id="clienteFields" style="display:none;">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">CI</label><input type="text" id="ci" class="form-input"></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" id="telefono" class="form-input"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Dirección</label><input type="text" id="direccion" class="form-input"></div>
+      </div>
+
+      <div id="groomerFields" style="display:none;">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" id="groomerTelefono" class="form-input"></div>
+          <div class="form-group"><label class="form-label">Especialidad</label><input type="text" id="especialidad" class="form-input"></div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+        <button type="button" id="toggleActivateBtn" class="btn btn-outline">🔄 Activar/Desactivar</button>
+        <button type="button" id="deletePermanentBtn" class="btn btn-danger">🗑️ Eliminar Permanentemente</button>
+      </div>
+      <div class="alert" id="formAlert"></div>
+    </form>
+
+    <hr>
+    <a href="admin-dashboard.html" class="back-link">← Volver al Panel de Administración</a>
+  </div>
+</div>
+
+<script type="module" src="js/admin-user-detail.js"></script>
+</body>
+</html>

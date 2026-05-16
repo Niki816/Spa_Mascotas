@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pet Spa — Iniciar Sesión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #2c7a2c;
+      --green-dark: #1e5a1e;
+      --green-light: #e8f5e8;
+      --orange: #e67e22;
+      --red: #e74c3c;
+      --text: #2d3748;
+      --muted: #718096;
+      --border: #e2e8f0;
+      --bg: #f0f7f0;
+      --white: #ffffff;
+      --radius: 12px;
+      --shadow: 0 10px 40px rgba(44,122,44,0.12);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem 2rem;
+      animation: fadeUp 0.4s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .logo span { font-size: 2.5rem; }
+    .logo h1 { color: var(--green); font-size: 1.6rem; font-weight: 800; margin-top: 0.25rem; }
+    .logo p  { color: var(--muted); font-size: 0.9rem; }
+
+    .form-group { margin-bottom: 1.1rem; }
+    label { display: block; font-weight: 700; font-size: 0.88rem; color: var(--text); margin-bottom: 0.35rem; }
+
+    .input-wrap { position: relative; }
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 0.65rem 2.6rem 0.65rem 0.85rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text);
+      transition: border-color 0.2s;
+      background: #fafafa;
+    }
+    input:focus { outline: none; border-color: var(--green); background: var(--white); }
+
+    /* toggle ojo */
+    .toggle-pw {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1.1rem;
+      width: auto;
+      padding: 0;
+    }
+    .toggle-pw:hover { color: var(--green); }
+
+    #totpGroup { display: none; }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      padding: 0.8rem;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover  { background: var(--green-dark); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.2rem 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .btn-google {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+    }
+    .btn-google:hover { border-color: var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .btn-google svg { width: 20px; height: 20px; }
+
+    #message {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.92rem;
+      min-height: 1.4rem;
+    }
+    .msg-error   { color: var(--red); }
+    .msg-success { color: var(--green); }
+    .msg-warn    { color: var(--orange); }
+
+    /* Panel de reenvío - oculto por defecto */
+    #resendPanel {
+      display: none;
+      margin-top: 1rem;
+      background: #fffbeb;
+      border: 1.5px solid #fde68a;
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    #resendPanel p { font-size: 0.88rem; color: #92400e; margin-bottom: 0.6rem; font-weight: 600; }
+    #resendEmailInput {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1.5px solid #fde68a;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      background: #fef3c7;
+    }
+    #resendEmailInput:focus { outline: none; border-color: var(--orange); }
+    .btn-resend {
+      width: 100%;
+      background: var(--orange);
+      color: white;
+      border: none;
+      padding: 0.6rem;
+      border-radius: 8px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-resend:hover { background: #d35400; }
+    #resendMsg { font-size: 0.85rem; margin-top: 0.4rem; min-height: 1.2rem; }
+
+    .links {
+      margin-top: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .links a, .links button.link-btn {
+      color: var(--green);
+      font-size: 0.88rem;
+      text-decoration: none;
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      width: auto;
+      padding: 0;
+    }
+    .links a:hover, .links button.link-btn:hover { text-decoration: underline; }
+
+    /* Contador de bloqueo */
+    #lockTimer {
+      display: none;
+      background: #fee2e2;
+      border: 1.5px solid #fca5a5;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      margin-top: 0.8rem;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--red);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <span>🐾</span>
+    <h1>Pet Spa</h1>
+    <p>Inicia sesión en tu cuenta</p>
+  </div>
+
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="email">Correo electrónico</label>
+      <div class="input-wrap">
+        <input type="email" id="email" placeholder="tu@email.com" required autocomplete="email">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Contraseña</label>
+      <div class="input-wrap">
+        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+        <button type="button" class="toggle-pw" id="togglePw" title="Mostrar/ocultar contraseña">👁</button>
+      </div>
+    </div>
+
+    <div class="form-group" id="totpGroup">
+      <label for="totpCode">Código 2FA (Google Authenticator)</label>
+      <div class="input-wrap">
+        <input type="text" id="totpCode" placeholder="123456" maxlength="6" inputmode="numeric">
+      </div>
+    </div>
+
+    <button type="submit" class="btn-primary" id="submitBtn">Iniciar Sesión</button>
+  </form>
+
+  <div id="lockTimer">🔒 Cuenta bloqueada — espera: <span id="lockCountdown"></span></div>
+
+  <div class="divider">o continúa con</div>
+
+  <a href="http://localhost:4000/api/auth/google" class="btn-google">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    Continuar con Google
+  </a>
+
+  <div id="message"></div>
+
+  <!-- Panel de reenvío de verificación -->
+  <div id="resendPanel">
+    <p>📧 ¿No recibiste o expiró el email de verificación?</p>
+    <input type="email" id="resendEmailInput" placeholder="Ingresa tu email">
+    <button class="btn-resend" id="resendBtn">Reenviar email de verificación</button>
+    <div id="resendMsg"></div>
+  </div>
+
+  <div id="lockTimer">🔒 Cuenta bloqueada — espera: <span id="lockCountdown"></span></div>
+
+  <div class="links">
+    <a href="register.html">¿No tienes cuenta? Regístrate</a>
+    <button class="link-btn" id="forgotBtn">Olvidé mi contraseña</button>
+    <button class="link-btn" id="showResendBtn">Reenviar email de verificación</button>
+    <button class="link-btn" id="emergency2FABtn" style="color:#999;font-size:0.8rem;">Recuperar acceso 2FA (admin)</button>
+  </div>
+</div>
+
+<script type="module">
+import { setTokens, saveUser, API_URL } from './js/auth.js';
+
+const form        = document.getElementById('loginForm');
+const messageDiv  = document.getElementById('message');
+const totpGroup   = document.getElementById('totpGroup');
+const submitBtn   = document.getElementById('submitBtn');
+const resendPanel = document.getElementById('resendPanel');
+const lockTimer   = document.getElementById('lockTimer');
+const lockCountdown = document.getElementById('lockCountdown');
+
+// ── Toggle mostrar/ocultar contraseña ──
+document.getElementById('togglePw').addEventListener('click', () => {
+  const pw = document.getElementById('password');
+  const btn = document.getElementById('togglePw');
+  if (pw.type === 'password') { pw.type = 'text'; btn.textContent = '🙈'; }
+  else                        { pw.type = 'password'; btn.textContent = '👁'; }
+});
+
+// ── Contador de bloqueo ──
+let lockInterval = null;
+function startLockTimer(seconds) {
+  lockTimer.style.display = 'block';
+  submitBtn.disabled = true;
+  let remaining = seconds;
+  const tick = () => {
+    if (remaining <= 0) {
+      clearInterval(lockInterval);
+      lockTimer.style.display = 'none';
+      submitBtn.disabled = false;
+      return;
+    }
+    const m = Math.floor(remaining / 60).toString().padStart(2,'0');
+    const s = (remaining % 60).toString().padStart(2,'0');
+    lockCountdown.textContent = `${m}:${s}`;
+    remaining--;
+  };
+  tick();
+  lockInterval = setInterval(tick, 1000);
+}
+
+// ── Login ──
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  messageDiv.innerHTML = '<span style="color:#666">Cargando...</span>';
+
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const totpCode = document.getElementById('totpCode').value.trim();
+
+  try {
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, totpCode: totpCode || undefined })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Mostrar panel de reenvío si el email no está verificado
+      if (data.message?.includes('verificar su email')) {
+        resendPanel.style.display = 'block';
+        document.getElementById('resendEmailInput').value = email;
+        messageDiv.innerHTML = `<span class="msg-warn">⚠️ ${data.message}</span>`;
+        return;
+      }
+      // Bloqueo por intentos
+      if (data.message?.includes('bloqueada')) {
+        startLockTimer(15 * 60);
+        messageDiv.innerHTML = `<span class="msg-error">🔒 ${data.message}</span>`;
+        return;
+      }
+      // 2FA requerido
+      if (data.message === 'Código 2FA requerido') {
+        totpGroup.style.display = 'block';
+        messageDiv.innerHTML = `<span class="msg-warn">🔐 Ingresa tu código de Google Authenticator</span>`;
+        document.getElementById('totpCode').focus();
+        return;
+      }
+      throw new Error(data.message || 'Error en login');
+    }
+
+        setTokens(data.accessToken, data.refreshToken);
+      saveUser({ 
+        email, 
+        rol: data.rol, 
+        debeCambiarPassword: data.debeCambiarPassword 
+      });
+      messageDiv.innerHTML = `<span class="msg-success">✅ ¡Bienvenido! Redirigiendo...</span>`;
+
+    // Redirigir según rol
+    const destinos = {
+      admin:    'admin-dashboard.html',
+      groomer:  'groomer-dashboard.html',
+      cliente:  'cliente-dashboard.html',
+    };
+    setTimeout(() => {
+      // 1. Si debe cambiar contraseña (primer login sin ultimo_acceso)
+      if (data.debeCambiarPassword) {
+        window.location.href = 'change-password-required.html';
+        return;
+      }
+
+      // 2. Si es admin y ya no debe cambiar contraseña → forzar activación 2FA
+      if (data.rol === 'admin') {
+        window.location.href = '2fa-verify.html';
+        return;
+      }
+      if (data.rol === 'recepcion') {
+        window.location.href = 'recepcion-dashboard.html';
+        return;
+      }
+
+      // 3. Resto de roles (groomer, cliente) van directo a su dashboard
+      const destinos = {
+        groomer: 'groomer-dashboard.html',
+        cliente: 'cliente-dashboard.html',
+      };
+      window.location.href = destinos[data.rol] || 'cliente-dashboard.html';
+    }, 600);
+
+  } catch (error) {
+    messageDiv.innerHTML = `<span class="msg-error">❌ ${error.message}</span>`;
+  }
+});
+
+// ── Reenviar verificación ──
+document.getElementById('showResendBtn').addEventListener('click', () => {
+  resendPanel.style.display = resendPanel.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('resendBtn').addEventListener('click', async () => {
+  const email = document.getElementById('resendEmailInput').value.trim();
+  const resendMsg = document.getElementById('resendMsg');
+  if (!email) { resendMsg.innerHTML = '<span style="color:red">Ingresa un email</span>'; return; }
+
+  resendMsg.innerHTML = '<span style="color:#666">Enviando...</span>';
+  try {
+    const res  = await fetch(`${API_URL}/resend-verification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    resendMsg.innerHTML = `<span style="color:green">✅ ${data.message}</span>`;
+  } catch {
+    resendMsg.innerHTML = '<span style="color:red">Error al enviar. Intenta de nuevo.</span>';
+  }
+});
+
+// ── Olvidé contraseña ──
+document.getElementById('forgotBtn').addEventListener('click', async () => {
+  const email = prompt('Ingresa tu email para recuperar tu contraseña:');
+  if (!email) return;
+  try {
+    const res  = await fetch(`${API_URL}/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    alert('📧 ' + data.message);
+  } catch { alert('Error al solicitar recuperación'); }
+});
+
+// ── Emergencia 2FA ──
+document.getElementById('emergency2FABtn').addEventListener('click', async () => {
+  const email    = prompt('Email del administrador:');
+  if (!email) return;
+  const password = prompt('Tu contraseña:');
+  if (!password) return;
+  try {
+    const res  = await fetch(`${API_URL}/2fa/emergency-disable`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    alert(data.message);
+  } catch { alert('Error al conectar con el servidor'); }
+});
+</script>
+</body>
+</html>
