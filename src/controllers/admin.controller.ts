@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { AdminService } from '../services/admin.service';
 import { AppError } from '../utils/errors';
 import prisma from '../config/database';
-
+import { AvailabilityService } from '../services/availability.service';
 const adminService = new AdminService();
-
+const availabilityService = new AvailabilityService();
 interface RequestWithUser extends Request {
   user?: { id: number; email: string; rol: string; jti: string };
 }

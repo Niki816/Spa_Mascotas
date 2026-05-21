@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Disponibilidad - Pet Spa Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========== ESTILOS IDÉNTICOS A admin-dashboard.html ========== */
+    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--shadow-md:0 6px 24px rgba(30,58,47,.12);--radius:16px;--radius-sm:10px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
+    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;overflow-y:auto;}
+    .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
+    .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:12px;display:grid;place-items:center;font-size:20px;}
+    .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
+    .logo-text span{display:block;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--green-light);letter-spacing:.08em;text-transform:uppercase;}
+    .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-light);padding:0 8px;margin:16px 0 4px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-sm);color:var(--green-light);cursor:pointer;font-size:13px;margin-bottom:2px;transition:all .2s;text-decoration:none;}
+    .nav-item:hover,.nav-item.active{background:var(--green-mid);color:white;}
+    .nav-icon{font-size:16px;width:18px;text-align:center;}
+    .sidebar-footer{margin-top:auto;padding:14px;background:rgba(255,255,255,.05);border-radius:var(--radius-sm);}
+    .user-card{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:36px;height:36px;background:var(--amber);border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0;}
+    .user-name{font-size:12px;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .user-role{font-size:10px;color:var(--green-light);}
+    .logout-btn{background:none;border:none;color:var(--green-light);cursor:pointer;font-size:16px;margin-left:auto;}
+    .logout-btn:hover{color:#ff7b7b;}
+    .main{margin-left:240px;flex:1;padding:32px 36px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+    .page-title{font-family:'Playfair Display',serif;font-size:26px;}
+    .page-sub{font-size:13px;color:var(--text-light);margin-top:2px;}
+    .badge-admin{background:rgba(212,132,90,.15);color:var(--amber);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;}
+    .card{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+    .card-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;border-left:4px solid var(--green-soft);padding-left:12px;}
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;}
+    .form-input,.form-select{width:100%;padding:10px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;background:var(--cream);}
+    .form-input:focus,.form-select:focus{outline:none;border-color:var(--green-soft);background:white;}
+    .btn{padding:10px 20px;border-radius:var(--radius-sm);border:none;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:var(--green-deep);color:white;}
+    .btn-primary:hover{background:var(--green-mid);}
+    .btn-outline{background:transparent;border:1px solid var(--green-light);color:var(--text-mid);}
+    .btn-danger{background:#fee2e2;color:#dc2626;}
+    .btn-danger:hover{background:#fecaca;}
+    .btn-sm{padding:6px 12px;font-size:12px;}
+    .alert{padding:12px;border-radius:var(--radius-sm);margin-top:12px;display:none;}
+    .alert.show{display:block;}
+    .alert-success{background:var(--green-pale);color:var(--green-mid);border:1px solid var(--green-light);}
+    .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{text-align:left;padding:10px 8px;border-bottom:1px solid var(--green-pale);color:var(--text-light);}
+    td{padding:10px 8px;border-bottom:1px solid #f5f7f5;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+    hr{margin:16px 0;border:0;border-top:1px solid var(--green-pale);}
+    .back-link{display:inline-block;margin-top:24px;color:var(--green-soft);text-decoration:none;}
+    .back-link:hover{text-decoration:underline;}
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR (idéntico al admin-dashboard) -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🐾</div>
+    <div class="logo-text">Pet Spa <span>Administrador</span></div>
+  </div>
+  <div class="nav-label">Inicio</div>
+  <a class="nav-item" href="admin-dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+  <div class="nav-label">Personal & Clientes</div>
+  <a class="nav-item" href="admin-dashboard.html#crear-groomer"><span class="nav-icon">✂️</span> Crear Groomer</a>
+  <a class="nav-item" href="admin-dashboard.html#crear-recepcion"><span class="nav-icon">📞</span> Crear Recepcionista</a>
+  <a class="nav-item" href="admin-dashboard.html#crear-cliente"><span class="nav-icon">🐶</span> Crear Cliente</a>
+  <a class="nav-item" href="admin-dashboard.html#usuarios"><span class="nav-icon">👥</span> Ver Usuarios</a>
+  <div class="nav-label">Auditoría</div>
+  <a class="nav-item" href="admin-dashboard.html#auth-logs"><span class="nav-icon">🔍</span> Auth Logs</a>
+  <div class="nav-label">Disponibilidad</div>
+  <a class="nav-item active" href="admin-availability.html"><span class="nav-icon">📆</span> Horarios & Bloques</a>
+  <div class="nav-label">Cuenta</div>
+  <a class="nav-item" href="admin-dashboard.html#seguridad"><span class="nav-icon">🔐</span> Seguridad & 2FA</a>
+  <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">🛡️</div>
+      <div style="flex:1;min-width:0;">
+        <div class="user-name" id="sidebarName">—</div>
+        <div class="user-role">Administrador</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn2">✕</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">📆 Gestión de Disponibilidad</div>
+      <div class="page-sub" id="adminEmail">—</div>
+    </div>
+    <span class="badge-admin">🛡️ Administrador</span>
+  </div>
+
+  <!-- Configuración general -->
+  <div class="card">
+    <div class="card-title">⚙️ Configuración General del Spa</div>
+    <form id="configForm">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Horario de inicio</label>
+          <input type="time" id="horarioInicio" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horario de fin</label>
+          <input type="time" id="horarioFin" class="form-input" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Días laborables (separados por coma)</label>
+        <input type="text" id="diasLaborales" class="form-input" placeholder="lunes,martes,miercoles,jueves,viernes" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capacidad máxima diaria (citas)</label>
+        <input type="number" id="capacidadMax" class="form-input" min="1" required>
+      </div>
+      <button type="submit" class="btn btn-primary">💾 Guardar configuración</button>
+      <div id="configAlert" class="alert"></div>
+    </form>
+  </div>
+
+  <!-- Bloqueos -->
+  <div class="card">
+    <div class="card-title">🔒 Crear Bloqueo</div>
+    <form id="bloqueoForm">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select id="tipoBloqueo" class="form-select" required>
+            <option value="feriado">Feriado</option>
+            <option value="vacaciones">Vacaciones</option>
+            <option value="mantenimiento">Mantenimiento</option>
+            <option value="ausencia">Ausencia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Groomer (opcional)</label>
+          <select id="groomerBloq" class="form-select">
+            <option value="">— Global (todos) —</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Fecha inicio</label>
+          <input type="datetime-local" id="fechaInicioBloq" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha fin</label>
+          <input type="datetime-local" id="fechaFinBloq" class="form-input" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <input type="text" id="descBloqueo" class="form-input" placeholder="Motivo">
+      </div>
+      <button type="submit" class="btn btn-primary">➕ Agregar bloqueo</button>
+      <div id="bloqueoAlert" class="alert"></div>
+    </form>
+  </div>
+
+  <!-- Lista de bloqueos existentes -->
+  <div class="card">
+    <div class="card-title">📋 Bloqueos actuales</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Groomer</th><th>Acciones</th></tr></thead>
+        <tbody id="bloqueosTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Disponibilidad por groomer -->
+  <div class="card">
+    <div class="card-title">✂️ Horarios personalizados por Groomer</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Seleccionar groomer</label>
+        <select id="groomerSelect" class="form-select">
+          <option value="">Cargando...</option>
+        </select>
+      </div>
+      <div style="text-align:right; align-self:flex-end;">
+        <button id="cargarDisponibilidadBtn" class="btn btn-outline btn-sm">📅 Cargar disponibilidad</button>
+      </div>
+    </div>
+    <div id="disponibilidadPanel" style="display:none; margin-top:20px;">
+      <hr>
+      <div id="horariosGroomerList"></div>
+      <button id="agregarHorarioBtn" class="btn btn-outline btn-sm">➕ Agregar horario</button>
+      <button id="guardarDisponibilidadBtn" class="btn btn-primary" style="margin-left:12px;">💾 Guardar todos</button>
+      <div id="dispAlert" class="alert"></div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="js/admin-availability.js"></script>
+</body>
+</html>

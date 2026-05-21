@@ -1,5 +1,5 @@
 export const API_URL = 'http://localhost:4000/api/auth'; // ← export es CRÍTICO
-
+export const API_BASE = 'http://localhost:4000/api';     // ← para el resto
 export function setTokens(accessToken, refreshToken) {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);

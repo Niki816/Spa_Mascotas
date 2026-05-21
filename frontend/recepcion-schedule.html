@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Cita - Recepción Pet Spa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--radius:16px;--radius-sm:10px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);padding:2rem;}
+    .container{max-width:1000px;margin:0 auto;}
+    h1{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:0.5rem;}
+    .sub{color:var(--text-light);margin-bottom:2rem;}
+    .card{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:24px;}
+    .card-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;border-left:4px solid var(--green-soft);padding-left:12px;}
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;}
+    .form-input,.form-select{width:100%;padding:10px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;background:var(--cream);}
+    .btn{padding:10px 20px;border-radius:var(--radius-sm);border:none;font-weight:500;cursor:pointer;transition:all .2s;}
+    .btn-primary{background:var(--green-deep);color:white;}
+    .btn-primary:hover{background:var(--green-mid);}
+    .btn-outline{background:transparent;border:1px solid var(--green-light);color:var(--text-mid);}
+    .slot-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(140px,1fr));gap:12px;margin-top:16px;}
+    .slot-card{background:var(--green-pale);border-radius:var(--radius-sm);padding:12px;text-align:center;cursor:pointer;transition:all .2s;border:2px solid transparent;}
+    .slot-card:hover{background:var(--green-light);transform:scale(0.98);}
+    .slot-card.selected{background:var(--green-soft);color:white;border-color:var(--green-deep);}
+    .slot-hour{font-weight:700;font-size:15px;}
+    .slot-groomer{font-size:12px;margin-top:4px;}
+    .alert{padding:12px;border-radius:var(--radius-sm);margin-top:12px;display:none;}
+    .alert.show{display:block;}
+    .alert-success{background:var(--green-pale);color:var(--green-mid);border:1px solid var(--green-light);}
+    .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
+    .back-link{display:inline-block;margin-top:24px;color:var(--green-soft);text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📅 Agendar Nueva Cita</h1>
+  <div class="sub">Recepción Pet Spa</div>
+
+  <div class="card">
+    <div class="card-title">🔍 Buscar disponibilidad</div>
+    <form id="searchForm">
+      <div class="form-group">
+        <label class="form-label">Fecha</label>
+        <input type="date" id="fecha" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Servicio</label>
+        <select id="servicio" class="form-select" required>
+          <option value="">Cargando servicios...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Groomer (opcional)</label>
+        <select id="groomer" class="form-select">
+          <option value="">— Todos los groomers —</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">🔍 Ver slots libres</button>
+    </form>
+  </div>
+
+  <div class="card" id="slotsCard" style="display:none;">
+    <div class="card-title">🕒 Slots disponibles</div>
+    <div id="slotsContainer"></div>
+  </div>
+
+  <div class="card" id="crearCitaCard" style="display:none;">
+    <div class="card-title">✏️ Completar cita</div>
+    <form id="citaForm">
+      <input type="hidden" id="slotGroomerId">
+      <input type="hidden" id="slotFechaHora">
+      <div class="form-group">
+        <label class="form-label">Mascota</label>
+        <select id="mascota" class="form-select" required>
+          <option value="">Cargando mascotas...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas (opcional)</label>
+        <textarea id="notas" class="form-input" rows="2"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">✅ Agendar cita</button>
+      <div id="citaAlert" class="alert"></div>
+    </form>
+  </div>
+
+  <a href="recepcion-dashboard.html" class="back-link">← Volver al panel</a>
+</div>
+
+<script type="module" src="js/recepcion-schedule.js"></script>
+</body>
+</html>

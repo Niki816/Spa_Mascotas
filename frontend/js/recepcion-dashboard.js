@@ -1,4 +1,4 @@
-import { authFetch, getAccessToken, getUser, clearTokens, API_URL } from './auth.js';
+import { authFetch, getAccessToken, getUser, clearTokens, API_BASE} from './auth.js';
 
 const token = getAccessToken();
 const user = getUser();
@@ -39,7 +39,7 @@ function showAlert(id, msg, type = 'success') {
 // Cargar estadísticas (citas hoy + clientes count)
 async function loadDashboard() {
   try {
-    const res = await authFetch(`${API_URL}/recepcion/dashboard`);
+    const res = await authFetch(`${API_BASE}/recepcion/dashboard`);
     const data = await res.json();
     document.getElementById('citasHoyCount').textContent = data.citasHoy.length;
     const table = document.querySelector('#citasHoyTable tbody');
