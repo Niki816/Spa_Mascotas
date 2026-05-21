@@ -1,4 +1,4 @@
-import { authFetch, getAccessToken, getUser, clearTokens, API_BASE} from './auth.js';
+import { authFetch, getAccessToken, getUser, clearTokens, API_BASE } from './auth.js';
 
 const token = getAccessToken();
 const user = getUser();
@@ -44,10 +44,15 @@ async function loadDashboard() {
     document.getElementById('citasHoyCount').textContent = data.citasHoy.length;
     const table = document.querySelector('#citasHoyTable tbody');
     if (data.citasHoy.length === 0) {
-      table.innerHTML = '<tr><td colspan="4">No hay citas hoy</td></tr>';
+      table.innerHTML = '<table><td colspan="4">No hay citas hoy</td></tr>';
     } else {
       table.innerHTML = data.citasHoy.map(c => `
-        <tr><td>${c.hora}</td><td>${c.mascota}</td><td>${c.servicio}</td><td>${c.groomer}</td></tr>
+        <tr>
+          <td>${c.hora}</td>
+          <td>${c.mascota}</td>
+          <td>${c.servicio}</td>
+          <td>${c.groomer}</td>
+        </tr>
       `).join('');
     }
     document.getElementById('clientesCount').textContent = data.totalClientes;
@@ -56,7 +61,11 @@ async function loadDashboard() {
       clientesTable.innerHTML = '<tr><td colspan="3">Sin clientes</td></tr>';
     } else {
       clientesTable.innerHTML = data.ultimosClientes.map(c => `
-        <tr><td>${c.nombre} ${c.apellido}</td><td>${c.email}</td><td>${c.telefono || '—'}</td></tr>
+        <tr>
+          <td>${c.nombre} ${c.apellido}</td>
+          <td>${c.email}</td>
+          <td>${c.telefono || '—'}</td>
+        </tr>
       `).join('');
     }
   } catch (err) {
@@ -66,7 +75,7 @@ async function loadDashboard() {
 
 async function loadCitasHoy() {
   try {
-    const res = await authFetch(`${API_URL}/recepcion/citas/hoy`);
+    const res = await authFetch(`${API_BASE}/recepcion/citas/hoy`);
     const citas = await res.json();
     const tbody = document.querySelector('#citasDetalleTable tbody');
     if (citas.length === 0) {
@@ -88,7 +97,7 @@ async function loadCitasHoy() {
 
 window.confirmarCita = async (citaId) => {
   try {
-    await authFetch(`${API_URL}/recepcion/citas/${citaId}/confirmar`, { method: 'PATCH' });
+    await authFetch(`${API_BASE}/recepcion/citas/${citaId}/confirmar`, { method: 'PATCH' });
     loadCitasHoy();
     showAlert('citaMessage', '✅ Cita confirmada', 'success');
   } catch (err) { alert(err.message); }
@@ -97,7 +106,7 @@ window.confirmarCita = async (citaId) => {
 async function loadClientes() {
   const search = document.getElementById('searchCliente')?.value || '';
   try {
-    const res = await authFetch(`${API_URL}/recepcion/clientes?search=${encodeURIComponent(search)}`);
+    const res = await authFetch(`${API_BASE}/recepcion/clientes?search=${encodeURIComponent(search)}`);
     const clientes = await res.json();
     const tbody = document.querySelector('#clientesListaTable tbody');
     if (clientes.length === 0) {
@@ -119,9 +128,9 @@ document.getElementById('searchCliente')?.addEventListener('input', () => loadCl
 async function loadFormularioNuevaCita() {
   try {
     const [mascotas, servicios, groomers] = await Promise.all([
-      authFetch(`${API_URL}/recepcion/mascotas`).then(r => r.json()),
-      authFetch(`${API_URL}/recepcion/servicios`).then(r => r.json()),
-      authFetch(`${API_URL}/recepcion/groomers`).then(r => r.json()),
+      authFetch(`${API_BASE}/recepcion/mascotas`).then(r => r.json()),
+      authFetch(`${API_BASE}/recepcion/servicios`).then(r => r.json()),
+      authFetch(`${API_BASE}/recepcion/groomers`).then(r => r.json()),
     ]);
     const mascotaSelect = document.getElementById('citaMascota');
     mascotaSelect.innerHTML = '<option value="">Seleccionar...</option>' + mascotas.map(m => `<option value="${m.id}">${m.nombre} (dueño: ${m.dueno})</option>`).join('');
@@ -143,7 +152,7 @@ document.getElementById('nuevaCitaForm')?.addEventListener('submit', async e => 
     notas: document.getElementById('citaNotas').value,
   };
   try {
-    const res = await authFetch(`${API_URL}/recepcion/citas`, { method: 'POST', body: JSON.stringify(payload) });
+    const res = await authFetch(`${API_BASE}/recepcion/citas`, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
     showAlert('citaMessage', '✅ Cita agendada correctamente', 'success');
@@ -155,7 +164,7 @@ document.getElementById('nuevaCitaForm')?.addEventListener('submit', async e => 
 document.getElementById('cambiarPassForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   try {
-    const res = await authFetch(`${API_URL}/change-password`, {
+    const res = await authFetch(`${API_BASE}/change-password`, {
       method: 'POST',
       body: JSON.stringify({
         oldPassword: document.getElementById('oldPass').value,
@@ -170,7 +179,7 @@ document.getElementById('cambiarPassForm')?.addEventListener('submit', async e =
 });
 
 function doLogout() {
-  authFetch(`${API_URL}/logout`, { method: 'POST' }).catch(() => {});
+  authFetch(`${API_BASE}/logout`, { method: 'POST' }).catch(() => {});
   clearTokens();
   window.location.href = 'index.html';
 }

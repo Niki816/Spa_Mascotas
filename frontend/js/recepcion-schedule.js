@@ -1,4 +1,4 @@
-import { authFetch, getAccessToken, getUser, clearTokens, API_URL } from './auth.js';
+import { authFetch, getAccessToken, getUser, clearTokens, API_BASE } from './auth.js';
 
 const token = getAccessToken();
 const user = getUser();
@@ -7,7 +7,7 @@ if (!token || !user || user.rol !== 'recepcion') {
   window.location.href = 'index.html';
 }
 
-const RECEPCION_API = API_URL.replace('/auth', '/recepcion');
+const RECEPCION_API = `${API_BASE}/recepcion`;
 
 // Elementos
 const searchForm = document.getElementById('searchForm');
@@ -31,40 +31,42 @@ function showAlert(element, msg, type = 'success') {
   setTimeout(() => element.classList.remove('show'), 5000);
 }
 
-// Cargar servicios
+// Cargar servicios (endpoint: GET /api/recepcion/servicios)
 async function loadServicios() {
   try {
-    const res = await authFetch(`${API_URL.replace('/auth', '')}/servicios`); // necesitas este endpoint público? Mejor crear uno en recepción, pero por simplicidad usamos un endpoint que deberías tener en admin o crear uno para recepción
-    // Como no tenemos endpoint público de servicios, usaré una llamada directa a /admin/servicios? No. Lo mejor es agregar en recepción.routes: router.get('/servicios', ...)
-    // Asumiré que existe un endpoint /api/servicios público (deberías implementarlo). Mientras tanto, pediré al backend.
-    // Si no existe, crea en un controlador general: serviciosController.getServiciosActivos
+    const res = await authFetch(`${RECEPCION_API}/servicios`);
     const data = await res.json();
-    servicioSelect.innerHTML = '<option value="">Seleccionar servicio</option>' + data.map(s => `<option value="${s.id}">${s.nombre} - ${s.duracion_base_minutos} min - $${s.precio_base}</option>`).join('');
+    servicioSelect.innerHTML = '<option value="">Seleccionar servicio</option>' + 
+      data.map(s => `<option value="${s.id}">${s.nombre} - ${s.duracion} min - $${s.precio_base}</option>`).join('');
   } catch (err) {
     console.error(err);
+    showAlert(servicioSelect.parentElement, 'Error cargando servicios', 'error');
   }
 }
 
-// Cargar groomers activos
+// Cargar groomers activos (endpoint: GET /api/recepcion/groomers)
 async function loadGroomers() {
   try {
-    const res = await authFetch(`${API_URL.replace('/auth', '')}/groomers`); // mismo caso, crear endpoint para recepción
+    const res = await authFetch(`${RECEPCION_API}/groomers`);
     const data = await res.json();
-    groomerSelect.innerHTML = '<option value="">— Todos los groomers —</option>' + data.map(g => `<option value="${g.id}">${g.nombre} ${g.apellido}</option>`).join('');
+    groomerSelect.innerHTML = '<option value="">— Todos los groomers —</option>' + 
+      data.map(g => `<option value="${g.id}">${g.nombre} ${g.apellido}</option>`).join('');
   } catch (err) {
     console.error(err);
+    showAlert(groomerSelect.parentElement, 'Error cargando groomers', 'error');
   }
 }
 
-// Cargar mascotas del cliente (suponiendo que la recepcionista puede ver todas las mascotas)
-// Necesitas un endpoint que liste todas las mascotas con su dueño
+// Cargar mascotas (endpoint: GET /api/recepcion/mascotas)
 async function loadMascotas() {
   try {
-    const res = await authFetch(`${API_URL.replace('/auth', '')}/mascotas`); // endpoint a crear
+    const res = await authFetch(`${RECEPCION_API}/mascotas`);
     const data = await res.json();
-    mascotaSelect.innerHTML = '<option value="">Seleccionar mascota</option>' + data.map(m => `<option value="${m.id}">${m.nombre} (dueño: ${m.cliente_nombre})</option>`).join('');
+    mascotaSelect.innerHTML = '<option value="">Seleccionar mascota</option>' + 
+      data.map(m => `<option value="${m.id}">${m.nombre} (dueño: ${m.dueno})</option>`).join('');
   } catch (err) {
     console.error(err);
+    showAlert(mascotaSelect.parentElement, 'Error cargando mascotas', 'error');
   }
 }
 

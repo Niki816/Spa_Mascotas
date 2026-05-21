@@ -4,12 +4,9 @@ import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
 import { AppError } from './utils/errors';
 import './config/env';
-import passport from 'passport';           // ← AGREGAR
-import './config/passport';                // ← AGREGAR (carga la estrategia Google)
+import passport from 'passport';
+import './config/passport';
 import recepcionRoutes from './routes/recepcion.routes';
-
-
-
 
 const app = express();
 
@@ -22,8 +19,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(passport.initialize());   
-app.use('/api/recepcion', recepcionRoutes);
+app.use(passport.initialize());
+app.use('/api/recepcion', recepcionRoutes);   // ✅ Única vez que se registra la ruta
 
 // 🔥 LOG ANTES DE LAS RUTAS
 app.use((req, res, next) => {
@@ -36,12 +33,11 @@ app.use('/api/admin', adminRoutes);
 //app.use('/api/groomer', groomerRoutes);
 //app.use('/api/cliente', clienteRoutes);
 
-
 app.get('/', (_req, res) => {
   res.json({ status: 'ok', message: 'Servidor Pet Spa funcionando' });
 });
 
-// ← ESTO ES LO QUE FALTABA: manejador global de errores
+// Manejador global de errores
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({ message: err.message });
@@ -53,5 +49,3 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 app.listen(PORT, () => {
   console.log(`Servidor iniciado en http://localhost:${PORT}`);
 });
-
-app.use('/api/recepcion', recepcionRoutes);

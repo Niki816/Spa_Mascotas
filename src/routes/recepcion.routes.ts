@@ -5,9 +5,7 @@ import {
   getDashboard,
   getCitasHoy,
   getClientes,
-  getMascotas,
   getServicios,
-  getGroomers,
   getGroomersList,
   getAllMascotas,
   crearCita,
@@ -19,9 +17,8 @@ import {
   deleteBloqueo,
   getGroomerAvailability,
   setGroomerAvailability,
-
+  getAvailableSlots
 } from '../controllers/recepcion.controller';
-import { getAvailableSlots, createAppointment } from '../controllers/recepcion.controller';
 
 const router = Router();
 
@@ -29,29 +26,32 @@ const router = Router();
 router.use(authMiddleware);
 router.use(allowRoles('recepcion'));
 
+// Dashboard y vistas principales
 router.get('/dashboard', getDashboard);
 router.get('/citas/hoy', getCitasHoy);
 router.get('/clientes', getClientes);
-router.get('/mascotas', getMascotas);
-router.get('/mascotas', getAllMascotas);
 router.get('/servicios', getServicios);
-router.get('/groomers', getGroomers);
+
+// Mascotas (única ruta)
+router.get('/mascotas', getAllMascotas);
+
+// Groomers (única ruta, usamos getGroomersList)
 router.get('/groomers', getGroomersList);
+
+// Creación de citas (única ruta POST)
 router.post('/citas', crearCita);
+
+// Confirmación de cita
 router.patch('/citas/:id/confirmar', confirmarCita);
+
+// Slots disponibles
 router.get('/slots', getAvailableSlots);
-router.post('/citas', createAppointment);
 
-
-// Slots y citas
-router.get('/slots', getAvailableSlots);
-router.post('/citas', createAppointment);
-
-// Configuración general
+// Configuración general del spa
 router.get('/config/spa', getSpaConfig);
 router.put('/config/spa', updateSpaConfig);
 
-// Bloqueos
+// Bloqueos de horarios
 router.get('/bloqueos', getBloqueos);
 router.post('/bloqueos', createBloqueo);
 router.delete('/bloqueos/:id', deleteBloqueo);
@@ -59,6 +59,5 @@ router.delete('/bloqueos/:id', deleteBloqueo);
 // Disponibilidad por groomer
 router.get('/groomers/:id/disponibilidad', getGroomerAvailability);
 router.put('/groomers/:id/disponibilidad', setGroomerAvailability);
-router.get('/groomers', getGroomersList);
 
 export default router;
