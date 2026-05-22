@@ -3,79 +3,178 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Disponibilidad - Recepción Pet Spa</title>
+  <title>Gestión de Disponibilidad — Recepción Pet Spa</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* Mismos estilos que admin-availability.html, solo cambiamos colores de badges si se desea */
-    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--radius:16px;--radius-sm:10px;}
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
-    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;overflow-y:auto;}
-    .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
-    .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:12px;display:grid;place-items:center;font-size:20px;}
-    .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
-    .logo-text span{display:block;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--green-light);letter-spacing:.08em;text-transform:uppercase;}
-    .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-light);padding:0 8px;margin:16px 0 4px;}
-    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-sm);color:var(--green-light);cursor:pointer;font-size:13px;margin-bottom:2px;transition:all .2s;text-decoration:none;}
-    .nav-item:hover,.nav-item.active{background:var(--green-mid);color:white;}
-    .nav-icon{font-size:16px;width:18px;text-align:center;}
-    .sidebar-footer{margin-top:auto;padding:14px;background:rgba(255,255,255,.05);border-radius:var(--radius-sm);}
-    .user-card{display:flex;align-items:center;gap:10px;}
-    .user-avatar{width:36px;height:36px;background:var(--amber);border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0;}
-    .user-name{font-size:12px;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .user-role{font-size:10px;color:var(--green-light);}
-    .logout-btn{background:none;border:none;color:var(--green-light);cursor:pointer;font-size:16px;margin-left:auto;}
-    .logout-btn:hover{color:#ff7b7b;}
-    .main{margin-left:240px;flex:1;padding:32px 36px;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
-    .page-title{font-family:'Playfair Display',serif;font-size:26px;}
-    .page-sub{font-size:13px;color:var(--text-light);margin-top:2px;}
-    .badge-recepcion{background:rgba(212,132,90,.15);color:var(--amber);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;}
-    .card{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
-    .card-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;border-left:4px solid var(--green-soft);padding-left:12px;}
-    .form-group{margin-bottom:14px;}
-    .form-label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;}
-    .form-input,.form-select{width:100%;padding:10px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;background:var(--cream);}
-    .form-input:focus,.form-select:focus{outline:none;border-color:var(--green-soft);background:white;}
-    .btn{padding:10px 20px;border-radius:var(--radius-sm);border:none;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
-    .btn-primary{background:var(--green-deep);color:white;}
-    .btn-primary:hover{background:var(--green-mid);}
-    .btn-outline{background:transparent;border:1px solid var(--green-light);color:var(--text-mid);}
-    .btn-danger{background:#fee2e2;color:#dc2626;}
-    .btn-danger:hover{background:#fecaca;}
-    .btn-sm{padding:6px 12px;font-size:12px;}
-    .alert{padding:12px;border-radius:var(--radius-sm);margin-top:12px;display:none;}
-    .alert.show{display:block;}
-    .alert-success{background:var(--green-pale);color:var(--green-mid);border:1px solid var(--green-light);}
-    .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
-    table{width:100%;border-collapse:collapse;font-size:13px;}
-    th{text-align:left;padding:10px 8px;border-bottom:1px solid var(--green-pale);color:var(--text-light);}
-    td{padding:10px 8px;border-bottom:1px solid #f5f7f5;}
-    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
-    hr{margin:16px 0;border:0;border-top:1px solid var(--green-pale);}
-    .back-link{display:inline-block;margin-top:24px;color:var(--green-soft);text-decoration:none;}
-    .back-link:hover{text-decoration:underline;}
+    :root {
+      --green-deep: #1e3a2f;
+      --green-mid:  #2d5a45;
+      --green-soft: #4a8c6f;
+      --green-light:#a8d5b5;
+      --green-pale: #e8f5ed;
+      --cream:      #faf7f2;
+      --amber:      #d4845a;
+      --text-dark:  #1a2e25;
+      --text-mid:   #4a6355;
+      --text-light: #8aab97;
+      --shadow-sm:  0 2px 8px rgba(30,58,47,.08);
+      --radius:     16px;
+      --radius-sm:  10px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      height: 100vh;
+      background: var(--green-deep);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 16px;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; padding: 0 8px; }
+    .logo-icon { width: 40px; height: 40px; background: var(--amber); border-radius: 12px; display: grid; place-items: center; font-size: 20px; }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--cream); }
+    .logo-text span { display: block; font-size: 10px; font-family: 'DM Sans', sans-serif; color: var(--green-light); letter-spacing: .08em; text-transform: uppercase; }
+
+    .nav-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-light); padding: 0 8px; margin: 16px 0 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; border-radius: var(--radius-sm);
+      color: var(--green-light); cursor: pointer;
+      font-size: 13px; margin-bottom: 2px;
+      transition: all .2s; text-decoration: none;
+    }
+    .nav-item:hover, .nav-item.active { background: var(--green-mid); color: white; }
+    .nav-icon { font-size: 16px; width: 18px; text-align: center; }
+
+    .sidebar-footer { margin-top: auto; padding: 14px; background: rgba(255,255,255,.05); border-radius: var(--radius-sm); }
+    .user-card { display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 36px; height: 36px; background: var(--amber); border-radius: 50%; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+    .user-name { font-size: 12px; font-weight: 600; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 10px; color: var(--green-light); }
+    .logout-btn { background: none; border: none; color: var(--green-light); cursor: pointer; font-size: 16px; margin-left: auto; }
+    .logout-btn:hover { color: #ff7b7b; }
+
+    /* ── MAIN ── */
+    .main { margin-left: 240px; flex: 1; padding: 32px 36px; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 26px; }
+    .page-sub { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+    .badge-recepcion { background: rgba(212,132,90,.15); color: var(--amber); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+
+    /* ── CARDS ── */
+    .card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+    .card-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 16px; border-left: 4px solid var(--green-soft); padding-left: 12px; }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-mid); margin-bottom: 4px; letter-spacing: .05em; }
+    .form-input, .form-select {
+      width: 100%; padding: 10px 12px;
+      border: 1.5px solid #e0ebe5; border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+      background: var(--cream); outline: none; transition: border-color .2s;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--green-soft); background: white; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 9px 20px; border-radius: var(--radius-sm); border: none;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all .2s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--green-deep); color: white; }
+    .btn-primary:hover { background: var(--green-mid); }
+    .btn-outline { background: transparent; border: 1.5px solid #d0e4da; color: var(--text-mid); }
+    .btn-outline:hover { border-color: var(--green-soft); color: var(--green-soft); }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    /* ── ALERTS ── */
+    .alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px; margin-top: 12px; display: none; }
+    .alert.show { display: block; }
+    .alert-success { background: var(--green-pale); color: var(--green-mid); border: 1px solid var(--green-light); }
+    .alert-error { background: #fdecea; color: #c0392b; border: 1px solid #f5c6c0; }
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1.5px solid #f0f5f2; }
+    td { padding: 11px 12px; border-bottom: 1px solid #f8f9fa; vertical-align: middle; }
+
+    hr { margin: 16px 0; border: 0; border-top: 1px solid var(--green-pale); }
+
+    /* ── SECCIÓN BACK LINK ── */
+    .back-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; color: var(--green-soft); text-decoration: none; font-size: 13px; }
+    .back-link:hover { text-decoration: underline; }
+
+    /* ── PANEL DISPONIBILIDAD ── */
+    #disponibilidadPanel {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--green-pale);
+    }
+    #disponibilidadPanel .disp-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
 
-<!-- SIDEBAR RECEPCIÓN (igual al dashboard de recepción) -->
+<!-- ══ SIDEBAR ══ -->
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon">🐾</div>
     <div class="logo-text">Pet Spa <span>Recepción</span></div>
   </div>
+
   <div class="nav-label">Inicio</div>
   <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
-  <div class="nav-label">Gestión</div>
-  <a class="nav-item" href="recepcion-dashboard.html#citas"><span class="nav-icon">📅</span> Citas hoy</a>
-  <a class="nav-item" href="recepcion-dashboard.html#clientes"><span class="nav-icon">🐶</span> Clientes</a>
-  <a class="nav-item" href="recepcion-schedule.html"><span class="nav-icon">➕</span> Nueva cita</a>
+
+  <div class="nav-label">Citas</div>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">📅</span> Citas hoy</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">➕</span> Nueva cita</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">❌</span> Anular cita</a>
+  <a class="nav-item" href="#" data-section="gestionar-citas">
+    <span class="nav-icon">🗂️</span> Gestionar Citas
+  </a>
+  <div class="nav-label">Clientes & Mascotas</div>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🐶</span> Ver clientes</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">👤</span> Registrar cliente</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🐾</span> Registrar mascota</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🐕</span> Gestionar Mascotas</a>
+
   <div class="nav-label">Disponibilidad</div>
   <a class="nav-item active" href="recepcion-availability.html"><span class="nav-icon">📆</span> Horarios & Bloques</a>
+
   <div class="nav-label">Cuenta</div>
-  <a class="nav-item" href="recepcion-dashboard.html#perfil"><span class="nav-icon">👤</span> Mi Perfil</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">👤</span> Mi Perfil</a>
   <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+
   <div class="sidebar-footer">
     <div class="user-card">
       <div class="user-avatar">📞</div>
@@ -83,79 +182,260 @@
         <div class="user-name" id="sidebarName">—</div>
         <div class="user-role">Recepcionista</div>
       </div>
-      <button class="logout-btn" id="logoutBtn2">✕</button>
+      <button class="logout-btn" id="logoutBtn2" title="Cerrar sesión">✕</button>
     </div>
   </div>
 </aside>
 
-<!-- MAIN CONTENT (mismo formulario que admin) -->
+<!-- ══ MAIN ══ -->
 <main class="main">
+
+  <!-- Topbar -->
   <div class="topbar">
     <div>
+      <a href="recepcion-dashboard.html" class="back-link">← Volver al dashboard</a>
       <div class="page-title">📆 Gestión de Disponibilidad</div>
       <div class="page-sub" id="userEmail">—</div>
     </div>
     <span class="badge-recepcion">📞 Recepcionista</span>
   </div>
 
-  <!-- Configuración general -->
+  <!-- ── CONFIGURACIÓN GENERAL ── -->
   <div class="card">
     <div class="card-title">⚙️ Configuración General del Spa</div>
     <form id="configForm">
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">Horario inicio</label><input type="time" id="horarioInicio" class="form-input" required></div>
-        <div class="form-group"><label class="form-label">Horario fin</label><input type="time" id="horarioFin" class="form-input" required></div>
+        <div class="form-group">
+          <label class="form-label">Horario inicio</label>
+          <input type="time" id="horarioInicio" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horario fin</label>
+          <input type="time" id="horarioFin" class="form-input" required>
+        </div>
       </div>
-      <div class="form-group"><label class="form-label">Días laborables (separados por coma)</label><input type="text" id="diasLaborales" class="form-input" placeholder="lunes,martes,miercoles,jueves,viernes" required></div>
-      <div class="form-group"><label class="form-label">Capacidad máxima diaria</label><input type="number" id="capacidadMax" class="form-input" min="1" required></div>
+      <div class="form-group">
+        <label class="form-label">Días laborables <span style="font-weight:400;text-transform:none;">(separados por coma, ej: lunes,martes,miercoles)</span></label>
+        <input type="text" id="diasLaborales" class="form-input" placeholder="lunes,martes,miercoles,jueves,viernes" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capacidad máxima diaria</label>
+        <input type="number" id="capacidadMax" class="form-input" min="1" required>
+      </div>
       <button type="submit" class="btn btn-primary">💾 Guardar configuración</button>
       <div id="configAlert" class="alert"></div>
     </form>
   </div>
 
-  <!-- Bloqueos -->
+  <<div id="section-gestionar-citas" style="display:none;">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">🗂️ Gestionar Citas</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+ 
+        <!-- Filtro por estado -->
+        <select id="filtroCitasEstado" class="form-select" style="width:160px;padding:6px 10px;font-size:12px;">
+          <option value="">Todos los estados</option>
+          <option value="agendada">📅 Agendada</option>
+          <option value="confirmada">✅ Confirmada</option>
+          <option value="cancelada">❌ Cancelada</option>
+          <option value="completada">✔️ Completada</option>
+          <option value="no_asistio">⚠️ No asistió</option>
+        </select>
+ 
+        <button class="btn btn-outline btn-sm" id="btnRefrescarCitasCRUD">🔄 Refrescar</button>
+      </div>
+    </div>
+ 
+    <div class="alert" id="citasCRUDMessage"></div>
+ 
+    <div class="table-wrap">
+      <table id="citasCRUDTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha y hora</th>
+            <th>Mascota</th>
+            <th>Servicio</th>
+            <th>Groomer</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="citasCRUDTableBody">
+          <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!-- ════════════════════════════════════════════════════════════
+     3. AGREGAR el modal de edición al final del <body>,
+        junto al modal de mascotas (mascotaCRUDModal)
+     ════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="editarCitaModal">
+  <div class="modal">
+    <div class="modal-title" id="editCitaModalTitle">✏️ Editar Cita</div>
+ 
+    <!-- Info extra: duración y estado actuales -->
+    <div id="editCitaInfoDuracion"
+         style="font-size:12px;color:var(--text-mid);background:var(--green-pale);
+                padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:16px;
+                border-left:3px solid var(--green-soft);">
+    </div>
+ 
+    <form id="formEditarCita">
+      <input type="hidden" id="editCitaId">
+ 
+      <div class="form-group">
+        <label class="form-label">Mascota</label>
+        <select id="editCitaMascota" class="form-select" required>
+          <option value="">⏳ Cargando...</option>
+        </select>
+      </div>
+ 
+      <div class="form-group">
+        <label class="form-label">Servicio</label>
+        <select id="editCitaServicio" class="form-select" required>
+          <option value="">⏳ Cargando...</option>
+        </select>
+      </div>
+ 
+      <div class="form-group">
+        <label class="form-label">Groomer</label>
+        <select id="editCitaGroomer" class="form-select" required>
+          <option value="">⏳ Cargando...</option>
+        </select>
+      </div>
+ 
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <input type="date" id="editCitaFecha" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora</label>
+          <input type="time" id="editCitaHora" class="form-input" required>
+        </div>
+      </div>
+ 
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea id="editCitaNotas" class="form-input" rows="2"
+                  placeholder="Instrucciones especiales..."></textarea>
+      </div>
+ 
+      <div class="section-note" style="margin-bottom:14px;">
+        💡 La duración se recalcula automáticamente si cambias la mascota o el servicio
+      </div>
+ 
+      <div class="alert" id="editCitaMessage"></div>
+ 
+      <div style="display:flex;gap:12px;margin-top:18px;">
+        <button type="submit" class="btn btn-primary" style="width:auto;">
+          💾 Guardar cambios
+        </button>
+        <button type="button" class="btn btn-outline" id="closeEditarCitaModalBtn">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <!-- ── CREAR BLOQUEO ── -->
   <div class="card">
     <div class="card-title">🔒 Crear Bloqueo</div>
     <form id="bloqueoForm">
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">Tipo</label><select id="tipoBloqueo" class="form-select" required><option value="feriado">Feriado</option><option value="vacaciones">Vacaciones</option><option value="mantenimiento">Mantenimiento</option><option value="ausencia">Ausencia</option></select></div>
-        <div class="form-group"><label class="form-label">Groomer (opcional)</label><select id="groomerBloq" class="form-select"><option value="">— Global (todos) —</option></select></div>
+        <div class="form-group">
+          <label class="form-label">Tipo de bloqueo</label>
+          <select id="tipoBloqueo" class="form-select" required>
+            <option value="feriado">Feriado</option>
+            <option value="vacaciones">Vacaciones</option>
+            <option value="mantenimiento">Mantenimiento</option>
+            <option value="ausencia">Ausencia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Groomer (dejar vacío para bloqueo global)</label>
+          <select id="groomerBloq" class="form-select">
+            <option value="">— Global (todos) —</option>
+          </select>
+        </div>
       </div>
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">Fecha inicio</label><input type="datetime-local" id="fechaInicioBloq" class="form-input" required></div>
-        <div class="form-group"><label class="form-label">Fecha fin</label><input type="datetime-local" id="fechaFinBloq" class="form-input" required></div>
+        <div class="form-group">
+          <label class="form-label">Fecha y hora inicio</label>
+          <input type="datetime-local" id="fechaInicioBloq" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha y hora fin</label>
+          <input type="datetime-local" id="fechaFinBloq" class="form-input" required>
+        </div>
       </div>
-      <div class="form-group"><label class="form-label">Descripción</label><input type="text" id="descBloqueo" class="form-input" placeholder="Motivo"></div>
-      <button type="submit" class="btn btn-primary">➕ Agregar bloqueo</button>
+      <div class="form-group">
+        <label class="form-label">Descripción / Motivo (opcional)</label>
+        <input type="text" id="descBloqueo" class="form-input" placeholder="Ej: Feriado nacional, vacaciones de temporada...">
+      </div>
+      <button type="submit" class="btn btn-primary">➕ Crear bloqueo</button>
       <div id="bloqueoAlert" class="alert"></div>
     </form>
   </div>
 
-  <!-- Lista de bloqueos -->
+  <!-- ── LISTA DE BLOQUEOS ── -->
   <div class="card">
     <div class="card-title">📋 Bloqueos actuales</div>
     <div class="table-wrap">
-      <table><thead><tr><th>ID</th><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Groomer</th><th>Acciones</th></tr></thead><tbody id="bloqueosTable"></tbody></table>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tipo</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Groomer</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="bloqueosTable">
+          <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-light);">Cargando...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Disponibilidad por groomer -->
+  <!-- ── DISPONIBILIDAD POR GROOMER ── -->
   <div class="card">
     <div class="card-title">✂️ Horarios personalizados por Groomer</div>
-    <div class="grid-2">
-      <div class="form-group"><label class="form-label">Seleccionar groomer</label><select id="groomerSelect" class="form-select"><option value="">Cargando...</option></select></div>
-      <div style="text-align:right; align-self:flex-end;"><button id="cargarDisponibilidadBtn" class="btn btn-outline btn-sm">📅 Cargar disponibilidad</button></div>
+    <div class="form-group" style="max-width:360px;">
+      <label class="form-label">Seleccionar groomer</label>
+      <select id="groomerSelect" class="form-select">
+        <option value="">— Seleccionar groomer —</option>
+      </select>
     </div>
-    <div id="disponibilidadPanel" style="display:none; margin-top:20px;">
-      <hr>
+
+    <div id="disponibilidadPanel" style="display:none;">
       <div id="horariosGroomerList"></div>
-      <button id="agregarHorarioBtn" class="btn btn-outline btn-sm">➕ Agregar horario</button>
-      <button id="guardarDisponibilidadBtn" class="btn btn-primary" style="margin-left:12px;">💾 Guardar todos</button>
+      <div class="disp-actions">
+        <button type="button" class="btn btn-outline btn-sm" id="agregarHorarioBtn">➕ Agregar horario</button>
+        <button type="button" class="btn btn-primary" id="guardarDisponibilidadBtn">💾 Guardar todos</button>
+      </div>
       <div id="dispAlert" class="alert"></div>
     </div>
   </div>
+
 </main>
 
 <script type="module" src="js/recepcion-availability.js"></script>
+<script>
+  // Filtrar al cambiar el select
+  document.getElementById('filtroCitasEstado')
+    ?.addEventListener('change', () => loadCitasCRUD());
+ 
+  // Refrescar con el estado actual del filtro
+  document.getElementById('btnRefrescarCitasCRUD')
+    ?.addEventListener('click', () => loadCitasCRUD());
+</script>
 </body>
 </html>

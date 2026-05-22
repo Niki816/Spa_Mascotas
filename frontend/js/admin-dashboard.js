@@ -12,10 +12,20 @@ document.getElementById('sidebarName').textContent  = user.email.split('@')[0];
 document.getElementById('adminEmail').textContent   = user.email;
 document.getElementById('profileEmail').textContent = user.email;
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
 // ════════════════════════════════════════
-// NAVEGACIÓN
+// NAVEGACIÓN (AHORA INCLUYE 'servicios')
 // ════════════════════════════════════════
-const sections = ['inicio','crear-groomer','crear-recepcion','crear-cliente','auth-logs','usuarios','seguridad'];
+const sections = ['inicio','crear-groomer','crear-recepcion','crear-cliente','auth-logs','usuarios','seguridad','servicios'];
 document.querySelectorAll('.nav-item[data-section]').forEach(link => {
   link.addEventListener('click', e => {
     e.preventDefault();
@@ -28,6 +38,7 @@ document.querySelectorAll('.nav-item[data-section]').forEach(link => {
     link.classList.add('active');
     if (sec === 'auth-logs') loadAuthLogs(true);
     if (sec === 'usuarios') loadUsuarios(true);
+    if (sec === 'servicios') loadServicios();
   });
 });
 
@@ -47,6 +58,7 @@ function doLogout() {
 }
 document.getElementById('logoutBtn').addEventListener('click', e => { e.preventDefault(); doLogout(); });
 document.getElementById('logoutBtn2').addEventListener('click', doLogout);
+
 // ════════════════════════════════════════
 // 2FA (obligatorio para admin)
 // ════════════════════════════════════════
@@ -244,8 +256,7 @@ document.getElementById('createGroomerForm').addEventListener('submit', async e 
     submitBtn.textContent = '➕ Crear groomer';
   }
 });
- 
- 
+
 // ════════════════════════════════════════
 // CREAR CLIENTE
 // ════════════════════════════════════════
@@ -380,7 +391,7 @@ async function loadUsuarios(resetPage = true) {
       acciones.unshift(`<a href="admin-user-detail.html?id=${u.id}" class="btn btn-primary btn-sm">Administrar</a>`);
       return `
         <tr>
-          <td style="font-size:13px;">${u.email}</td>
+          <td style="font-size:13px;">${escapeHtml(u.email)}</td>
           <td><span class="rol-badge rol-${rol}">${rol}</span></td>
           <td style="text-align:center;">${verificado}</td>
           <td><span class="status-dot ${activo ? 'dot-active':'dot-inactive'}"></span>${activo ? 'Activo':'Inactivo'}</td>
@@ -488,7 +499,6 @@ document.getElementById('editUserForm')?.addEventListener('submit', async (e) =>
   }
 });
 
-
 // ════════════════════════════════════════
 // CAMBIAR CONTRASEÑA
 // ════════════════════════════════════════
@@ -560,7 +570,6 @@ document.getElementById('changePasswordForm').addEventListener('submit', async e
   } catch (err) { showAlert('pwMessage', err.message, 'error'); }
 });
 
-
 // ════════════════════════════════════════
 // CREAR RECEPCIONISTA
 // ════════════════════════════════════════
@@ -593,16 +602,127 @@ async function loadSucursales() {
     if (select) {
       select.innerHTML = '<option value="">Seleccionar sucursal</option>';
       data.forEach(suc => {
-        select.innerHTML += `<option value="${suc.id}">${suc.nombre}</option>`;
+        select.innerHTML += `<option value="${suc.id}">${escapeHtml(suc.nombre)}</option>`;
       });
     }
   } catch (err) {
     console.error('Error cargando sucursales:', err);
   }
 }
-// Llama a esta función al inicio (junto con loadProfile, loadStats)
-loadSucursales();
-// ── Llamar al cargar ──
-loadProfile();
 
+// =====================
+// CRUD de Servicios
+// =====================
+let serviciosData = [];
+
+async function loadServicios() {
+  try {
+    const res = await authFetch(`${ADMIN_API}/servicios?incluirInactivos=true`);
+    const data = await res.json();
+    serviciosData = data;
+    const tbody = document.getElementById('serviciosTableBody');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="6">No hay servicios registrados</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(s => `
+      <tr>
+        <td>${s.id}</td>
+        <td>${escapeHtml(s.nombre)}</td>
+        <td>${s.duracion_base_minutos} min</td>
+        <td>Bs ${s.precio_base}</td>
+        <td>${s.estado_activo ? '✅ Activo' : '❌ Inactivo'}</td>
+        <td>
+          <button class="btn btn-outline btn-sm edit-servicio" data-id="${s.id}">✏️ Editar</button>
+          <button class="btn btn-danger btn-sm delete-servicio" data-id="${s.id}">🗑️ Desactivar</button>
+         </td>
+      </tr>
+    `).join('');
+    // Bind eventos dinámicos
+    document.querySelectorAll('.edit-servicio').forEach(btn => {
+      btn.addEventListener('click', () => openServicioModal(parseInt(btn.dataset.id)));
+    });
+    document.querySelectorAll('.delete-servicio').forEach(btn => {
+      btn.addEventListener('click', () => deleteServicio(parseInt(btn.dataset.id)));
+    });
+  } catch (err) {
+    console.error('Error cargando servicios:', err);
+  }
+}
+
+function openServicioModal(id = null) {
+  const modal = document.getElementById('servicioModal');
+  if (!modal) return;
+  const title = document.getElementById('servicioModalTitle');
+  const form = document.getElementById('servicioForm');
+  form.reset();
+  document.getElementById('servicioId').value = '';
+  if (id) {
+    const servicio = serviciosData.find(s => s.id === id);
+    if (!servicio) return;
+    title.innerText = 'Editar Servicio';
+    document.getElementById('servicioId').value = servicio.id;
+    document.getElementById('servicioNombre').value = servicio.nombre;
+    document.getElementById('servicioDescripcion').value = servicio.descripcion || '';
+    document.getElementById('servicioDuracion').value = servicio.duracion_base_minutos;
+    document.getElementById('servicioPrecio').value = servicio.precio_base;
+    document.getElementById('servicioDobleBooking').value = String(servicio.permite_doble_booking);
+    document.getElementById('servicioBloqueoConsecutivo').value = String(servicio.requiere_bloqueo_consecutivo);
+    document.getElementById('servicioEstado').value = String(servicio.estado_activo);
+  } else {
+    title.innerText = 'Nuevo Servicio';
+  }
+  modal.classList.add('open');
+}
+
+document.getElementById('btnNuevoServicio')?.addEventListener('click', () => openServicioModal());
+document.getElementById('closeServicioModalBtn')?.addEventListener('click', () => {
+  document.getElementById('servicioModal')?.classList.remove('open');
+});
+
+document.getElementById('servicioForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('servicioId').value;
+  const payload = {
+    nombre: document.getElementById('servicioNombre').value.trim(),
+    descripcion: document.getElementById('servicioDescripcion').value.trim() || null,
+    duracion_base_minutos: parseInt(document.getElementById('servicioDuracion').value),
+    precio_base: parseFloat(document.getElementById('servicioPrecio').value),
+    permite_doble_booking: document.getElementById('servicioDobleBooking').value === 'true',
+    requiere_bloqueo_consecutivo: document.getElementById('servicioBloqueoConsecutivo').value === 'true',
+    estado_activo: document.getElementById('servicioEstado').value === 'true',
+  };
+  try {
+    let url = `${ADMIN_API}/servicios`;
+    let method = 'POST';
+    if (id) {
+      url += `/${id}`;
+      method = 'PUT';
+    }
+    const res = await authFetch(url, { method, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    document.getElementById('servicioModal').classList.remove('open');
+    showAlert('servicioMessage', id ? 'Servicio actualizado' : 'Servicio creado', 'success');
+    loadServicios();
+  } catch (err) {
+    showAlert('servicioMessage', err.message, 'error');
+  }
+});
+
+async function deleteServicio(id) {
+  if (!confirm('¿Desactivar este servicio? Los servicios inactivos no aparecerán en recepción.')) return;
+  try {
+    const res = await authFetch(`${ADMIN_API}/servicios/${id}`, { method: 'DELETE' });
+    if (res.status !== 204) throw new Error('Error al desactivar');
+    showAlert('servicioMessage', 'Servicio desactivado', 'success');
+    loadServicios();
+  } catch (err) {
+    showAlert('servicioMessage', err.message, 'error');
+  }
+}
+
+// Inicialización
+loadSucursales();
+loadProfile();
 loadStats();

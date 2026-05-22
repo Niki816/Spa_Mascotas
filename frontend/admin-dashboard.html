@@ -11,7 +11,8 @@
     body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
 
     /* SIDEBAR */
-    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;overflow-y:auto;}
+    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;height: 100vh; /* asegurar altura completa */
+    overflow-y: auto;}
     .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
     .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:12px;display:grid;place-items:center;font-size:20px;}
     .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
@@ -165,6 +166,8 @@
   <div class="nav-label">Disponibilidad</div>
   <a class="nav-item" href="admin-availability.html"><span class="nav-icon">📆</span> Horarios & Bloques</a>
 
+  <div class="nav-label">Servicios</div>
+  <a class="nav-item" href="#" data-section="servicios"><span class="nav-icon">💇</span> Servicios</a>
 
   <div class="sidebar-footer">
     <div class="user-card">
@@ -457,6 +460,25 @@
     <div class="alert" id="usersMessage"></div>
   </div>
 </div>
+<!-- ═══ SERVICIOS ═══ -->
+<div id="section-servicios" style="display:none;">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">💇 Servicios de peluquería</div>
+      <button class="btn btn-primary btn-sm" id="btnNuevoServicio">➕ Nuevo servicio</button>
+    </div>
+    <div class="table-wrap">
+      <table id="serviciosTable">
+        <thead>
+          <tr><th>ID</th><th>Nombre</th><th>Duración (min)</th><th>Precio</th><th>Activo</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="serviciosTableBody">
+          <tr><td colspan="6">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
   <!-- ═══ SEGURIDAD ═══ -->
   <div id="section-seguridad" style="display:none;">
@@ -721,6 +743,62 @@ function validarPassword(el) {
   </div>
 </div>
 
+<!-- Modal Servicio -->
+<div class="modal-overlay" id="servicioModal">
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-title" id="servicioModalTitle">Nuevo Servicio</div>
+    <form id="servicioForm">
+      <input type="hidden" id="servicioId">
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input type="text" id="servicioNombre" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción (opcional)</label>
+        <textarea id="servicioDescripcion" class="form-input" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Duración base (minutos)</label>
+          <input type="number" id="servicioDuracion" class="form-input" required min="15" step="15">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio base (Bs)</label>
+          <input type="number" id="servicioPrecio" class="form-input" required step="0.01" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Permite doble booking</label>
+          <select id="servicioDobleBooking" class="form-select">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Requiere bloqueo consecutivo</label>
+          <select id="servicioBloqueoConsecutivo" class="form-select">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select id="servicioEstado" class="form-select">
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:20px;">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-outline" id="closeServicioModalBtn">Cancelar</button>
+      </div>
+      <div class="alert" id="servicioMessage"></div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal para eliminar permanentemente -->
 <div class="modal-overlay" id="confirmDeletePermanentModal">
   <div class="modal">
@@ -732,5 +810,6 @@ function validarPassword(el) {
     </div>
   </div>
 </div>
+
 </body>
 </html>

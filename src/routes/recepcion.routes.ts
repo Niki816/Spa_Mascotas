@@ -1,15 +1,29 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import { allowRoles } from '../middlewares/rbac.middleware';
+import { allowRoles }     from '../middlewares/rbac.middleware';
+
 import {
   getDashboard,
   getCitasHoy,
+  getCitasActivas,
+  getCitaById,        // ← NUEVO
+  crearCita,
+  updateCita,         // ← NUEVO
+  deleteCita,         // ← NUEVO
+  getCitasTodas,
+  confirmarCita,
+  cancelarCita,
+  getAvailableSlots,
   getClientes,
+  crearCliente,
   getServicios,
+  getGroomers,
   getGroomersList,
   getAllMascotas,
-  crearCita,
-  confirmarCita,
+  crearMascota,
+  getMascotaById,
+  updateMascota,
+  deleteMascota,
   getSpaConfig,
   updateSpaConfig,
   getBloqueos,
@@ -17,46 +31,95 @@ import {
   deleteBloqueo,
   getGroomerAvailability,
   setGroomerAvailability,
-  getAvailableSlots
 } from '../controllers/recepcion.controller';
+
+import {
+  getServicioById,
+  createServicio,
+  updateServicio,
+  deleteServicio,
+} from '../controllers/servicios.controller';
 
 const router = Router();
 
-// Todas las rutas requieren autenticación y rol 'recepcion'
 router.use(authMiddleware);
 router.use(allowRoles('recepcion'));
 
-// Dashboard y vistas principales
+router.use((req, _res, next) => {
+  console.log(`[Recepcion] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// ══════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════
 router.get('/dashboard', getDashboard);
-router.get('/citas/hoy', getCitasHoy);
-router.get('/clientes', getClientes);
-router.get('/servicios', getServicios);
 
-// Mascotas (única ruta)
-router.get('/mascotas', getAllMascotas);
+// ══════════════════════════════════════
+// CITAS  — CRUD completo
+// ══════════════════════════════════════
+router.get   ('/citas/hoy',              getCitasHoy);
+router.get   ('/citas/activas',          getCitasActivas);
+router.get   ('/citas/todas',            getCitasTodas);
+router.post  ('/citas',                  crearCita);
+// ↓ rutas con :id SIEMPRE después de las rutas estáticas
+router.get   ('/citas/:id',              getCitaById);      // ← NUEVO: leer para editar
+router.patch ('/citas/:id',              updateCita);       // ← NUEVO: editar
+router.delete('/citas/:id',              deleteCita);       // ← NUEVO: eliminar permanente
+router.patch ('/citas/:id/confirmar',    confirmarCita);
+router.patch ('/citas/:id/cancelar',     cancelarCita);
 
-// Groomers (única ruta, usamos getGroomersList)
-router.get('/groomers', getGroomersList);
-
-// Creación de citas (única ruta POST)
-router.post('/citas', crearCita);
-
-// Confirmación de cita
-router.patch('/citas/:id/confirmar', confirmarCita);
-
-// Slots disponibles
+ 
+// ══════════════════════════════════════
+// SLOTS DE DISPONIBILIDAD
+// ══════════════════════════════════════
 router.get('/slots', getAvailableSlots);
 
-// Configuración general del spa
+// ══════════════════════════════════════
+// CLIENTES
+// ══════════════════════════════════════
+router.get ('/clientes',  getClientes);
+router.post('/clientes',  crearCliente);
+
+// ══════════════════════════════════════
+// MASCOTAS
+// ══════════════════════════════════════
+router.get   ('/mascotas',        getAllMascotas);
+router.post  ('/mascotas',        crearMascota);
+router.get   ('/mascotas/:id',    getMascotaById);
+router.put   ('/mascotas/:id',    updateMascota);
+router.delete('/mascotas/:id',    deleteMascota);
+
+// ══════════════════════════════════════
+// SERVICIOS (lectura + CRUD)
+// ══════════════════════════════════════
+router.get   ('/servicios',        getServicios);
+router.get   ('/servicios/:id',    getServicioById);
+router.post  ('/servicios',        createServicio);
+router.put   ('/servicios/:id',    updateServicio);
+router.delete('/servicios/:id',    deleteServicio);
+
+// ══════════════════════════════════════
+// GROOMERS
+// ══════════════════════════════════════
+router.get('/groomers', getGroomersList);
+
+// ══════════════════════════════════════
+// CONFIGURACIÓN GENERAL DEL SPA
+// ══════════════════════════════════════
 router.get('/config/spa', getSpaConfig);
 router.put('/config/spa', updateSpaConfig);
 
-// Bloqueos de horarios
-router.get('/bloqueos', getBloqueos);
-router.post('/bloqueos', createBloqueo);
-router.delete('/bloqueos/:id', deleteBloqueo);
+// ══════════════════════════════════════
+// BLOQUEOS
+// ══════════════════════════════════════
+router.get   ('/bloqueos',        getBloqueos);
+router.post  ('/bloqueos',        createBloqueo);
+router.delete('/bloqueos/:id',    deleteBloqueo);
 
-// Disponibilidad por groomer
+// ══════════════════════════════════════
+// DISPONIBILIDAD POR GROOMER
+// ══════════════════════════════════════
 router.get('/groomers/:id/disponibilidad', getGroomerAvailability);
 router.put('/groomers/:id/disponibilidad', setGroomerAvailability);
 

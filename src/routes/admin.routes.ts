@@ -102,5 +102,22 @@ router.put('/users/:id', updateUser);
 router.patch('/users/:id/reactivate', reactivateUser);
 router.delete('/users/:id/permanent', permanentDeleteUser);
 router.get('/sucursales', getSucursales);
-
+// =====================
+// CRUD de Servicios
+// =====================
+import {
+  getServicios,
+  getServicioById,
+  createServicio,
+  updateServicio,
+  deleteServicio,
+} from '../controllers/servicios.controller';
+////////////////////////////
+///// CRUD de servicios
+////////////////////////////
+router.get('/servicios', getServicios);
+router.get('/servicios/:id', getServicioById);
+router.post('/servicios', createServicio);
+router.put('/servicios/:id', updateServicio);
+router.delete('/servicios/:id', deleteServicio);
 export default router;

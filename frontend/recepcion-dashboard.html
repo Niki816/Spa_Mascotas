@@ -6,12 +6,13 @@
   <title>Recepcionista — Pet Spa</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--shadow-md:0 6px 24px rgba(30,58,47,.12);--radius:16px;--radius-sm:10px;}
+    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--radius:16px;--radius-sm:10px;}
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
 
-    /* SIDEBAR RECEPCION */
-    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;overflow-y:auto;}
+    /* ── SIDEBAR ── */
+    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;height: 100vh; /* asegurar altura completa */
+    overflow-y: auto;}
     .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
     .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:12px;display:grid;place-items:center;font-size:20px;}
     .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
@@ -28,62 +29,119 @@
     .logout-btn{background:none;border:none;color:var(--green-light);cursor:pointer;font-size:16px;margin-left:auto;}
     .logout-btn:hover{color:#ff7b7b;}
 
-    /* MAIN */
+    /* ── MAIN ── */
     .main{margin-left:240px;flex:1;padding:32px 36px;}
     .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
     .page-title{font-family:'Playfair Display',serif;font-size:26px;}
     .page-sub{font-size:13px;color:var(--text-light);margin-top:2px;}
     .badge-recepcion{background:rgba(212,132,90,.15);color:var(--amber);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;}
 
-    /* CARDS */
+    /* ── CARDS ── */
     .card{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
     .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
     .card-title{font-family:'Playfair Display',serif;font-size:17px;}
     .card-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--green-pale);color:var(--green-soft);}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 
+    /* ── FORM ── */
     .form-group{margin-bottom:13px;}
-    .form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;}
-    .form-input{width:100%;padding:9px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cream);outline:none;}
-    .form-input:focus{border-color:var(--green-soft);background:white;}
+    .form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;letter-spacing:.05em;}
+    .form-input,.form-select{width:100%;padding:9px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cream);outline:none;transition:border-color .2s;}
+    .form-input:focus,.form-select:focus{border-color:var(--green-soft);background:white;}
+    textarea.form-input{resize:vertical;}
     .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .pass-wrap{position:relative;}
+    .pass-wrap .form-input{padding-right:38px;}
+    .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-light);}
+
+    /* ── BUTTONS ── */
     .btn{padding:9px 20px;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
     .btn-primary{background:var(--green-deep);color:white;width:100%;justify-content:center;}
     .btn-primary:hover{background:var(--green-mid);}
+    .btn-danger{background:#fee2e2;color:#dc2626;padding:4px 10px;font-size:11px;}
     .btn-outline{background:transparent;border:1.5px solid #d0e4da;color:var(--text-mid);}
     .btn-outline:hover{border-color:var(--green-soft);color:var(--green-soft);}
-    .btn-danger{background:#fee2e2;color:#dc2626;}
-    .btn-danger:hover{background:#fecaca;}
+    .btn-sm{padding:5px 12px;font-size:12px;}
+
+    /* ── ALERTS ── */
+    .alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;margin-top:12px;display:none;}
+    .alert.show{display:block;}
+    .alert-success{background:#e8f5ed;color:#2d5a45;border:1px solid #a8d5b5;}
+    .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
+
+    /* ── TABLES ── */
     .table-wrap{overflow-x:auto;}
     table{width:100%;border-collapse:collapse;font-size:13px;}
     th{text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;color:var(--text-light);border-bottom:1.5px solid #f0f5f2;}
     td{padding:11px 12px;border-bottom:1px solid #f8f9fa;vertical-align:middle;}
-    .alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;margin-top:10px;display:none;}
-    .alert.show{display:block;}
-    .alert-success{background:#e8f5ed;color:#2d5a45;border:1px solid #a8d5b5;}
-    .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
+
+    /* ── STATS ── */
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+    .stat{background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);}
+    .stat-icon{font-size:24px;margin-bottom:6px;}
+    .stat-val{font-family:'Playfair Display',serif;font-size:28px;}
+    .stat-lbl{font-size:12px;color:var(--text-light);}
+
+    /* ── SECTION NOTE ── */
+    .section-note{font-size:12px;color:var(--text-light);background:var(--green-pale);padding:8px 14px;border-radius:var(--radius-sm);margin-bottom:16px;border-left:3px solid var(--green-soft);}
+
+    /* ── MODAL ── */
+    .modal-overlay{
+      display:none;
+      position:fixed;inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:200;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .modal-overlay.open{display:flex;}
+    .modal{
+      background:white;
+      border-radius:var(--radius);
+      padding:28px;
+      width:100%;
+      max-width:600px;
+      max-height:90vh;
+      overflow-y:auto;
+      box-shadow:0 8px 40px rgba(0,0,0,.2);
+    }
+    .modal-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:20px;color:var(--green-deep);}
+    .modal .btn-primary{width:auto;}
   </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
+<!-- ══ SIDEBAR ══ -->
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon">🐾</div>
     <div class="logo-text">Pet Spa <span>Recepción</span></div>
   </div>
+
   <div class="nav-label">Inicio</div>
   <a class="nav-item active" href="#" data-section="inicio"><span class="nav-icon">🏠</span> Dashboard</a>
-  <div class="nav-label">Gestión</div>
+
+  <div class="nav-label">Citas</div>
   <a class="nav-item" href="#" data-section="citas"><span class="nav-icon">📅</span> Citas hoy</a>
-  <a class="nav-item" href="#" data-section="clientes"><span class="nav-icon">🐶</span> Clientes</a>
   <a class="nav-item" href="#" data-section="nueva-cita"><span class="nav-icon">➕</span> Nueva cita</a>
+  <a class="nav-item" href="#" data-section="cancelar-cita"><span class="nav-icon">❌</span> Anular cita</a>
+  <a class="nav-item" href="#" data-section="gestionar-citas">
+    <span class="nav-icon">🗂️</span> Gestionar Citas
+  </a>
+  <div class="nav-label">Clientes & Mascotas</div>
+  <a class="nav-item" href="#" data-section="clientes"><span class="nav-icon">🐶</span> Ver clientes</a>
+  <a class="nav-item" href="#" data-section="registrar-cliente"><span class="nav-icon">👤</span> Registrar cliente</a>
+  <a class="nav-item" href="#" data-section="registrar-mascota"><span class="nav-icon">🐾</span> Registrar mascota</a>
+  <a class="nav-item" href="#" data-section="gestionar-mascotas"><span class="nav-icon">🐕</span> Gestionar Mascotas</a>
+
   <div class="nav-label">Disponibilidad</div>
   <a class="nav-item" href="recepcion-availability.html"><span class="nav-icon">📆</span> Horarios & Bloques</a>
-  
+
   <div class="nav-label">Cuenta</div>
   <a class="nav-item" href="#" data-section="perfil"><span class="nav-icon">👤</span> Mi Perfil</a>
   <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+
   <div class="sidebar-footer">
     <div class="user-card">
       <div class="user-avatar">📞</div>
@@ -96,7 +154,7 @@
   </div>
 </aside>
 
-<!-- MAIN -->
+<!-- ══ MAIN ══ -->
 <main class="main">
   <div class="topbar">
     <div>
@@ -106,11 +164,23 @@
     <span class="badge-recepcion">📞 Recepcionista</span>
   </div>
 
-  <!-- Dashboard inicio (stats) -->
+  <!-- INICIO (Dashboard) -->
   <div id="section-inicio">
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-icon">📅</div>
+        <div class="stat-val" id="citasHoyCount">—</div>
+        <div class="stat-lbl">Citas hoy</div>
+      </div>
+      <div class="stat">
+        <div class="stat-icon">🐶</div>
+        <div class="stat-val" id="clientesCount">—</div>
+        <div class="stat-lbl">Clientes totales</div>
+      </div>
+    </div>
     <div class="grid-2">
       <div class="card">
-        <div class="card-head"><div class="card-title">Citas hoy</div><span class="card-badge" id="citasHoyCount">0</span></div>
+        <div class="card-head"><div class="card-title">Citas de hoy</div></div>
         <div class="table-wrap">
           <table id="citasHoyTable">
             <thead><tr><th>Hora</th><th>Mascota</th><th>Servicio</th><th>Groomer</th></tr></thead>
@@ -119,7 +189,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-head"><div class="card-title">Clientes registrados</div><span class="card-badge" id="clientesCount">0</span></div>
+        <div class="card-head"><div class="card-title">Últimos clientes</div></div>
         <div class="table-wrap">
           <table id="clientesTable">
             <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th></tr></thead>
@@ -130,10 +200,13 @@
     </div>
   </div>
 
-  <!-- Citas hoy -->
+  <!-- CITAS HOY (detallado) -->
   <div id="section-citas" style="display:none;">
     <div class="card">
-      <div class="card-head"><div class="card-title">📅 Citas de hoy</div><button class="btn btn-outline btn-sm" id="refreshCitasBtn">🔄 Refrescar</button></div>
+      <div class="card-head">
+        <div class="card-title">📅 Citas de hoy</div>
+        <button class="btn btn-outline btn-sm" id="btnRefrescarCitas">🔄 Refrescar</button>
+      </div>
       <div class="table-wrap">
         <table id="citasDetalleTable">
           <thead><tr><th>Hora</th><th>Mascota</th><th>Servicio</th><th>Groomer</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -142,11 +215,129 @@
       </div>
     </div>
   </div>
-
-  <!-- Lista de clientes -->
+<div id="section-gestionar-citas" style="display:none;">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">🗂️ Gestionar Citas</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+ 
+        <!-- Filtro por estado -->
+        <select id="filtroCitasEstado" class="form-select" style="width:160px;padding:6px 10px;font-size:12px;">
+          <option value="">Todos los estados</option>
+          <option value="agendada">📅 Agendada</option>
+          <option value="confirmada">✅ Confirmada</option>
+          <option value="cancelada">❌ Cancelada</option>
+          <option value="completada">✔️ Completada</option>
+          <option value="no_asistio">⚠️ No asistió</option>
+        </select>
+ 
+        <button class="btn btn-outline btn-sm" id="btnRefrescarCitasCRUD">🔄 Refrescar</button>
+      </div>
+    </div>
+ 
+    <div class="alert" id="citasCRUDMessage"></div>
+ 
+    <div class="table-wrap">
+      <table id="citasCRUDTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha y hora</th>
+            <th>Mascota</th>
+            <th>Servicio</th>
+            <th>Groomer</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="citasCRUDTableBody">
+          <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div> 
+ 
+<!-- ════════════════════════════════════════════════════════════
+     3. AGREGAR el modal de edición al final del <body>,
+        junto al modal de mascotas (mascotaCRUDModal)
+     ════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="editarCitaModal">
+  <div class="modal">
+    <div class="modal-title" id="editCitaModalTitle">✏️ Editar Cita</div>
+ 
+    <!-- Info extra: duración y estado actuales -->
+    <div id="editCitaInfoDuracion"
+         style="font-size:12px;color:var(--text-mid);background:var(--green-pale);
+                padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:16px;
+                border-left:3px solid var(--green-soft);">
+    </div>
+ 
+    <form id="formEditarCita">
+      <input type="hidden" id="editCitaId">
+ 
+      <div class="form-group">
+        <label class="form-label">Mascota</label>
+        <select id="editCitaMascota" class="form-select" required>
+          <option value="">⏳ Cargando...</option>
+        </select>
+      </div>
+ 
+      <div class="form-group">
+        <label class="form-label">Servicio</label>
+        <select id="editCitaServicio" class="form-select" required>
+          <option value="">⏳ Cargando...</option>
+        </select>
+      </div>
+ 
+      <div class="form-group">
+        <label class="form-label">Groomer</label>
+        <select id="editCitaGroomer" class="form-select" required>
+          <option value="">⏳ Cargando...</option>
+        </select>
+      </div>
+ 
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <input type="date" id="editCitaFecha" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora</label>
+          <input type="time" id="editCitaHora" class="form-input" required>
+        </div>
+      </div>
+ 
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea id="editCitaNotas" class="form-input" rows="2"
+                  placeholder="Instrucciones especiales..."></textarea>
+      </div>
+ 
+      <div class="section-note" style="margin-bottom:14px;">
+        💡 La duración se recalcula automáticamente si cambias la mascota o el servicio
+      </div>
+ 
+      <div class="alert" id="editCitaMessage"></div>
+ 
+      <div style="display:flex;gap:12px;margin-top:18px;">
+        <button type="submit" class="btn btn-primary" style="width:auto;">
+          💾 Guardar cambios
+        </button>
+        <button type="button" class="btn btn-outline" id="closeEditarCitaModalBtn">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+  <!-- VER CLIENTES -->
   <div id="section-clientes" style="display:none;">
     <div class="card">
-      <div class="card-head"><div class="card-title">🐶 Clientes</div><input type="text" id="searchCliente" class="form-input" placeholder="Buscar por nombre o email..." style="width:200px;"></div>
+      <div class="card-head">
+        <div class="card-title">🐶 Clientes registrados</div>
+        <input type="text" id="searchCliente" class="form-input" placeholder="Buscar por nombre, email o CI..." style="width:240px;">
+      </div>
       <div class="table-wrap">
         <table id="clientesListaTable">
           <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>CI</th></tr></thead>
@@ -156,37 +347,231 @@
     </div>
   </div>
 
-  <!-- Nueva cita rápida -->
+  <!-- NUEVA CITA -->
   <div id="section-nueva-cita" style="display:none;">
-    <div class="card" style="max-width:500px;">
-      <div class="card-head"><div class="card-title">➕ Agendar nueva cita</div><span class="card-badge">Rápido</span></div>
+    <div class="card" style="max-width:520px;">
+      <div class="card-head"><div class="card-title">➕ Agendar nueva cita</div><span class="card-badge">Recepción</span></div>
+      <div class="section-note">💡 La duración se ajusta automáticamente según el peso y temperamento de la mascota</div>
       <form id="nuevaCitaForm">
-        <div class="form-group"><label class="form-label">Mascota</label><select id="citaMascota" class="form-input" required><option value="">Seleccionar...</option></select></div>
-        <div class="form-group"><label class="form-label">Servicio</label><select id="citaServicio" class="form-input" required><option value="">Seleccionar...</option></select></div>
-        <div class="form-group"><label class="form-label">Groomer</label><select id="citaGroomer" class="form-input" required><option value="">Seleccionar...</option></select></div>
-        <div class="form-row"><div class="form-group"><label>Fecha</label><input type="date" id="citaFecha" class="form-input" required></div>
-        <div class="form-group"><label>Hora</label><input type="time" id="citaHora" class="form-input" required></div></div>
-        <div class="form-group"><label class="form-label">Notas (opcional)</label><textarea id="citaNotas" class="form-input"></textarea></div>
+        <div class="form-group">
+          <label class="form-label">Mascota</label>
+          <select id="citaMascota" class="form-select" required><option value="">Cargando...</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Servicio</label>
+          <select id="citaServicio" class="form-select" required><option value="">Cargando...</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Groomer</label>
+          <select id="citaGroomer" class="form-select" required><option value="">Cargando...</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Fecha</label>
+            <input type="date" id="citaFecha" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hora</label>
+            <input type="time" id="citaHora" class="form-input" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas (opcional)</label>
+          <textarea id="citaNotas" class="form-input" rows="2" placeholder="Instrucciones especiales..."></textarea>
+        </div>
         <button type="submit" class="btn btn-primary">📅 Agendar cita</button>
         <div class="alert" id="citaMessage"></div>
       </form>
     </div>
   </div>
 
-  <!-- Perfil y cambio de contraseña -->
+  <!-- ANULAR CITA -->
+  <div id="section-cancelar-cita" style="display:none;">
+    <div class="card" style="max-width:520px;">
+      <div class="card-head"><div class="card-title">❌ Anular cita</div><span class="card-badge">Recepción</span></div>
+      <div class="section-note">⚠️ Solo se pueden cancelar citas en estado <strong>agendada</strong> o <strong>confirmada</strong></div>
+      <form id="formCancelarCita">
+        <div class="form-group">
+          <label class="form-label">Cita a cancelar</label>
+          <select id="cancelarCitaId" class="form-select" required>
+            <option value="">— Cargando citas activas —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Motivo de cancelación</label>
+          <textarea id="cancelarMotivo" class="form-input" rows="2" placeholder="Ej: El cliente no puede asistir..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="background:#dc2626;">❌ Cancelar cita</button>
+        <div class="alert" id="cancelarMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- REGISTRAR CLIENTE -->
+  <div id="section-registrar-cliente" style="display:none;">
+    <div class="card" style="max-width:580px;">
+      <div class="card-head">
+        <div class="card-title">👤 Registrar nuevo cliente</div>
+        <span class="card-badge">Recepción</span>
+      </div>
+      <form id="formRegistrarCliente">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input type="text" id="regClienteNombre" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Apellido</label>
+            <input type="text" id="regClienteApellido" class="form-input" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="regClienteEmail" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña temporal</label>
+          <div class="pass-wrap">
+            <input type="password" id="regClientePassword" class="form-input" required minlength="8"
+              placeholder="Mín. 8 caracteres, mayúscula, número, símbolo">
+            <button type="button" class="eye-btn" id="togglePassBtn">👁️</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">CI (cédula)</label>
+            <input type="text" id="regClienteCI" class="form-input" required placeholder="12345678">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="tel" id="regClienteTelefono" class="form-input" placeholder="591 7XXXXXXX">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dirección (opcional)</label>
+          <input type="text" id="regClienteDireccion" class="form-input" placeholder="Calle, zona, ciudad">
+        </div>
+        <button type="submit" class="btn btn-primary">📝 Registrar cliente</button>
+        <div class="alert" id="regClienteMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- REGISTRAR MASCOTA -->
+  <div id="section-registrar-mascota" style="display:none;">
+    <div class="card" style="max-width:580px;">
+      <div class="card-head">
+        <div class="card-title">🐾 Registrar nueva mascota</div>
+        <span class="card-badge">Recepción</span>
+      </div>
+      <div class="section-note">💡 El peso determina el ajuste de duración del servicio automáticamente</div>
+      <form id="formRegistrarMascota">
+        <div class="form-group">
+          <label class="form-label">Dueño (cliente)</label>
+          <select id="regMascotaClienteId" class="form-select" required>
+            <option value="">— Seleccionar dueño —</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre de la mascota</label>
+            <input type="text" id="regMascotaNombre" class="form-input" required placeholder="Max, Luna...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Especie</label>
+            <select id="regMascotaEspecie" class="form-select" required>
+              <option value="">Seleccionar</option>
+              <option value="Perro">🐕 Perro</option>
+              <option value="Gato">🐈 Gato</option>
+              <option value="Conejo">🐰 Conejo</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Raza</label>
+          <input type="text" id="regMascotaRaza" class="form-input" placeholder="Labrador, Schnauzer...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Fecha de nacimiento</label>
+            <input type="date" id="regMascotaFechaNac" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Peso (kg)</label>
+            <input type="number" id="regMascotaPeso" class="form-input" step="0.1" min="0" placeholder="5.5">
+            <small style="color:var(--text-light);font-size:11px;">&lt;5kg pequeño · 5-20kg mediano · 20-45kg grande · &gt;45kg gigante</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temperamento</label>
+          <select id="regMascotaTemperamento" class="form-select">
+            <option value="">— Sin especificar —</option>
+            <option value="tranquilo">😌 Tranquilo</option>
+            <option value="jugueton">🎾 Juguetón</option>
+            <option value="ansioso">😟 Ansioso (+20% tiempo)</option>
+            <option value="agresivo">😠 Agresivo (+20% tiempo)</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alergias conocidas</label>
+          <textarea id="regMascotaAlergias" class="form-input" rows="2" placeholder="Ej: alérgico al shampoo de lavanda..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Restricciones médicas</label>
+          <textarea id="regMascotaRestricciones" class="form-input" rows="2" placeholder="Ej: no mojar oídos, hernia..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">🐾 Registrar mascota</button>
+        <div class="alert" id="regMascotaMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- GESTIONAR MASCOTAS (CRUD) -->
+  <div id="section-gestionar-mascotas" style="display:none;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">🐕 Gestionar Mascotas</div>
+        <button class="btn btn-outline btn-sm" id="btnNuevaMascotaCRUD">➕ Nueva Mascota</button>
+      </div>
+      <div class="alert" id="mascotaCRUDMessage"></div>
+      <div class="table-wrap">
+        <table id="mascotasCRUDTable">
+          <thead>
+            <tr>
+              <th>ID</th><th>Nombre</th><th>Especie</th><th>Dueño</th>
+              <th>Peso (kg)</th><th>Temperamento</th><th>Foto</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="mascotasCRUDTableBody">
+            <tr><td colspan="8">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERFIL -->
   <div id="section-perfil" style="display:none;">
     <div class="grid-2">
       <div class="card">
-        <div class="card-head"><div class="card-title">Mi Perfil</div><span class="card-badge">Datos</span></div>
-        <div style="padding:8px 0;"><div style="font-size:11px;color:var(--text-light);">Email</div><div id="perfilEmail">—</div></div>
-        <div style="padding:8px 0;"><div style="font-size:11px;color:var(--text-light);">Rol</div><div>Recepcionista</div></div>
+        <div class="card-head"><div class="card-title">Mi Perfil</div></div>
+        <div style="padding:8px 0;">
+          <div style="font-size:11px;color:var(--text-light);">Email</div>
+          <div id="perfilEmail" style="font-weight:500;margin-top:3px;">—</div>
+        </div>
+        <div style="padding:8px 0;margin-top:8px;">
+          <div style="font-size:11px;color:var(--text-light);">Rol</div>
+          <div style="font-weight:500;margin-top:3px;">Recepcionista 📞</div>
+        </div>
       </div>
       <div class="card">
-        <div class="card-head"><div class="card-title">Cambiar Contraseña</div></div>
+        <div class="card-head"><div class="card-title">Cambiar contraseña</div></div>
         <form id="cambiarPassForm">
           <div class="form-group"><input type="password" id="oldPass" class="form-input" placeholder="Contraseña actual" required></div>
           <div class="form-group"><input type="password" id="newPass" class="form-input" placeholder="Nueva contraseña" required></div>
-          <button type="submit" class="btn btn-primary">🔒 Actualizar contraseña</button>
+          <button type="submit" class="btn btn-primary">🔒 Actualizar</button>
           <div class="alert" id="passMessage"></div>
         </form>
       </div>
@@ -194,6 +579,91 @@
   </div>
 </main>
 
+<!-- MODAL: Crear / Editar Mascota -->
+<div class="modal-overlay" id="mascotaCRUDModal">
+  <div class="modal">
+    <div class="modal-title" id="mascotaCRUDModalTitle">Nueva Mascota</div>
+    <form id="mascotaCRUDForm">
+      <input type="hidden" id="mascotaCRUDId">
+      <div class="form-group">
+        <label class="form-label">Dueño (cliente)</label>
+        <select id="mascotaCRUDClienteId" class="form-select" required>
+          <option value="">— Seleccionar dueño —</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input type="text" id="mascotaCRUDNombre" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Especie</label>
+          <select id="mascotaCRUDEspecie" class="form-select" required>
+            <option value="Perro">Perro</option>
+            <option value="Gato">Gato</option>
+            <option value="Conejo">Conejo</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Raza</label>
+        <input type="text" id="mascotaCRUDRaza" class="form-input">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha nacimiento</label>
+          <input type="date" id="mascotaCRUDFechaNac" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Peso (kg)</label>
+          <input type="number" id="mascotaCRUDPeso" class="form-input" step="0.1" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Temperamento</label>
+        <select id="mascotaCRUDTemperamento" class="form-select">
+          <option value="">— Seleccionar —</option>
+          <option value="tranquilo">Tranquilo</option>
+          <option value="jugueton">Juguetón</option>
+          <option value="ansioso">Ansioso</option>
+          <option value="agresivo">Agresivo</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alergias</label>
+        <textarea id="mascotaCRUDAlergias" class="form-input" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Restricciones médicas</label>
+        <textarea id="mascotaCRUDRestricciones" class="form-input" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas adicionales</label>
+        <textarea id="mascotaCRUDNotas" class="form-input" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL de la foto (opcional)</label>
+        <input type="url" id="mascotaCRUDFotoUrl" class="form-input" placeholder="https://ejemplo.com/foto.jpg">
+      </div>
+      <div style="display:flex;gap:12px;margin-top:20px;">
+        <button type="submit" class="btn btn-primary" style="width:auto;">Guardar</button>
+        <button type="button" class="btn btn-outline" id="closeMascotaCRUDModalBtn">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script type="module" src="js/recepcion-dashboard.js"></script>
+<script>
+  // Filtrar al cambiar el select
+  document.getElementById('filtroCitasEstado')
+    ?.addEventListener('change', () => loadCitasCRUD());
+ 
+  // Refrescar con el estado actual del filtro
+  document.getElementById('btnRefrescarCitasCRUD')
+    ?.addEventListener('click', () => loadCitasCRUD());
+</script>
 </body>
 </html>
