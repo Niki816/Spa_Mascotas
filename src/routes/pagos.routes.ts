@@ -1,4 +1,3 @@
-// ─── src/routes/recepcion.routes.ts ──────────────────────────────────────────
 import { Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { allowRoles }     from '../middlewares/rbac.middleware';
@@ -12,7 +11,7 @@ import {
   updateCita,
   deleteCita,
   getCitasTodas,
-  getCitasCalendario,    // ← asegúrate de exportarlo en el controller
+  getCitasCalendario,
   confirmarCita,
   cancelarCita,
   getAvailableSlots,
@@ -33,8 +32,6 @@ import {
   deleteBloqueo,
   getGroomerAvailability,
   setGroomerAvailability,
-  
-  
 } from '../controllers/recepcion.controller';
 
 import {
@@ -44,15 +41,16 @@ import {
   deleteServicio,
 } from '../controllers/servicios.controller';
 
+// ── PAGOS ──────────────────────────────────────────────────────
 import {
   getCitasPendientesPago,
+  getClientesConCitasPendientes,
   getClienteNivel,
   getClientesFrecuentes,
   getFacturas,
   getReciboFactura,
   crearFactura,
   getCierreCaja,
-  getClientesConCitasPendientes,
 } from '../controllers/pagos.controller';
 
 const router = Router();
@@ -71,58 +69,62 @@ router.use((req, _res, next) => {
 router.get('/dashboard', getDashboard);
 
 // ══════════════════════════════════════
-// CITAS  — CRUD completo
-// IMPORTANTE: rutas estáticas ANTES que :id
+// CITAS — rutas estáticas ANTES que :id
 // ══════════════════════════════════════
-router.get('/citas/hoy',             getCitasHoy);
-router.get('/citas/activas',         getCitasActivas);
-router.get('/citas/todas',           getCitasTodas);
-router.get('/citas/calendario',      getCitasCalendario);
-router.get('/citas/pendientes-pago', getCitasPendientesPago); // ← AQUÍ, no al fondo
-router.post('/citas',                crearCita);
+router.get ('/citas/hoy',             getCitasHoy);
+router.get ('/citas/activas',         getCitasActivas);
+router.get ('/citas/todas',           getCitasTodas);
+router.get ('/citas/calendario',      getCitasCalendario);
+router.get ('/citas/pendientes-pago', getCitasPendientesPago);   // ← pagos
+router.post('/citas',                 crearCita);
 
-// ↓ Con :id siempre DESPUÉS
 router.get   ('/citas/:id',           getCitaById);
 router.patch ('/citas/:id',           updateCita);
 router.delete('/citas/:id',           deleteCita);
 router.patch ('/citas/:id/confirmar', confirmarCita);
 router.patch ('/citas/:id/cancelar',  cancelarCita);
+
 // ══════════════════════════════════════
-// SLOTS DE DISPONIBILIDAD
+// SLOTS
 // ══════════════════════════════════════
 router.get('/slots', getAvailableSlots);
 
 // ══════════════════════════════════════
-// CLIENTES
+// CLIENTES — estáticas ANTES que :id
 // ══════════════════════════════════════
-router.get ('/clientes',  getClientes);
-router.post('/clientes',  crearCliente);
-router.get('/clientes/pendientes-pago', getClientesConCitasPendientes);
+router.get ('/clientes/pendientes-pago', getClientesConCitasPendientes);  // ← pagos
+router.get ('/clientes/frecuentes',      getClientesFrecuentes);           // ← pagos
+router.get ('/clientes',                 getClientes);
+router.post('/clientes',                 crearCliente);
+router.get ('/clientes/:id/nivel',       getClienteNivel);                 // ← pagos
+
 // ══════════════════════════════════════
 // MASCOTAS
 // ══════════════════════════════════════
-router.get   ('/mascotas',        getAllMascotas);
-router.post  ('/mascotas',        crearMascota);
-router.get   ('/mascotas/:id',    getMascotaById);
-router.put   ('/mascotas/:id',    updateMascota);
-router.delete('/mascotas/:id',    deleteMascota);
+router.get   ('/mascotas',     getAllMascotas);
+router.post  ('/mascotas',     crearMascota);
+router.get   ('/mascotas/:id', getMascotaById);
+router.put   ('/mascotas/:id', updateMascota);
+router.delete('/mascotas/:id', deleteMascota);
 
 // ══════════════════════════════════════
-// SERVICIOS (lectura + CRUD)
+// SERVICIOS
 // ══════════════════════════════════════
-router.get   ('/servicios',        getServicios);
-router.get   ('/servicios/:id',    getServicioById);
-router.post  ('/servicios',        createServicio);
-router.put   ('/servicios/:id',    updateServicio);
-router.delete('/servicios/:id',    deleteServicio);
+router.get   ('/servicios',     getServicios);
+router.get   ('/servicios/:id', getServicioById);
+router.post  ('/servicios',     createServicio);
+router.put   ('/servicios/:id', updateServicio);
+router.delete('/servicios/:id', deleteServicio);
 
 // ══════════════════════════════════════
 // GROOMERS
 // ══════════════════════════════════════
 router.get('/groomers', getGroomersList);
+router.get('/groomers/:id/disponibilidad', getGroomerAvailability);
+router.put('/groomers/:id/disponibilidad', setGroomerAvailability);
 
 // ══════════════════════════════════════
-// CONFIGURACIÓN GENERAL DEL SPA
+// CONFIGURACIÓN SPA
 // ══════════════════════════════════════
 router.get('/config/spa', getSpaConfig);
 router.put('/config/spa', updateSpaConfig);
@@ -130,18 +132,16 @@ router.put('/config/spa', updateSpaConfig);
 // ══════════════════════════════════════
 // BLOQUEOS
 // ══════════════════════════════════════
-router.get   ('/bloqueos',        getBloqueos);
-router.post  ('/bloqueos',        createBloqueo);
-router.delete('/bloqueos/:id',    deleteBloqueo);
+router.get   ('/bloqueos',     getBloqueos);
+router.post  ('/bloqueos',     createBloqueo);
+router.delete('/bloqueos/:id', deleteBloqueo);
 
 // ══════════════════════════════════════
-// DISPONIBILIDAD POR GROOMER
+// PAGOS & FACTURACIÓN
 // ══════════════════════════════════════
-router.get('/groomers/:id/disponibilidad', getGroomerAvailability);
-router.put('/groomers/:id/disponibilidad', setGroomerAvailability);
+router.get ('/facturas',           getFacturas);
+router.post('/facturas',           crearFactura);
+router.get ('/facturas/:id/recibo',getReciboFactura);
+router.get ('/caja/resumen',       getCierreCaja);
 
-
-router.get('/test', (req, res) => {
-  res.json({ ok: true, msg: 'Router de recepción funcionando' });
-});
 export default router;

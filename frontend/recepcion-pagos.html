@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagos & Facturación — Pet Spa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--radius:16px;--radius-sm:10px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
+
+    /* SIDEBAR */
+    .sidebar{width:240px;min-height:100vh;height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;overflow-y:auto;}
+    .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
+    .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:12px;display:grid;place-items:center;font-size:20px;}
+    .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
+    .logo-text span{display:block;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--green-light);letter-spacing:.08em;text-transform:uppercase;}
+    .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-light);padding:0 8px;margin:16px 0 4px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-sm);color:var(--green-light);cursor:pointer;font-size:13px;margin-bottom:2px;transition:all .2s;text-decoration:none;}
+    .nav-item:hover,.nav-item.active{background:var(--green-mid);color:white;}
+    .nav-icon{font-size:16px;width:18px;text-align:center;}
+    .sidebar-footer{margin-top:auto;padding:14px;background:rgba(255,255,255,.05);border-radius:var(--radius-sm);}
+    .user-card{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:36px;height:36px;background:var(--amber);border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0;}
+    .user-name{font-size:12px;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .user-role{font-size:10px;color:var(--green-light);}
+    .logout-btn{background:none;border:none;color:var(--green-light);cursor:pointer;font-size:16px;margin-left:auto;}
+    .logout-btn:hover{color:#ff7b7b;}
+
+    /* MAIN */
+    .main{margin-left:240px;flex:1;padding:32px 36px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .page-title{font-family:'Playfair Display',serif;font-size:26px;}
+    .page-sub{font-size:13px;color:var(--text-light);margin-top:2px;}
+    .badge-recepcion{background:rgba(212,132,90,.15);color:var(--amber);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;}
+    .back-link{display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;color:var(--green-soft);text-decoration:none;font-size:13px;}
+    .back-link:hover{text-decoration:underline;}
+
+    /* TABS */
+    .tabs-nav{display:flex;gap:4px;background:var(--green-pale);padding:4px;border-radius:14px;margin-bottom:24px;}
+    .tab-btn{flex:1;padding:10px 14px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text-mid);transition:all .2s;white-space:nowrap;}
+    .tab-btn.active{background:white;color:var(--green-deep);box-shadow:0 2px 8px rgba(0,0,0,.1);}
+    .tab-btn:hover:not(.active){color:var(--green-soft);}
+
+    /* CARDS */
+    .card{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+    .card-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;border-left:4px solid var(--green-soft);padding-left:12px;}
+    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+
+    /* FORM */
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;letter-spacing:.05em;}
+    .form-input,.form-select{width:100%;padding:10px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cream);outline:none;transition:border-color .2s;}
+    .form-input:focus,.form-select:focus{border-color:var(--green-soft);background:white;}
+    textarea.form-input{resize:vertical;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+    /* BUTTONS */
+    .btn{padding:9px 20px;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:var(--green-deep);color:white;}
+    .btn-primary:hover{background:var(--green-mid);}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+    .btn-outline{background:transparent;border:1.5px solid #d0e4da;color:var(--text-mid);}
+    .btn-outline:hover{border-color:var(--green-soft);color:var(--green-soft);}
+    .btn-amber{background:rgba(212,132,90,.15);color:var(--amber);}
+    .btn-amber:hover{background:rgba(212,132,90,.28);}
+    .btn-sm{padding:5px 12px;font-size:12px;}
+
+    /* ALERTS */
+    .alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;margin-top:12px;display:none;}
+    .alert.show{display:block;}
+    .alert-success{background:var(--green-pale);color:var(--green-mid);border:1px solid var(--green-light);}
+    .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
+    .alert-info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+
+    /* TABLES */
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;color:var(--text-light);border-bottom:1.5px solid #f0f5f2;white-space:nowrap;}
+    td{padding:11px 12px;border-bottom:1px solid #f8f9fa;vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+
+    /* METODOS PAGO */
+    .metodos-pago{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+    .metodo-btn{flex:1;min-width:100px;padding:14px 10px;border:2px solid #e0ebe5;border-radius:12px;background:white;cursor:pointer;text-align:center;transition:all .2s;font-family:'DM Sans',sans-serif;}
+    .metodo-btn:hover{border-color:var(--green-soft);}
+    .metodo-btn.selected{border-color:var(--green-deep);background:var(--green-pale);}
+    .metodo-btn .mi{font-size:26px;display:block;margin-bottom:6px;}
+    .metodo-btn .ml{font-size:12px;font-weight:600;color:var(--text-mid);}
+    .metodo-btn.selected .ml{color:var(--green-deep);}
+
+    /* PROMOS */
+    .promos-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+    .promo-tag{padding:5px 12px;border-radius:20px;background:var(--green-pale);border:1.5px solid var(--green-light);color:var(--green-mid);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;}
+    .promo-tag:hover{background:var(--green-light);color:var(--green-deep);}
+    .promo-tag.applied{background:var(--green-deep);color:white;border-color:var(--green-deep);}
+
+    /* RESUMEN */
+    .total-box{background:var(--green-deep);color:white;border-radius:var(--radius);padding:16px 20px;margin-top:16px;}
+    .total-lbl{font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.06em;}
+    .total-amt{font-family:'Playfair Display',serif;font-size:32px;margin:4px 0;}
+    .total-det{font-size:11px;opacity:.6;}
+    .detail-list{list-style:none;}
+    .detail-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--green-pale);font-size:13px;}
+    .detail-item:last-child{border-bottom:none;}
+    .item-name{color:var(--text-mid);}
+    .item-discount{color:#16a34a;}
+    .item-total-row{font-weight:700;font-size:15px;margin-top:4px;padding-top:12px;border-top:2px solid var(--green-pale);}
+
+    /* CIERRE SUMMARY */
+    .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:20px;}
+    .summary-card{background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--green-light);}
+    .summary-card.amber{border-top-color:var(--amber);}
+    .summary-card.blue{border-top-color:#3b82f6;}
+    .summary-card.purple{border-top-color:#8b5cf6;}
+    .summary-card.red{border-top-color:#ef4444;}
+    .summary-amt{font-family:'Playfair Display',serif;font-size:22px;color:var(--text-dark);}
+    .summary-lbl{font-size:11px;color:var(--text-light);margin-top:4px;}
+    .summary-cnt{font-size:11px;color:var(--green-soft);font-weight:600;margin-top:2px;}
+
+    /* STATUS PILLS */
+    .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+    .pill-pendiente{background:#fef9c3;color:#92400e;}
+    .pill-pagada{background:#dcfce7;color:#166534;}
+    .pill-cancelada{background:#fee2e2;color:#dc2626;}
+
+    /* SECTION NOTE */
+    .section-note{font-size:12px;color:var(--text-light);background:var(--green-pale);padding:8px 14px;border-radius:var(--radius-sm);margin-bottom:16px;border-left:3px solid var(--green-soft);}
+
+    /* LAYOUT */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    @media(max-width:1100px){.grid-2{grid-template-columns:1fr;}}
+    .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+    .filter-bar .form-input,.filter-bar .form-select{width:auto;}
+
+    /* MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:20px;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:white;border-radius:var(--radius);padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2);}
+    .modal-title{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:18px;color:var(--green-deep);}
+
+    /* RECIBO */
+    .receipt-box{background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:20px;font-size:12px;line-height:1.7;}
+    .receipt-hdr{text-align:center;padding-bottom:12px;border-bottom:1px dashed #d1d5db;margin-bottom:12px;}
+    .receipt-logo{font-size:32px;}
+    .receipt-title{font-family:'Playfair Display',serif;font-size:17px;margin:4px 0;}
+    .receipt-sub{color:#6b7280;font-size:11px;}
+    .receipt-row{display:flex;justify-content:space-between;margin-bottom:3px;}
+    .receipt-divider{border-top:1px dashed #d1d5db;margin:8px 0;}
+    .receipt-total-row{display:flex;justify-content:space-between;font-weight:700;font-size:14px;}
+    .receipt-footer{text-align:center;margin-top:12px;padding-top:12px;border-top:1px dashed #d1d5db;color:#6b7280;font-size:11px;}
+
+    /* PRINT */
+    @media print{
+      .sidebar,.topbar,.tabs-nav,.no-print,.modal-overlay:not(#comprobanteModal){display:none!important;}
+      .main{margin-left:0;padding:0;}
+      #comprobanteModal{position:static!important;background:none!important;display:block!important;}
+      .modal{box-shadow:none!important;max-height:none!important;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🐾</div>
+    <div class="logo-text">Pet Spa <span>Recepción</span></div>
+  </div>
+  <div class="nav-label">Inicio</div>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+  <div class="nav-label">Citas</div>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">📅</span> Citas hoy</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">➕</span> Nueva cita</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🗂️</span> Gestionar Citas</a>
+  <a class="nav-item" href="recepcion-calendario.html"><span class="nav-icon">📆</span> Calendario Maestro</a>
+  <div class="nav-label">Clientes &amp; Mascotas</div>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🐶</span> Ver clientes</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">👤</span> Registrar cliente</a>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🐕</span> Gestionar Mascotas</a>
+  <div class="nav-label">Pagos &amp; Facturación</div>
+  <a class="nav-item active" href="recepcion-pagos.html"><span class="nav-icon">💳</span> Cobrar / POS</a>
+  <a class="nav-item" href="recepcion-pagos.html" data-goto-tab="facturas"><span class="nav-icon">🧾</span> Facturas</a>
+  <a class="nav-item" href="recepcion-pagos.html" data-goto-tab="cierre"><span class="nav-icon">📊</span> Cierre de Caja</a>
+  <div class="nav-label">Disponibilidad</div>
+  <a class="nav-item" href="recepcion-availability.html"><span class="nav-icon">⚙️</span> Horarios &amp; Bloques</a>
+  <div class="nav-label">Cuenta</div>
+  <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">👤</span> Mi Perfil</a>
+  <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">📞</div>
+      <div style="flex:1;min-width:0;">
+        <div class="user-name" id="sidebarName">—</div>
+        <div class="user-role">Recepcionista</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn2" title="Cerrar sesión">✕</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <a href="recepcion-dashboard.html" class="back-link no-print">← Volver al dashboard</a>
+  <div class="topbar no-print">
+    <div>
+      <div class="page-title">💳 Pagos &amp; Facturación</div>
+      <div class="page-sub" id="userEmail">—</div>
+    </div>
+    <span class="badge-recepcion">📞 Recepcionista</span>
+  </div>
+
+  <div class="tabs-nav no-print">
+    <button class="tab-btn active" data-tab="cobrar">💳 Cobrar / POS</button>
+    <button class="tab-btn" data-tab="facturas">🧾 Facturas</button>
+    <button class="tab-btn" data-tab="cierre">📊 Cierre de Caja</button>
+  </div>
+
+  <!-- ══ TAB: COBRAR / POS ══ -->
+  <div id="tab-cobrar">
+    <div class="grid-2">
+
+      <!-- IZQUIERDA -->
+      <div>
+        <!-- Selector de cliente -->
+        <div class="card">
+          <div class="card-title">👤 Seleccionar cliente</div>
+          <div class="section-note">
+            Solo aparecen clientes con citas completadas y sin cobrar.
+            Las citas ya facturadas no aparecen.
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cliente</label>
+            <select id="posClienteSelect" class="form-select">
+              <option value="">⏳ Cargando clientes...</option>
+            </select>
+          </div>
+          <!-- Badge de nivel del cliente -->
+          <div id="posNivelBox" style="display:none;margin-top:8px;"></div>
+          <div class="alert" id="posSelAlert"></div>
+        </div>
+
+        <!-- Citas del cliente (checkboxes) -->
+        <div class="card" id="posCitasCard" style="display:block;">
+          <div class="card-title">🐾 Citas a cobrar</div>
+          <div class="section-note">
+            Selecciona una o varias citas. Puedes cobrarlas juntas en una sola factura.
+          </div>
+          <div id="posCitasContainer">
+            <div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px;">
+              Selecciona un cliente para ver sus citas pendientes
+            </div>
+          </div>
+        </div>
+
+        <!-- Descuentos -->
+        <div class="card">
+          <div class="card-title">🎁 Descuento / Promoción</div>
+          <div class="section-note">El descuento sugerido se aplica automáticamente según el nivel del cliente</div>
+          <div class="promos-list" id="promosList">
+            <span class="promo-tag" data-tipo="porcentaje" data-valor="5">5% Frecuente</span>
+            <span class="promo-tag" data-tipo="porcentaje" data-valor="10">10% Especial</span>
+            <span class="promo-tag" data-tipo="porcentaje" data-valor="15">15% Fidelidad VIP</span>
+            <span class="promo-tag" data-tipo="porcentaje" data-valor="20">20% Promo mes</span>
+            <span class="promo-tag" data-tipo="fijo" data-valor="20">Bs 20 fijo</span>
+            <span class="promo-tag" data-tipo="fijo" data-valor="50">Bs 50 fijo</span>
+          </div>
+          <div class="form-row" style="margin-top:14px;">
+            <div class="form-group">
+              <label class="form-label">Tipo de descuento</label>
+              <select id="descuentoTipo" class="form-select">
+                <option value="sin_descuento">Sin descuento</option>
+                <option value="porcentaje">Porcentaje (%)</option>
+                <option value="fijo">Monto fijo (Bs)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Valor</label>
+              <input type="number" id="descuentoValor" class="form-input" min="0" step="0.01" value="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DERECHA -->
+      <div>
+        <!-- Resumen -->
+        <div class="card">
+          <div class="card-title">💰 Resumen de cobro</div>
+          <ul class="detail-list" id="posResumenList">
+            <li class="detail-item">
+              <span class="item-name">Sin citas seleccionadas</span>
+              <span>Bs 0.00</span>
+            </li>
+          </ul>
+          <div class="total-box">
+            <div class="total-lbl">Total a cobrar</div>
+            <div class="total-amt" id="posTotalDisplay">Bs 0.00</div>
+            <div class="total-det" id="posTotalDet">—</div>
+          </div>
+        </div>
+
+        <!-- Método de pago -->
+        <div class="card">
+          <div class="card-title">💳 Método de pago</div>
+          <div class="metodos-pago">
+            <button type="button" class="metodo-btn selected" data-metodo="efectivo">
+              <span class="mi">💵</span><span class="ml">Efectivo</span>
+            </button>
+            <button type="button" class="metodo-btn" data-metodo="qr">
+              <span class="mi">📱</span><span class="ml">QR</span>
+            </button>
+            <button type="button" class="metodo-btn" data-metodo="transferencia">
+              <span class="mi">🏦</span><span class="ml">Transferencia</span>
+            </button>
+          </div>
+          <div id="posRefWrap" style="display:none;margin-top:14px;">
+            <div class="form-group">
+              <label class="form-label">Referencia / N° transacción</label>
+              <input type="text" id="posReferencia" class="form-input" placeholder="Ej: TRX-20240601-001">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:14px;">
+            <label class="form-label">Notas (opcional)</label>
+            <textarea id="posNotas" class="form-input" rows="2" placeholder="Observaciones del pago..."></textarea>
+          </div>
+          <div class="alert" id="posAlert"></div>
+          <button type="button" id="btnCobrar" class="btn btn-primary"
+                  style="width:100%;margin-top:16px;padding:14px;font-size:15px;" disabled>
+            💳 Generar factura y cobrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-cobrar -->
+
+  <!-- ══ TAB: FACTURAS ══ -->
+  <div id="tab-facturas" style="display:none;">
+    <div class="card">
+      <div class="card-head">
+        <div style="font-family:'Playfair Display',serif;font-size:18px;">🧾 Historial de Facturas</div>
+        <div class="filter-bar" style="margin:0;">
+          <select id="filtroEstado" class="form-select" style="width:155px;">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">⏳ Pendiente</option>
+            <option value="pagada">✅ Pagada</option>
+            <option value="cancelada">❌ Cancelada</option>
+          </select>
+          <input type="date" id="filtroDesde" class="form-input" style="width:148px;">
+          <input type="date" id="filtroHasta" class="form-input" style="width:148px;">
+          <button class="btn btn-outline btn-sm" id="btnFiltrar">🔍 Filtrar</button>
+          <button class="btn btn-outline btn-sm" id="btnRefrescarF">🔄</button>
+        </div>
+      </div>
+      <div class="alert" id="facturasAlert"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>N° Factura</th><th>Fecha</th><th>Cliente</th><th>Servicio</th>
+              <th>Total</th><th>Método</th><th>Estado</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="facturasBody">
+            <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-light);">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /tab-facturas -->
+
+  <!-- ══ TAB: CIERRE DE CAJA ══ -->
+  <div id="tab-cierre" style="display:none;">
+    <div class="card no-print">
+      <div class="card-head">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;">📊 Cierre de Caja</div>
+          <div style="font-size:12px;color:var(--text-light);margin-top:4px;">
+            Calculado en tiempo real desde los pagos registrados del día. No requiere almacenamiento adicional.
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input type="date" id="cierreFecha" class="form-input" style="width:180px;">
+          <button class="btn btn-primary btn-sm" id="btnCargarCierre">📊 Ver resumen</button>
+          <button class="btn btn-outline btn-sm" id="btnImprimirCierre">🖨️ Imprimir</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-amt" id="cierreTotalDia">Bs 0.00</div>
+        <div class="summary-lbl">Total recaudado</div>
+        <div class="summary-cnt" id="cierreTotalCnt">0 pagos</div>
+      </div>
+      <div class="summary-card amber">
+        <div class="summary-amt" id="cierreEfectivo">Bs 0.00</div>
+        <div class="summary-lbl">💵 Efectivo</div>
+        <div class="summary-cnt" id="cierreEfectivoCnt">0 pagos</div>
+      </div>
+      <div class="summary-card blue">
+        <div class="summary-amt" id="cierreQR">Bs 0.00</div>
+        <div class="summary-lbl">📱 QR</div>
+        <div class="summary-cnt" id="cierreQRCnt">0 pagos</div>
+      </div>
+      <div class="summary-card purple">
+        <div class="summary-amt" id="cierreTransf">Bs 0.00</div>
+        <div class="summary-lbl">🏦 Transferencia</div>
+        <div class="summary-cnt" id="cierreTransfCnt">0 pagos</div>
+      </div>
+      <div class="summary-card red">
+        <div class="summary-amt" id="cierrePendiente">Bs 0.00</div>
+        <div class="summary-lbl">⏳ Por cobrar</div>
+        <div class="summary-cnt" id="cierrePendienteCnt">0 facturas</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div style="font-family:'Playfair Display',serif;font-size:16px;">📋 Detalle de pagos del día</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Hora</th><th>N° Factura</th><th>Cliente</th><th>Servicio</th><th>Método</th><th>Monto</th><th>Estado</th></tr>
+          </thead>
+          <tbody id="cierreBody">
+            <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-light);">Selecciona una fecha para ver el cierre</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /tab-cierre -->
+</main>
+
+<!-- MODAL: Ver / Cobrar Factura -->
+<div class="modal-overlay" id="facturaModal">
+  <div class="modal">
+    <div class="modal-title" id="facturaModalTitle">🧾 Detalle de Factura</div>
+    <div id="facturaModalContent">
+      <div style="text-align:center;padding:20px;color:var(--text-light);">⏳ Cargando...</div>
+    </div>
+    <div id="facturaModalPagoSection" style="display:none;">
+      <hr style="margin:16px 0;border:0;border-top:1px solid var(--green-pale);">
+      <div style="font-weight:600;font-size:13px;margin-bottom:10px;">Registrar pago</div>
+      <div class="metodos-pago">
+        <button type="button" class="metodo-btn selected" data-modal-metodo="efectivo"><span class="mi">💵</span><span class="ml">Efectivo</span></button>
+        <button type="button" class="metodo-btn" data-modal-metodo="qr"><span class="mi">📱</span><span class="ml">QR</span></button>
+        <button type="button" class="metodo-btn" data-modal-metodo="transferencia"><span class="mi">🏦</span><span class="ml">Transferencia</span></button>
+      </div>
+      <div id="modalRefWrap" style="display:none;margin-top:12px;">
+        <input type="text" id="modalReferencia" class="form-input" placeholder="Referencia de transacción">
+      </div>
+      <div class="alert" id="facturaModalAlert"></div>
+      <button type="button" id="btnPagarFactura" class="btn btn-primary" style="width:100%;margin-top:14px;">✅ Registrar pago completo</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-outline btn-sm" id="btnImprimirFactura">🖨️ Comprobante</button>
+      <button class="btn btn-outline" id="closeFacturaModal" style="margin-left:auto;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Comprobante de Pago -->
+<div class="modal-overlay" id="comprobanteModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-title">🧾 Comprobante de Pago</div>
+    <div id="comprobanteContent"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;" class="no-print">
+      <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn btn-outline" id="closeComprobanteModal">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/recepcion-pagos.js"></script>
+</body>
+</html>
