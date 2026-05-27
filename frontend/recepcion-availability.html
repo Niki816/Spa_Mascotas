@@ -159,12 +159,13 @@
   <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">📅</span> Citas hoy</a>
   <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">➕</span> Nueva cita</a>
   <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">❌</span> Anular cita</a>
-  <a class="nav-item" href="#" data-section="gestionar-citas">
+  <a class="nav-item" href="recepcion-dashboard.html" data-section="gestionar-citas">
     <span class="nav-icon">🗂️</span> Gestionar Citas
   </a>
   <a class="nav-item" href="recepcion-calendario.html">
     <span class="nav-icon">📆</span> Calendario Maestro
   </a>
+
   <div class="nav-label">Clientes & Mascotas</div>
   <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">🐶</span> Ver clientes</a>
   <a class="nav-item" href="recepcion-dashboard.html"><span class="nav-icon">👤</span> Registrar cliente</a>
@@ -190,16 +191,15 @@
   </div>
 
   <div class="nav-label">Pagos &amp; Caja</div>
-   <a class="nav-item" href="recepcion-pagos.html">
-      <span class="nav-icon">💳</span> Punto de venta
-    </a>
-    <a class="nav-item" href="recepcion-caja.html">
-      <span class="nav-icon">🗃️</span> Cierre de caja
-    </a>
-    <a class="nav-item" href="recepcion-clientes-frecuentes.html">
-      <span class="nav-icon">⭐</span> Clientes frecuentes
-    </a>
-
+  <a class="nav-item" href="recepcion-pagos.html">
+    <span class="nav-icon">💳</span> Punto de venta
+  </a>
+  <a class="nav-item" href="recepcion-caja.html">
+    <span class="nav-icon">🗃️</span> Cierre de caja
+  </a>
+  <a class="nav-item" href="recepcion-clientes-frecuentes.html">
+    <span class="nav-icon">⭐</span> Clientes frecuentes
+  </a>
 </aside>
 
 <!-- ══ MAIN ══ -->
@@ -241,122 +241,6 @@
       <div id="configAlert" class="alert"></div>
     </form>
   </div>
-
-  <<div id="section-gestionar-citas" style="display:none;">
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title">🗂️ Gestionar Citas</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
- 
-        <!-- Filtro por estado -->
-        <select id="filtroCitasEstado" class="form-select" style="width:160px;padding:6px 10px;font-size:12px;">
-          <option value="">Todos los estados</option>
-          <option value="agendada">📅 Agendada</option>
-          <option value="confirmada">✅ Confirmada</option>
-          <option value="cancelada">❌ Cancelada</option>
-          <option value="completada">✔️ Completada</option>
-          <option value="no_asistio">⚠️ No asistió</option>
-        </select>
- 
-        <button class="btn btn-outline btn-sm" id="btnRefrescarCitasCRUD">🔄 Refrescar</button>
-      </div>
-    </div>
- 
-    <div class="alert" id="citasCRUDMessage"></div>
- 
-    <div class="table-wrap">
-      <table id="citasCRUDTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Fecha y hora</th>
-            <th>Mascota</th>
-            <th>Servicio</th>
-            <th>Groomer</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="citasCRUDTableBody">
-          <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-<!-- ════════════════════════════════════════════════════════════
-     3. AGREGAR el modal de edición al final del <body>,
-        junto al modal de mascotas (mascotaCRUDModal)
-     ════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="editarCitaModal">
-  <div class="modal">
-    <div class="modal-title" id="editCitaModalTitle">✏️ Editar Cita</div>
- 
-    <!-- Info extra: duración y estado actuales -->
-    <div id="editCitaInfoDuracion"
-         style="font-size:12px;color:var(--text-mid);background:var(--green-pale);
-                padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:16px;
-                border-left:3px solid var(--green-soft);">
-    </div>
- 
-    <form id="formEditarCita">
-      <input type="hidden" id="editCitaId">
- 
-      <div class="form-group">
-        <label class="form-label">Mascota</label>
-        <select id="editCitaMascota" class="form-select" required>
-          <option value="">⏳ Cargando...</option>
-        </select>
-      </div>
- 
-      <div class="form-group">
-        <label class="form-label">Servicio</label>
-        <select id="editCitaServicio" class="form-select" required>
-          <option value="">⏳ Cargando...</option>
-        </select>
-      </div>
- 
-      <div class="form-group">
-        <label class="form-label">Groomer</label>
-        <select id="editCitaGroomer" class="form-select" required>
-          <option value="">⏳ Cargando...</option>
-        </select>
-      </div>
- 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Fecha</label>
-          <input type="date" id="editCitaFecha" class="form-input" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Hora</label>
-          <input type="time" id="editCitaHora" class="form-input" required>
-        </div>
-      </div>
- 
-      <div class="form-group">
-        <label class="form-label">Notas</label>
-        <textarea id="editCitaNotas" class="form-input" rows="2"
-                  placeholder="Instrucciones especiales..."></textarea>
-      </div>
- 
-      <div class="section-note" style="margin-bottom:14px;">
-        💡 La duración se recalcula automáticamente si cambias la mascota o el servicio
-      </div>
- 
-      <div class="alert" id="editCitaMessage"></div>
- 
-      <div style="display:flex;gap:12px;margin-top:18px;">
-        <button type="submit" class="btn btn-primary" style="width:auto;">
-          💾 Guardar cambios
-        </button>
-        <button type="button" class="btn btn-outline" id="closeEditarCitaModalBtn">
-          Cancelar
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
 
   <!-- ── CREAR BLOQUEO ── -->
   <div class="card">
@@ -443,14 +327,5 @@
 </main>
 
 <script type="module" src="js/recepcion-availability.js"></script>
-<script>
-  // Filtrar al cambiar el select
-  document.getElementById('filtroCitasEstado')
-    ?.addEventListener('change', () => loadCitasCRUD());
- 
-  // Refrescar con el estado actual del filtro
-  document.getElementById('btnRefrescarCitasCRUD')
-    ?.addEventListener('click', () => loadCitasCRUD());
-</script>
 </body>
 </html>

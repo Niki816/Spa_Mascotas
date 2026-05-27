@@ -11,8 +11,7 @@
     body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
 
     /* ── SIDEBAR ── */
-    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;height: 100vh; /* asegurar altura completa */
-    overflow-y: auto;}
+    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;height:100vh;overflow-y:auto;}
     .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
     .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:12px;display:grid;place-items:center;font-size:20px;}
     .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
@@ -38,7 +37,7 @@
 
     /* ── CARDS ── */
     .card{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
-    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
     .card-title{font-family:'Playfair Display',serif;font-size:17px;}
     .card-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--green-pale);color:var(--green-soft);}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
@@ -86,28 +85,17 @@
     .section-note{font-size:12px;color:var(--text-light);background:var(--green-pale);padding:8px 14px;border-radius:var(--radius-sm);margin-bottom:16px;border-left:3px solid var(--green-soft);}
 
     /* ── MODAL ── */
-    .modal-overlay{
-      display:none;
-      position:fixed;inset:0;
-      background:rgba(0,0,0,.45);
-      z-index:200;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-    }
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px;}
     .modal-overlay.open{display:flex;}
-    .modal{
-      background:white;
-      border-radius:var(--radius);
-      padding:28px;
-      width:100%;
-      max-width:600px;
-      max-height:90vh;
-      overflow-y:auto;
-      box-shadow:0 8px 40px rgba(0,0,0,.2);
-    }
+    .modal{background:white;border-radius:var(--radius);padding:28px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2);}
     .modal-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:20px;color:var(--green-deep);}
     .modal .btn-primary{width:auto;}
+
+    /* ── CITAS HOY: fila con acceso al calendario ── */
+    .cal-promo{display:flex;align-items:center;justify-content:space-between;background:var(--green-pale);border-radius:var(--radius-sm);padding:12px 16px;margin-top:14px;border-left:4px solid var(--green-soft);}
+    .cal-promo-text{font-size:13px;color:var(--text-mid);}
+    .cal-promo-link{background:var(--green-deep);color:white;padding:7px 16px;border-radius:var(--radius-sm);text-decoration:none;font-size:12px;font-weight:500;}
+    .cal-promo-link:hover{background:var(--green-mid);}
   </style>
 </head>
 <body>
@@ -123,25 +111,23 @@
   <a class="nav-item active" href="#" data-section="inicio"><span class="nav-icon">🏠</span> Dashboard</a>
 
   <div class="nav-label">Citas</div>
-  <a class="nav-item" href="#" data-section="citas"><span class="nav-icon">📅</span> Citas hoy</a>
+  <a class="nav-item" href="#" data-section="citas"><span class="nav-icon">📅</span> Citas de hoy</a>
   <a class="nav-item" href="#" data-section="nueva-cita"><span class="nav-icon">➕</span> Nueva cita</a>
-  <a class="nav-item" href="#" data-section="cancelar-cita"><span class="nav-icon">❌</span> Anular cita</a>
-  <a class="nav-item" href="#" data-section="gestionar-citas">
-    <span class="nav-icon">🗂️</span> Gestionar Citas
-  </a>
-  <a class="nav-item" href="recepcion-calendario.html">
-    <span class="nav-icon">📆</span> Calendario Maestro
-  </a>
+  <a class="nav-item" href="recepcion-calendario.html"><span class="nav-icon">📆</span> Calendario Maestro</a>
 
-
-  <div class="nav-label">Clientes & Mascotas</div>
+  <div class="nav-label">Clientes &amp; Mascotas</div>
   <a class="nav-item" href="#" data-section="clientes"><span class="nav-icon">🐶</span> Ver clientes</a>
   <a class="nav-item" href="#" data-section="registrar-cliente"><span class="nav-icon">👤</span> Registrar cliente</a>
   <a class="nav-item" href="#" data-section="registrar-mascota"><span class="nav-icon">🐾</span> Registrar mascota</a>
   <a class="nav-item" href="#" data-section="gestionar-mascotas"><span class="nav-icon">🐕</span> Gestionar Mascotas</a>
 
   <div class="nav-label">Disponibilidad</div>
-  <a class="nav-item" href="recepcion-availability.html"><span class="nav-icon">📆</span> Horarios & Bloques</a>
+  <a class="nav-item" href="recepcion-availability.html"><span class="nav-icon">⚙️</span> Horarios &amp; Bloques</a>
+
+  <div class="nav-label">Pagos &amp; Caja</div>
+  <a class="nav-item" href="recepcion-pagos.html"><span class="nav-icon">💳</span> Punto de venta</a>
+  <a class="nav-item" href="recepcion-caja.html"><span class="nav-icon">🗃️</span> Cierre de caja</a>
+  <a class="nav-item" href="recepcion-clientes-frecuentes.html"><span class="nav-icon">⭐</span> Clientes frecuentes</a>
 
   <div class="nav-label">Cuenta</div>
   <a class="nav-item" href="#" data-section="perfil"><span class="nav-icon">👤</span> Mi Perfil</a>
@@ -157,16 +143,6 @@
       <button class="logout-btn" id="logoutBtn2">✕</button>
     </div>
   </div>
-  <div class="nav-label">Pagos &amp; Caja</div>
-   <a class="nav-item" href="recepcion-pagos.html">
-      <span class="nav-icon">💳</span> Punto de venta
-    </a>
-    <a class="nav-item" href="recepcion-caja.html">
-      <span class="nav-icon">🗃️</span> Cierre de caja
-    </a>
-    <a class="nav-item" href="recepcion-clientes-frecuentes.html">
-      <span class="nav-icon">⭐</span> Clientes frecuentes
-    </a>
 </aside>
 
 <!-- ══ MAIN ══ -->
@@ -179,7 +155,7 @@
     <span class="badge-recepcion">📞 Recepcionista</span>
   </div>
 
-  <!-- INICIO (Dashboard) -->
+  <!-- ── INICIO ── -->
   <div id="section-inicio">
     <div class="stats">
       <div class="stat">
@@ -195,158 +171,68 @@
     </div>
     <div class="grid-2">
       <div class="card">
-        <div class="card-head"><div class="card-title">Citas de hoy</div></div>
+        <div class="card-head">
+          <div class="card-title">Citas de hoy</div>
+          <a href="recepcion-calendario.html" style="font-size:12px;color:var(--green-soft);text-decoration:none;">📆 Ver calendario →</a>
+        </div>
         <div class="table-wrap">
           <table id="citasHoyTable">
-            <thead><tr><th>Hora</th><th>Mascota</th><th>Servicio</th><th>Groomer</th></tr></thead>
-            <tbody><tr><td colspan="4">Cargando...</td></tr></tbody>
+            <thead><tr><th>Hora</th><th>Mascota</th><th>Servicio</th><th>Groomer</th><th>Estado</th></tr></thead>
+            <tbody><tr><td colspan="5" style="text-align:center;padding:16px;">Cargando...</td></tr></tbody>
           </table>
         </div>
       </div>
       <div class="card">
-        <div class="card-head"><div class="card-title">Últimos clientes</div></div>
+        <div class="card-head">
+          <div class="card-title">Últimos clientes</div>
+        </div>
         <div class="table-wrap">
           <table id="clientesTable">
             <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th></tr></thead>
-            <tbody><tr><td colspan="3">Cargando...</td></tr></tbody>
+            <tbody><tr><td colspan="3" style="text-align:center;padding:16px;">Cargando...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CITAS HOY (detallado) -->
+  <!-- ── CITAS HOY DETALLADO ── -->
   <div id="section-citas" style="display:none;">
     <div class="card">
       <div class="card-head">
-        <div class="card-title">📅 Citas de hoy</div>
+        <div class="card-title">📅 Citas del día — Detalle completo</div>
         <button class="btn btn-outline btn-sm" id="btnRefrescarCitas">🔄 Refrescar</button>
+      </div>
+      <div class="section-note">
+        ✏️ Para editar, reprogramar o anular citas con detalle completo usa el
+        <a href="recepcion-calendario.html" style="color:var(--green-soft);font-weight:600;">📆 Calendario Maestro</a>
       </div>
       <div class="table-wrap">
         <table id="citasDetalleTable">
-          <thead><tr><th>Hora</th><th>Mascota</th><th>Servicio</th><th>Groomer</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody><tr><td colspan="6">Cargando...</td></tr></tbody>
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Mascota</th>
+              <th>Servicio</th>
+              <th>Groomer</th>
+              <th>Duración</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7" style="text-align:center;padding:20px;">Cargando...</td></tr>
+          </tbody>
         </table>
       </div>
+      <div class="cal-promo">
+        <div class="cal-promo-text">📆 Para gestionar citas (editar, reprogramar, anular) accede al Calendario Maestro</div>
+        <a href="recepcion-calendario.html" class="cal-promo-link">Ir al Calendario →</a>
+      </div>
     </div>
   </div>
-<div id="section-gestionar-citas" style="display:none;">
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title">🗂️ Gestionar Citas</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
- 
-        <!-- Filtro por estado -->
-        <select id="filtroCitasEstado" class="form-select" style="width:160px;padding:6px 10px;font-size:12px;">
-          <option value="">Todos los estados</option>
-          <option value="agendada">📅 Agendada</option>
-          <option value="confirmada">✅ Confirmada</option>
-          <option value="cancelada">❌ Cancelada</option>
-          <option value="completada">✔️ Completada</option>
-          <option value="no_asistio">⚠️ No asistió</option>
-        </select>
- 
-        <button class="btn btn-outline btn-sm" id="btnRefrescarCitasCRUD">🔄 Refrescar</button>
-      </div>
-    </div>
- 
-    <div class="alert" id="citasCRUDMessage"></div>
- 
-    <div class="table-wrap">
-      <table id="citasCRUDTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Fecha y hora</th>
-            <th>Mascota</th>
-            <th>Servicio</th>
-            <th>Groomer</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="citasCRUDTableBody">
-          <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div> 
- 
-<!-- ════════════════════════════════════════════════════════════
-     3. AGREGAR el modal de edición al final del <body>,
-        junto al modal de mascotas (mascotaCRUDModal)
-     ════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="editarCitaModal">
-  <div class="modal">
-    <div class="modal-title" id="editCitaModalTitle">✏️ Editar Cita</div>
- 
-    <!-- Info extra: duración y estado actuales -->
-    <div id="editCitaInfoDuracion"
-         style="font-size:12px;color:var(--text-mid);background:var(--green-pale);
-                padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:16px;
-                border-left:3px solid var(--green-soft);">
-    </div>
- 
-    <form id="formEditarCita">
-      <input type="hidden" id="editCitaId">
- 
-      <div class="form-group">
-        <label class="form-label">Mascota</label>
-        <select id="editCitaMascota" class="form-select" required>
-          <option value="">⏳ Cargando...</option>
-        </select>
-      </div>
- 
-      <div class="form-group">
-        <label class="form-label">Servicio</label>
-        <select id="editCitaServicio" class="form-select" required>
-          <option value="">⏳ Cargando...</option>
-        </select>
-      </div>
- 
-      <div class="form-group">
-        <label class="form-label">Groomer</label>
-        <select id="editCitaGroomer" class="form-select" required>
-          <option value="">⏳ Cargando...</option>
-        </select>
-      </div>
- 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Fecha</label>
-          <input type="date" id="editCitaFecha" class="form-input" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Hora</label>
-          <input type="time" id="editCitaHora" class="form-input" required>
-        </div>
-      </div>
- 
-      <div class="form-group">
-        <label class="form-label">Notas</label>
-        <textarea id="editCitaNotas" class="form-input" rows="2"
-                  placeholder="Instrucciones especiales..."></textarea>
-      </div>
- 
-      <div class="section-note" style="margin-bottom:14px;">
-        💡 La duración se recalcula automáticamente si cambias la mascota o el servicio
-      </div>
- 
-      <div class="alert" id="editCitaMessage"></div>
- 
-      <div style="display:flex;gap:12px;margin-top:18px;">
-        <button type="submit" class="btn btn-primary" style="width:auto;">
-          💾 Guardar cambios
-        </button>
-        <button type="button" class="btn btn-outline" id="closeEditarCitaModalBtn">
-          Cancelar
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-  <!-- VER CLIENTES -->
+
+  <!-- ── VER CLIENTES ── -->
   <div id="section-clientes" style="display:none;">
     <div class="card">
       <div class="card-head">
@@ -362,7 +248,7 @@
     </div>
   </div>
 
-  <!-- NUEVA CITA -->
+  <!-- ── NUEVA CITA ── -->
   <div id="section-nueva-cita" style="display:none;">
     <div class="card" style="max-width:520px;">
       <div class="card-head"><div class="card-title">➕ Agendar nueva cita</div><span class="card-badge">Recepción</span></div>
@@ -400,29 +286,7 @@
     </div>
   </div>
 
-  <!-- ANULAR CITA -->
-  <div id="section-cancelar-cita" style="display:none;">
-    <div class="card" style="max-width:520px;">
-      <div class="card-head"><div class="card-title">❌ Anular cita</div><span class="card-badge">Recepción</span></div>
-      <div class="section-note">⚠️ Solo se pueden cancelar citas en estado <strong>agendada</strong> o <strong>confirmada</strong></div>
-      <form id="formCancelarCita">
-        <div class="form-group">
-          <label class="form-label">Cita a cancelar</label>
-          <select id="cancelarCitaId" class="form-select" required>
-            <option value="">— Cargando citas activas —</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Motivo de cancelación</label>
-          <textarea id="cancelarMotivo" class="form-input" rows="2" placeholder="Ej: El cliente no puede asistir..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary" style="background:#dc2626;">❌ Cancelar cita</button>
-        <div class="alert" id="cancelarMessage"></div>
-      </form>
-    </div>
-  </div>
-
-  <!-- REGISTRAR CLIENTE -->
+  <!-- ── REGISTRAR CLIENTE ── -->
   <div id="section-registrar-cliente" style="display:none;">
     <div class="card" style="max-width:580px;">
       <div class="card-head">
@@ -431,48 +295,29 @@
       </div>
       <form id="formRegistrarCliente">
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Nombre</label>
-            <input type="text" id="regClienteNombre" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Apellido</label>
-            <input type="text" id="regClienteApellido" class="form-input" required>
-          </div>
+          <div class="form-group"><label class="form-label">Nombre</label><input type="text" id="regClienteNombre" class="form-input" required></div>
+          <div class="form-group"><label class="form-label">Apellido</label><input type="text" id="regClienteApellido" class="form-input" required></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" id="regClienteEmail" class="form-input" required>
-        </div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" id="regClienteEmail" class="form-input" required></div>
         <div class="form-group">
           <label class="form-label">Contraseña temporal</label>
           <div class="pass-wrap">
-            <input type="password" id="regClientePassword" class="form-input" required minlength="8"
-              placeholder="Mín. 8 caracteres, mayúscula, número, símbolo">
+            <input type="password" id="regClientePassword" class="form-input" required minlength="8" placeholder="Mín. 8 caracteres">
             <button type="button" class="eye-btn" id="togglePassBtn">👁️</button>
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">CI (cédula)</label>
-            <input type="text" id="regClienteCI" class="form-input" required placeholder="12345678">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Teléfono</label>
-            <input type="tel" id="regClienteTelefono" class="form-input" placeholder="591 7XXXXXXX">
-          </div>
+          <div class="form-group"><label class="form-label">CI (cédula)</label><input type="text" id="regClienteCI" class="form-input" required placeholder="12345678"></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" id="regClienteTelefono" class="form-input" placeholder="591 7XXXXXXX"></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Dirección (opcional)</label>
-          <input type="text" id="regClienteDireccion" class="form-input" placeholder="Calle, zona, ciudad">
-        </div>
+        <div class="form-group"><label class="form-label">Dirección (opcional)</label><input type="text" id="regClienteDireccion" class="form-input" placeholder="Calle, zona, ciudad"></div>
         <button type="submit" class="btn btn-primary">📝 Registrar cliente</button>
         <div class="alert" id="regClienteMessage"></div>
       </form>
     </div>
   </div>
 
-  <!-- REGISTRAR MASCOTA -->
+  <!-- ── REGISTRAR MASCOTA ── -->
   <div id="section-registrar-mascota" style="display:none;">
     <div class="card" style="max-width:580px;">
       <div class="card-head">
@@ -483,15 +328,10 @@
       <form id="formRegistrarMascota">
         <div class="form-group">
           <label class="form-label">Dueño (cliente)</label>
-          <select id="regMascotaClienteId" class="form-select" required>
-            <option value="">— Seleccionar dueño —</option>
-          </select>
+          <select id="regMascotaClienteId" class="form-select" required><option value="">— Seleccionar dueño —</option></select>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Nombre de la mascota</label>
-            <input type="text" id="regMascotaNombre" class="form-input" required placeholder="Max, Luna...">
-          </div>
+          <div class="form-group"><label class="form-label">Nombre de la mascota</label><input type="text" id="regMascotaNombre" class="form-input" required placeholder="Max, Luna..."></div>
           <div class="form-group">
             <label class="form-label">Especie</label>
             <select id="regMascotaEspecie" class="form-select" required>
@@ -503,15 +343,9 @@
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Raza</label>
-          <input type="text" id="regMascotaRaza" class="form-input" placeholder="Labrador, Schnauzer...">
-        </div>
+        <div class="form-group"><label class="form-label">Raza</label><input type="text" id="regMascotaRaza" class="form-input" placeholder="Labrador, Schnauzer..."></div>
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Fecha de nacimiento</label>
-            <input type="date" id="regMascotaFechaNac" class="form-input">
-          </div>
+          <div class="form-group"><label class="form-label">Fecha de nacimiento</label><input type="date" id="regMascotaFechaNac" class="form-input"></div>
           <div class="form-group">
             <label class="form-label">Peso (kg)</label>
             <input type="number" id="regMascotaPeso" class="form-input" step="0.1" min="0" placeholder="5.5">
@@ -529,21 +363,15 @@
             <option value="otro">Otro</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">Alergias conocidas</label>
-          <textarea id="regMascotaAlergias" class="form-input" rows="2" placeholder="Ej: alérgico al shampoo de lavanda..."></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Restricciones médicas</label>
-          <textarea id="regMascotaRestricciones" class="form-input" rows="2" placeholder="Ej: no mojar oídos, hernia..."></textarea>
-        </div>
+        <div class="form-group"><label class="form-label">Alergias conocidas</label><textarea id="regMascotaAlergias" class="form-input" rows="2" placeholder="Ej: alérgico al shampoo de lavanda..."></textarea></div>
+        <div class="form-group"><label class="form-label">Restricciones médicas</label><textarea id="regMascotaRestricciones" class="form-input" rows="2" placeholder="Ej: no mojar oídos, hernia..."></textarea></div>
         <button type="submit" class="btn btn-primary">🐾 Registrar mascota</button>
         <div class="alert" id="regMascotaMessage"></div>
       </form>
     </div>
   </div>
 
-  <!-- GESTIONAR MASCOTAS (CRUD) -->
+  <!-- ── GESTIONAR MASCOTAS ── -->
   <div id="section-gestionar-mascotas" style="display:none;">
     <div class="card">
       <div class="card-head">
@@ -553,33 +381,20 @@
       <div class="alert" id="mascotaCRUDMessage"></div>
       <div class="table-wrap">
         <table id="mascotasCRUDTable">
-          <thead>
-            <tr>
-              <th>ID</th><th>Nombre</th><th>Especie</th><th>Dueño</th>
-              <th>Peso (kg)</th><th>Temperamento</th><th>Foto</th><th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="mascotasCRUDTableBody">
-            <tr><td colspan="8">Cargando...</td></tr>
-          </tbody>
+          <thead><tr><th>ID</th><th>Nombre</th><th>Especie</th><th>Dueño</th><th>Peso (kg)</th><th>Temperamento</th><th>Foto</th><th>Acciones</th></tr></thead>
+          <tbody id="mascotasCRUDTableBody"><tr><td colspan="8">Cargando...</td></tr></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- PERFIL -->
+  <!-- ── PERFIL ── -->
   <div id="section-perfil" style="display:none;">
     <div class="grid-2">
       <div class="card">
         <div class="card-head"><div class="card-title">Mi Perfil</div></div>
-        <div style="padding:8px 0;">
-          <div style="font-size:11px;color:var(--text-light);">Email</div>
-          <div id="perfilEmail" style="font-weight:500;margin-top:3px;">—</div>
-        </div>
-        <div style="padding:8px 0;margin-top:8px;">
-          <div style="font-size:11px;color:var(--text-light);">Rol</div>
-          <div style="font-weight:500;margin-top:3px;">Recepcionista 📞</div>
-        </div>
+        <div style="padding:8px 0;"><div style="font-size:11px;color:var(--text-light);">Email</div><div id="perfilEmail" style="font-weight:500;margin-top:3px;">—</div></div>
+        <div style="padding:8px 0;margin-top:8px;"><div style="font-size:11px;color:var(--text-light);">Rol</div><div style="font-weight:500;margin-top:3px;">Recepcionista 📞</div></div>
       </div>
       <div class="card">
         <div class="card-head"><div class="card-title">Cambiar contraseña</div></div>
@@ -600,68 +415,35 @@
     <div class="modal-title" id="mascotaCRUDModalTitle">Nueva Mascota</div>
     <form id="mascotaCRUDForm">
       <input type="hidden" id="mascotaCRUDId">
-      <div class="form-group">
-        <label class="form-label">Dueño (cliente)</label>
-        <select id="mascotaCRUDClienteId" class="form-select" required>
-          <option value="">— Seleccionar dueño —</option>
-        </select>
-      </div>
+      <div class="form-group"><label class="form-label">Dueño (cliente)</label><select id="mascotaCRUDClienteId" class="form-select" required><option value="">— Seleccionar dueño —</option></select></div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Nombre</label>
-          <input type="text" id="mascotaCRUDNombre" class="form-input" required>
-        </div>
+        <div class="form-group"><label class="form-label">Nombre</label><input type="text" id="mascotaCRUDNombre" class="form-input" required></div>
         <div class="form-group">
           <label class="form-label">Especie</label>
           <select id="mascotaCRUDEspecie" class="form-select" required>
-            <option value="Perro">Perro</option>
-            <option value="Gato">Gato</option>
-            <option value="Conejo">Conejo</option>
-            <option value="Otro">Otro</option>
+            <option value="Perro">Perro</option><option value="Gato">Gato</option>
+            <option value="Conejo">Conejo</option><option value="Otro">Otro</option>
           </select>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Raza</label>
-        <input type="text" id="mascotaCRUDRaza" class="form-input">
-      </div>
+      <div class="form-group"><label class="form-label">Raza</label><input type="text" id="mascotaCRUDRaza" class="form-input"></div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Fecha nacimiento</label>
-          <input type="date" id="mascotaCRUDFechaNac" class="form-input">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Peso (kg)</label>
-          <input type="number" id="mascotaCRUDPeso" class="form-input" step="0.1" min="0">
-        </div>
+        <div class="form-group"><label class="form-label">Fecha nacimiento</label><input type="date" id="mascotaCRUDFechaNac" class="form-input"></div>
+        <div class="form-group"><label class="form-label">Peso (kg)</label><input type="number" id="mascotaCRUDPeso" class="form-input" step="0.1" min="0"></div>
       </div>
       <div class="form-group">
         <label class="form-label">Temperamento</label>
         <select id="mascotaCRUDTemperamento" class="form-select">
           <option value="">— Seleccionar —</option>
-          <option value="tranquilo">Tranquilo</option>
-          <option value="jugueton">Juguetón</option>
-          <option value="ansioso">Ansioso</option>
-          <option value="agresivo">Agresivo</option>
+          <option value="tranquilo">Tranquilo</option><option value="jugueton">Juguetón</option>
+          <option value="ansioso">Ansioso</option><option value="agresivo">Agresivo</option>
           <option value="otro">Otro</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">Alergias</label>
-        <textarea id="mascotaCRUDAlergias" class="form-input" rows="2"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Restricciones médicas</label>
-        <textarea id="mascotaCRUDRestricciones" class="form-input" rows="2"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Notas adicionales</label>
-        <textarea id="mascotaCRUDNotas" class="form-input" rows="2"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">URL de la foto (opcional)</label>
-        <input type="url" id="mascotaCRUDFotoUrl" class="form-input" placeholder="https://ejemplo.com/foto.jpg">
-      </div>
+      <div class="form-group"><label class="form-label">Alergias</label><textarea id="mascotaCRUDAlergias" class="form-input" rows="2"></textarea></div>
+      <div class="form-group"><label class="form-label">Restricciones médicas</label><textarea id="mascotaCRUDRestricciones" class="form-input" rows="2"></textarea></div>
+      <div class="form-group"><label class="form-label">Notas adicionales</label><textarea id="mascotaCRUDNotas" class="form-input" rows="2"></textarea></div>
+      <div class="form-group"><label class="form-label">URL de la foto (opcional)</label><input type="url" id="mascotaCRUDFotoUrl" class="form-input" placeholder="https://..."></div>
       <div style="display:flex;gap:12px;margin-top:20px;">
         <button type="submit" class="btn btn-primary" style="width:auto;">Guardar</button>
         <button type="button" class="btn btn-outline" id="closeMascotaCRUDModalBtn">Cancelar</button>
@@ -671,14 +453,5 @@
 </div>
 
 <script type="module" src="js/recepcion-dashboard.js"></script>
-<script>
-  // Filtrar al cambiar el select
-  document.getElementById('filtroCitasEstado')
-    ?.addEventListener('change', () => loadCitasCRUD());
- 
-  // Refrescar con el estado actual del filtro
-  document.getElementById('btnRefrescarCitasCRUD')
-    ?.addEventListener('click', () => loadCitasCRUD());
-</script>
 </body>
 </html>

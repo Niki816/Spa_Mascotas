@@ -1,14 +1,4 @@
 // ─── js/recepcion-availability.js ────────────────────────────────────────────
-// Correcciones aplicadas:
-//   ✅ showAlert recibe elemento O id (string), igual que dashboard
-//   ✅ groomerSelect.addEventListener en lugar de cargarDisponibilidadBtn separado
-//   ✅ window.eliminarBloqueo movido fuera de loadBloqueos (no se redeclara en cada carga)
-//   ✅ Logout unificado con doLogout()
-//   ✅ dias_laborales acepta string separado por comas O array (robusto)
-//   ✅ null-checks en todos los elementos del DOM antes de usarlos
-//   ✅ Sidebar nav-items con data-section conectados correctamente
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { authFetch, getAccessToken, getUser, clearTokens, API_URL } from './auth.js';
 
 const RECEPCION_API = API_URL.replace('/auth', '/recepcion');
@@ -29,10 +19,6 @@ document.getElementById('userEmail').textContent   = user.email;
 // ══════════════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════════════
-
-/**
- * Muestra una alerta. `target` puede ser un HTMLElement o un string (id del elemento).
- */
 function showAlert(target, msg, type = 'success') {
   const el = typeof target === 'string' ? document.getElementById(target) : target;
   if (!el) return;
@@ -73,7 +59,6 @@ async function loadConfig() {
     if (horarioInicio) horarioInicio.value = data.horario_inicio ?? '';
     if (horarioFin)    horarioFin.value    = data.horario_fin    ?? '';
     if (diasLaborales) {
-      // El backend puede devolver array o string
       diasLaborales.value = Array.isArray(data.dias_laborales)
         ? data.dias_laborales.join(',')
         : (data.dias_laborales ?? '');
@@ -88,9 +73,9 @@ document.getElementById('configForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   const raw = document.getElementById('diasLaborales').value;
   const payload = {
-    horario_inicio:      document.getElementById('horarioInicio').value,
-    horario_fin:         document.getElementById('horarioFin').value,
-    dias_laborales:      raw.split(',').map(d => d.trim().toLowerCase()).filter(Boolean),
+    horario_inicio:       document.getElementById('horarioInicio').value,
+    horario_fin:          document.getElementById('horarioFin').value,
+    dias_laborales:       raw.split(',').map(d => d.trim().toLowerCase()).filter(Boolean),
     capacidad_diaria_max: parseInt(document.getElementById('capacidadMax').value),
   };
   try {
@@ -163,7 +148,6 @@ async function loadBloqueos() {
       </tr>
     `).join('');
 
-    // Delegación de eventos (no inline onclick)
     tbody.querySelectorAll('button[data-id]').forEach(btn => {
       btn.addEventListener('click', () => eliminarBloqueo(parseInt(btn.dataset.id)));
     });
@@ -219,10 +203,10 @@ async function cargarDisponibilidad(groomerId) {
     const res  = await authFetch(`${RECEPCION_API}/groomers/${groomerId}/disponibilidad`);
     const data = await res.json();
     currentHorarios = data.map(d => ({
-      dia_semana:      d.dia_semana,
-      hora_inicio:     d.hora_inicio,
-      hora_fin:        d.hora_fin,
-      buffer_minutos:  d.buffer_minutos ?? 15,
+      dia_semana:     d.dia_semana,
+      hora_inicio:    d.hora_inicio,
+      hora_fin:       d.hora_fin,
+      buffer_minutos: d.buffer_minutos ?? 15,
     }));
     renderHorarios();
     const panel = document.getElementById('disponibilidadPanel');
@@ -255,7 +239,6 @@ function renderHorarios() {
     </div>
   `).join('');
 
-  // Eventos para eliminar fila
   container.querySelectorAll('.eliminar-horario').forEach(btn => {
     btn.addEventListener('click', () => {
       currentHorarios.splice(parseInt(btn.dataset.index), 1);
@@ -263,13 +246,12 @@ function renderHorarios() {
     });
   });
 
-  // Eventos para editar campos
   container.querySelectorAll('.dia-select, .hora-inicio, .hora-fin').forEach(input => {
     input.addEventListener('change', () => {
       const idx = parseInt(input.dataset.index);
-      if (input.classList.contains('dia-select'))   currentHorarios[idx].dia_semana  = parseInt(input.value);
-      if (input.classList.contains('hora-inicio'))  currentHorarios[idx].hora_inicio = input.value;
-      if (input.classList.contains('hora-fin'))     currentHorarios[idx].hora_fin    = input.value;
+      if (input.classList.contains('dia-select'))  currentHorarios[idx].dia_semana  = parseInt(input.value);
+      if (input.classList.contains('hora-inicio')) currentHorarios[idx].hora_inicio = input.value;
+      if (input.classList.contains('hora-fin'))    currentHorarios[idx].hora_fin    = input.value;
     });
   });
 }
@@ -302,7 +284,6 @@ document.getElementById('guardarDisponibilidadBtn')?.addEventListener('click', a
   }
 });
 
-// Listener del select de groomer — carga disponibilidad al cambiar
 document.getElementById('groomerSelect')?.addEventListener('change', function () {
   const panel = document.getElementById('disponibilidadPanel');
   if (this.value) {

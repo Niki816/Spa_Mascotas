@@ -19,13 +19,12 @@ const perfilEmailEl = document.getElementById('perfilEmail');
 if (perfilEmailEl) perfilEmailEl.textContent = user.email;
 
 // ══════════════════════════════════════════════════════════════
-// NAVEGACIÓN
+// NAVEGACIÓN SPA
 // ══════════════════════════════════════════════════════════════
 const ALL_SECTIONS = [
   'inicio', 'citas', 'clientes', 'nueva-cita',
   'registrar-cliente', 'registrar-mascota',
-  'cancelar-cita', 'perfil', 'gestionar-mascotas',
-  'gestionar-citas',   // ← sección CRUD citas
+  'perfil', 'gestionar-mascotas',
 ];
 
 function showSection(sec) {
@@ -48,9 +47,7 @@ document.querySelectorAll('.nav-item[data-section]').forEach(link => {
     if (sec === 'clientes')           loadClientes();
     if (sec === 'nueva-cita')         loadFormularioNuevaCita();
     if (sec === 'registrar-mascota')  loadClientesParaSelect('regMascotaClienteId');
-    if (sec === 'cancelar-cita')      loadCitasParaCancelar();
     if (sec === 'gestionar-mascotas') loadMascotasCRUD();
-    if (sec === 'gestionar-citas')    loadCitasCRUD();
   });
 });
 
@@ -67,10 +64,15 @@ function showAlert(id, msg, type = 'success') {
 
 function escapeHtml(str = '') {
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function fillSelect(id, items, labelFn, valueFn = i => i.id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '<option value="">— Seleccionar —</option>'
+    + items.map(i => `<option value="${valueFn(i)}">${escapeHtml(labelFn(i))}</option>`).join('');
 }
 
 const ESTADO_BADGE = {
@@ -79,10 +81,12 @@ const ESTADO_BADGE = {
   cancelada:   { bg: '#fee2e2', color: '#dc2626', label: 'Cancelada'   },
   completada:  { bg: '#f3f4f6', color: '#374151', label: 'Completada'  },
   no_asistio:  { bg: '#fef3c7', color: '#92400e', label: 'No asistió'  },
+  en_progreso: { bg: '#ede9fe', color: '#5b21b6', label: 'En progreso' },
 };
+
 function estadoBadge(estado) {
   const s = ESTADO_BADGE[estado] || { bg: '#f3f4f6', color: '#374151', label: estado };
-  return `<span style="background:${s.bg};color:${s.color};padding:2px 9px;border-radius:10px;font-size:11px;font-weight:500;">${s.label}</span>`;
+  return `<span style="background:${s.bg};color:${s.color};padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;">${s.label}</span>`;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -97,7 +101,7 @@ document.getElementById('logoutBtn')?.addEventListener('click',  e => { e.preven
 document.getElementById('logoutBtn2')?.addEventListener('click', doLogout);
 
 // ══════════════════════════════════════════════════════════════
-// DASHBOARD
+// DASHBOARD (INICIO)
 // ══════════════════════════════════════════════════════════════
 async function loadDashboard() {
   try {
@@ -112,12 +116,13 @@ async function loadDashboard() {
       tableCitas.innerHTML = data.citasHoy?.length
         ? data.citasHoy.map(c => `
             <tr>
-              <td>${escapeHtml(c.hora)}</td>
-              <td>${escapeHtml(c.mascota)}</td>
+              <td><strong>${escapeHtml(c.hora)}</strong></td>
+              <td>🐾 ${escapeHtml(c.mascota)}</td>
               <td>${escapeHtml(c.servicio)}</td>
               <td>${escapeHtml(c.groomer)}</td>
+              <td>${estadoBadge(c.estado)}</td>
             </tr>`).join('')
-        : '<tr><td colspan="4" style="text-align:center;color:#8aab97;">No hay citas hoy</td></tr>';
+        : '<tr><td colspan="5" style="text-align:center;color:#8aab97;padding:16px;">No hay citas hoy</td></tr>';
     }
 
     const tableClientes = document.querySelector('#clientesTable tbody');
@@ -137,43 +142,61 @@ async function loadDashboard() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// CITAS DE HOY
+// CITAS HOY — DETALLE COMPLETO
 // ══════════════════════════════════════════════════════════════
 async function loadCitasHoy() {
+  const tbody = document.querySelector('#citasDetalleTable tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">⏳ Cargando citas...</td></tr>';
+
   try {
-    const res   = await authFetch(`${RECEPCION_API}/citas/hoy`);
+    const today = new Date().toISOString().split('T')[0];
+    // Usa /citas/todas para obtener el detalle completo del día
+    const res   = await authFetch(`${RECEPCION_API}/citas/todas?desde=${today}&hasta=${today}`);
+    if (!res.ok) throw new Error((await res.json()).message);
     const citas = await res.json();
-    const tbody = document.querySelector('#citasDetalleTable tbody');
-    if (!tbody) return;
 
-    tbody.innerHTML = citas.length
-      ? citas.map(c => `
-          <tr>
-            <td>${escapeHtml(c.hora)}</td>
-            <td>${escapeHtml(c.mascota)}</td>
-            <td>${escapeHtml(c.servicio)}</td>
-            <td>${escapeHtml(c.groomer)}</td>
-            <td>${estadoBadge(c.estado)}</td>
-            <td style="display:flex;gap:5px;flex-wrap:wrap;">
-              ${c.estado === 'agendada'
-                ? `<button class="btn btn-outline btn-sm" data-action="confirmar" data-id="${c.id}">✅ Confirmar</button>`
-                : ''}
-              ${['agendada','confirmada'].includes(c.estado)
-                ? `<button class="btn btn-danger btn-sm" data-action="cancelar" data-id="${c.id}">❌ Cancelar</button>`
-                : ''}
-            </td>
-          </tr>`).join('')
-      : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#8aab97;">No hay citas hoy</td></tr>';
+    if (!citas.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center;padding:32px;color:#8aab97;">
+            📭 No hay citas programadas para hoy<br>
+            <a href="recepcion-calendario.html" style="color:var(--green-soft);font-size:13px;margin-top:8px;display:inline-block;">
+              → Ir al Calendario para agendar una cita
+            </a>
+          </td>
+        </tr>`;
+      return;
+    }
 
-    tbody.querySelectorAll('button[data-action]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = parseInt(btn.dataset.id);
-        if (btn.dataset.action === 'confirmar') confirmarCitaDirecto(id);
-        if (btn.dataset.action === 'cancelar')  irACancelar(id);
-      });
+    tbody.innerHTML = citas.map(c => {
+      const puedeConfirmar = c.estado === 'agendada';
+      return `
+      <tr>
+        <td><strong style="font-size:15px;">${escapeHtml(c.hora || '—')}</strong></td>
+        <td>
+          <div style="font-weight:600;">🐾 ${escapeHtml(c.mascota)}</div>
+        </td>
+        <td>✂️ ${escapeHtml(c.servicio)}</td>
+        <td>👤 ${escapeHtml(c.groomer)}</td>
+        <td style="font-size:12px;color:var(--text-mid);">
+          ${c.duracion ? `⏱️ ${c.duracion}min` : '—'}
+        </td>
+        <td>${estadoBadge(c.estado)}</td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${puedeConfirmar
+            ? `<button class="btn btn-outline btn-sm" data-action="confirmar" data-id="${c.id}">✅ Confirmar</button>`
+            : ''}
+          <a href="recepcion-calendario.html" class="btn btn-outline btn-sm" style="text-decoration:none;font-size:11px;">📆 Calendario</a>
+        </td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('button[data-action="confirmar"]').forEach(btn => {
+      btn.addEventListener('click', () => confirmarCitaDirecto(parseInt(btn.dataset.id)));
     });
   } catch (err) {
-    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;padding:14px;">❌ Error: ${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -186,11 +209,6 @@ async function confirmarCitaDirecto(citaId) {
   } catch (err) {
     alert(`Error: ${err.message}`);
   }
-}
-
-function irACancelar(citaId) {
-  showSection('cancelar-cita');
-  loadCitasParaCancelar(citaId);
 }
 
 document.getElementById('btnRefrescarCitas')?.addEventListener('click', loadCitasHoy);
@@ -230,7 +248,6 @@ async function loadFormularioNuevaCita() {
       authFetch(`${RECEPCION_API}/servicios`).then(r => r.json()),
       authFetch(`${RECEPCION_API}/groomers`).then(r => r.json()),
     ]);
-
     fillSelect('citaMascota',  mascotas,  m => `${m.nombre} (${m.dueno})`);
     fillSelect('citaServicio', servicios, s => `${s.nombre} · ${s.duracion_base_minutos ?? s.duracion}min · Bs${s.precio_base}`);
     fillSelect('citaGroomer',  groomers,  g => `${g.nombre} ${g.apellido}`);
@@ -241,44 +258,34 @@ async function loadFormularioNuevaCita() {
 
 document.getElementById('nuevaCitaForm')?.addEventListener('submit', async e => {
   e.preventDefault();
-  const horaRaw    = document.getElementById('citaHora').value;
-  const horaLimpia = horaRaw.substring(0, 5);
   const payload = {
     mascota_id:  parseInt(document.getElementById('citaMascota').value),
     servicio_id: parseInt(document.getElementById('citaServicio').value),
     groomer_id:  parseInt(document.getElementById('citaGroomer').value),
     fecha:       document.getElementById('citaFecha').value,
-    hora:        horaLimpia,
+    hora:        document.getElementById('citaHora').value.substring(0, 5),
     notas:       document.getElementById('citaNotas').value.trim() || null,
   };
-
-  if (!payload.mascota_id || !payload.servicio_id || !payload.groomer_id) {
+  if (!payload.mascota_id || !payload.servicio_id || !payload.groomer_id)
     return showAlert('citaMessage', '⚠️ Completa todos los campos obligatorios', 'error');
-  }
-  if (!payload.fecha || !payload.hora) {
+  if (!payload.fecha || !payload.hora)
     return showAlert('citaMessage', '⚠️ Indica la fecha y hora', 'error');
-  }
 
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.textContent = '⏳ Agendando...';
-
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = '⏳ Agendando...';
   try {
     const res  = await authFetch(`${RECEPCION_API}/citas`, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
-    const info   = data._info;
-    const infoTxt = info
-      ? ` · Duración: ${info.duracion_ajustada_min}min (${info.tamanio_mascota}, ×${info.multiplicador_aplicado?.toFixed(2)})`
-      : '';
-    showAlert('citaMessage', `✅ Cita agendada correctamente${infoTxt}`, 'success');
+    const info    = data._info;
+    const infoTxt = info ? ` · ${info.duracion_ajustada_min}min (${info.tamanio_mascota}, ×${info.multiplicador_aplicado?.toFixed(2)})` : '';
+    showAlert('citaMessage', `✅ Cita agendada${infoTxt}`, 'success');
     e.target.reset();
     loadDashboard();
   } catch (err) {
     showAlert('citaMessage', `❌ ${err.message}`, 'error');
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = '📅 Agendar cita';
+    btn.disabled = false; btn.textContent = '📅 Agendar cita';
   }
 });
 
@@ -326,9 +333,7 @@ async function loadClientesParaSelect(selectId) {
       + clientes.map(c =>
           `<option value="${c.id}">${escapeHtml(c.nombre)} ${escapeHtml(c.apellido)} (CI: ${c.ci || '—'})</option>`
         ).join('');
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) { console.error(err); }
 }
 
 document.getElementById('formRegistrarMascota')?.addEventListener('submit', async e => {
@@ -356,260 +361,7 @@ document.getElementById('formRegistrarMascota')?.addEventListener('submit', asyn
 });
 
 // ══════════════════════════════════════════════════════════════
-// CANCELAR CITA
-// ══════════════════════════════════════════════════════════════
-async function loadCitasParaCancelar(preselectedId = null) {
-  const select = document.getElementById('cancelarCitaId');
-  if (!select) return;
-  select.innerHTML = '<option value="">⏳ Cargando citas...</option>';
-  select.disabled  = true;
-  try {
-    const res   = await authFetch(`${RECEPCION_API}/citas/activas`);
-    if (!res.ok) throw new Error((await res.json()).message);
-    const citas = await res.json();
-    if (!citas.length) {
-      select.innerHTML = '<option value="">— No hay citas activas —</option>';
-    } else {
-      select.innerHTML = '<option value="">— Seleccionar cita —</option>'
-        + citas.map(c =>
-            `<option value="${c.id}">${escapeHtml(c.fechaHora)} — ${escapeHtml(c.mascota)} — ${escapeHtml(c.servicio)} (${escapeHtml(c.estado)})</option>`
-          ).join('');
-      if (preselectedId) select.value = preselectedId;
-    }
-  } catch (err) {
-    select.innerHTML = '<option value="">— Error al cargar —</option>';
-    showAlert('cancelarMessage', `Error: ${err.message}`, 'error');
-  } finally {
-    select.disabled = false;
-  }
-}
-
-document.getElementById('formCancelarCita')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const citaId = document.getElementById('cancelarCitaId').value;
-  const motivo = document.getElementById('cancelarMotivo').value.trim();
-  if (!citaId) return showAlert('cancelarMessage', '⚠️ Selecciona una cita', 'error');
-
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.textContent = '⏳ Cancelando...';
-  try {
-    const res  = await authFetch(`${RECEPCION_API}/citas/${citaId}/cancelar`, {
-      method: 'PATCH',
-      body: JSON.stringify({ motivo }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
-    showAlert('cancelarMessage', `✅ ${data.message}`, 'success');
-    e.target.reset();
-    loadCitasParaCancelar();
-    loadDashboard();
-  } catch (err) {
-    showAlert('cancelarMessage', `❌ ${err.message}`, 'error');
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = '❌ Cancelar cita';
-  }
-});
-
-// ══════════════════════════════════════════════════════════════
-// ██████████████████████████████████████████████████████████████
-//   GESTIÓN DE CITAS — CRUD COMPLETO
-// ██████████████████████████████████████████████████████████████
-// ══════════════════════════════════════════════════════════════
-
-async function loadCitasCRUD() {
-  const tbody     = document.getElementById('citasCRUDTableBody');
-  const selectFil = document.getElementById('filtroCitasEstado');
-  if (!tbody) return;
- 
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;">⏳ Cargando...</td></tr>';
- 
-  // Leer filtro activo del select (si existe en el HTML)
-  const estadoFiltro = selectFil ? selectFil.value : '';
-  const qs = estadoFiltro ? `?estado=${encodeURIComponent(estadoFiltro)}` : '';
- 
-  try {
-    // Llama a /citas/todas — devuelve TODAS las citas (cualquier estado)
-    const res   = await authFetch(`${RECEPCION_API}/citas/todas${qs}`);
-    if (!res.ok) throw new Error((await res.json()).message);
-    const citas = await res.json();
- 
-    if (!citas.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:#8aab97;">No hay citas para mostrar</td></tr>';
-      return;
-    }
- 
-    tbody.innerHTML = citas.map(c => {
-      // Los botones se muestran según el estado
-      const puedeEditar   = ['agendada', 'confirmada'].includes(c.estado);
-      const puedeEliminar = c.estado !== 'completada'; // completadas no se eliminan
- 
-      return `
-      <tr style="${!puedeEditar ? 'opacity:0.75;' : ''}">
-        <td style="font-weight:600;color:var(--text-mid);">#${c.id}</td>
-        <td>${escapeHtml(c.fechaHora)}</td>
-        <td>${escapeHtml(c.mascota)}</td>
-        <td>${escapeHtml(c.servicio)}</td>
-        <td>${escapeHtml(c.groomer)}</td>
-        <td>${estadoBadge(c.estado)}</td>
-        <td style="display:flex;gap:5px;flex-wrap:wrap;">
-          ${puedeEditar
-            ? `<button class="btn btn-outline btn-sm" data-action="editar" data-id="${c.id}">✏️ Editar</button>`
-            : `<button class="btn btn-outline btn-sm" style="opacity:0.4;cursor:not-allowed;" disabled title="Solo se pueden editar citas agendadas o confirmadas">✏️ Editar</button>`
-          }
-          ${puedeEliminar
-            ? `<button class="btn btn-danger btn-sm" data-action="eliminar" data-id="${c.id}">🗑️ Eliminar</button>`
-            : `<button class="btn btn-danger btn-sm" style="opacity:0.4;cursor:not-allowed;" disabled title="Las citas completadas no se pueden eliminar">🗑️ Eliminar</button>`
-          }
-        </td>
-      </tr>`;
-    }).join('');
- 
-    // Solo los botones habilitados reciben el listener
-    tbody.querySelectorAll('button[data-action]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = parseInt(btn.dataset.id);
-        if (btn.dataset.action === 'editar')   openEditarCitaModal(id);
-        if (btn.dataset.action === 'eliminar') eliminarCita(id);
-      });
-    });
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="8" style="color:#dc2626;padding:14px;">❌ Error: ${escapeHtml(err.message)}</td></tr>`;
-  }
-}
- 
-// ── Helper: llenar un <select> ─────────────────────────────────
-function fillSelect(id, items, labelFn, valueFn = i => i.id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = '<option value="">— Seleccionar —</option>'
-    + items.map(i => `<option value="${valueFn(i)}">${escapeHtml(labelFn(i))}</option>`).join('');
-}
- 
-// ── Abrir modal de edición ─────────────────────────────────────
-async function openEditarCitaModal(citaId) {
-  const modal = document.getElementById('editarCitaModal');
-  if (!modal) return;
- 
-  document.getElementById('editCitaId').value = citaId;
-  document.getElementById('editCitaModalTitle').textContent = `✏️ Editar Cita #${citaId}`;
- 
-  // Limpiar alerta previa
-  const alertEl = document.getElementById('editCitaMessage');
-  if (alertEl) alertEl.className = 'alert';
- 
-  try {
-    const [citaRes, mascotasRes, serviciosRes, groomersRes] = await Promise.all([
-      authFetch(`${RECEPCION_API}/citas/${citaId}`),
-      authFetch(`${RECEPCION_API}/mascotas`),
-      authFetch(`${RECEPCION_API}/servicios`),
-      authFetch(`${RECEPCION_API}/groomers`),
-    ]);
- 
-    if (!citaRes.ok) throw new Error((await citaRes.json()).message);
-    const cita      = await citaRes.json();
-    const mascotas  = await mascotasRes.json();
-    const servicios = await serviciosRes.json();
-    const groomers  = await groomersRes.json();
- 
-    fillSelect('editCitaMascota',  mascotas,  m => `${m.nombre} (${m.dueno})`);
-    fillSelect('editCitaServicio', servicios, s => `${s.nombre} · ${s.duracion_base_minutos ?? s.duracion}min · Bs${s.precio_base}`);
-    fillSelect('editCitaGroomer',  groomers,  g => `${g.nombre} ${g.apellido}`);
- 
-    document.getElementById('editCitaMascota').value  = cita.mascota_id;
-    document.getElementById('editCitaServicio').value = cita.servicio_id;
-    document.getElementById('editCitaGroomer').value  = cita.groomer_id;
-    document.getElementById('editCitaFecha').value    = cita.fecha;
-    document.getElementById('editCitaHora').value     = cita.hora;
-    document.getElementById('editCitaNotas').value    = cita.notas || '';
- 
-    document.getElementById('editCitaInfoDuracion').textContent =
-      `Duración actual: ${cita.duracion_estimada_min}min  |  Estado: ${cita.estado}  |  Precio: Bs${cita.precio_calculado}`;
- 
-    modal.classList.add('open');
-  } catch (err) {
-    alert(`Error al cargar la cita: ${err.message}`);
-  }
-}
- 
-function closeEditarCitaModal() {
-  document.getElementById('editarCitaModal')?.classList.remove('open');
-}
-document.getElementById('closeEditarCitaModalBtn')?.addEventListener('click', closeEditarCitaModal);
-document.getElementById('editarCitaModal')?.addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeEditarCitaModal();
-});
- 
-// ── Submit edición ─────────────────────────────────────────────
-document.getElementById('formEditarCita')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const citaId = document.getElementById('editCitaId').value;
-  if (!citaId) return;
- 
-  const payload = {
-    mascota_id:  parseInt(document.getElementById('editCitaMascota').value),
-    servicio_id: parseInt(document.getElementById('editCitaServicio').value),
-    groomer_id:  parseInt(document.getElementById('editCitaGroomer').value),
-    fecha:       document.getElementById('editCitaFecha').value,
-    hora:        document.getElementById('editCitaHora').value.substring(0, 5),
-    notas:       document.getElementById('editCitaNotas').value.trim() || null,
-  };
- 
-  if (!payload.mascota_id || !payload.servicio_id || !payload.groomer_id || !payload.fecha || !payload.hora) {
-    return showAlert('editCitaMessage', '⚠️ Completa todos los campos', 'error');
-  }
- 
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.textContent = '⏳ Guardando...';
- 
-  try {
-    const res  = await authFetch(`${RECEPCION_API}/citas/${citaId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
- 
-    const info    = data._info;
-    const infoTxt = info
-      ? ` · Duración: ${info.duracion_ajustada_min}min (${info.tamanio_mascota})`
-      : '';
-    showAlert('editCitaMessage', `✅ Cita actualizada${infoTxt}`, 'success');
- 
-    setTimeout(() => {
-      closeEditarCitaModal();
-      loadCitasCRUD();
-      loadDashboard();
-    }, 1500);
-  } catch (err) {
-    showAlert('editCitaMessage', `❌ ${err.message}`, 'error');
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = '💾 Guardar cambios';
-  }
-});
- 
-// ── Eliminar cita ──────────────────────────────────────────────
-async function eliminarCita(citaId) {
-  if (!confirm(`¿Eliminar permanentemente la cita #${citaId}?\n\nEsta acción no se puede deshacer.`)) return;
-  try {
-    const res = await authFetch(`${RECEPCION_API}/citas/${citaId}`, { method: 'DELETE' });
-    if (res.status === 204) {
-      showAlert('citasCRUDMessage', `✅ Cita #${citaId} eliminada`, 'success');
-      loadCitasCRUD();
-      loadDashboard();
-    } else {
-      throw new Error((await res.json()).message);
-    }
-  } catch (err) {
-    showAlert('citasCRUDMessage', `❌ ${err.message}`, 'error');
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-// CRUD MASCOTAS (sin cambios)
+// GESTIONAR MASCOTAS — CRUD
 // ══════════════════════════════════════════════════════════════
 async function loadMascotasCRUD() {
   try {
@@ -617,7 +369,6 @@ async function loadMascotasCRUD() {
     const data  = await res.json();
     const tbody = document.getElementById('mascotasCRUDTableBody');
     if (!tbody) return;
-
     if (!data.length) {
       tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No hay mascotas registradas</td></tr>';
       return;
@@ -630,15 +381,12 @@ async function loadMascotasCRUD() {
         <td>${escapeHtml(m.dueno || '—')}</td>
         <td>${m.peso_kg ?? '—'}</td>
         <td>${escapeHtml(m.temperamento || '—')}</td>
-        <td>${m.foto_url
-          ? `<img src="${escapeHtml(m.foto_url)}" width="40" height="40" style="object-fit:cover;border-radius:8px;">`
-          : '—'}</td>
+        <td>${m.foto_url ? `<img src="${escapeHtml(m.foto_url)}" width="40" height="40" style="object-fit:cover;border-radius:8px;">` : '—'}</td>
         <td style="display:flex;gap:5px;">
           <button class="btn btn-outline btn-sm" data-action="editar"   data-id="${m.id}">✏️ Editar</button>
           <button class="btn btn-danger  btn-sm" data-action="eliminar" data-id="${m.id}">🗑️ Eliminar</button>
         </td>
       </tr>`).join('');
-
     tbody.querySelectorAll('button[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.dataset.id);
@@ -646,9 +394,7 @@ async function loadMascotasCRUD() {
         if (btn.dataset.action === 'eliminar') deleteMascotaCRUD(id);
       });
     });
-  } catch (err) {
-    console.error('Error cargando mascotas CRUD:', err);
-  }
+  } catch (err) { console.error('Error cargando mascotas CRUD:', err); }
 }
 
 async function openMascotaCRUDModal(id = null) {
@@ -657,7 +403,6 @@ async function openMascotaCRUDModal(id = null) {
   document.getElementById('mascotaCRUDForm').reset();
   document.getElementById('mascotaCRUDId').value = '';
   await loadClientesParaSelect('mascotaCRUDClienteId');
-
   if (id) {
     title.textContent = 'Editar Mascota';
     try {
@@ -674,13 +419,9 @@ async function openMascotaCRUDModal(id = null) {
       document.getElementById('mascotaCRUDRestricciones').value = m.restricciones_medicas || '';
       document.getElementById('mascotaCRUDNotas').value         = m.notas_adicionales || '';
       document.getElementById('mascotaCRUDFotoUrl').value       = m.foto_url || '';
-      if (m.fecha_nacimiento) {
-        document.getElementById('mascotaCRUDFechaNac').value =
-          new Date(m.fecha_nacimiento).toISOString().split('T')[0];
-      }
-    } catch {
-      showAlert('mascotaCRUDMessage', 'Error al cargar datos de la mascota', 'error');
-    }
+      if (m.fecha_nacimiento)
+        document.getElementById('mascotaCRUDFechaNac').value = new Date(m.fecha_nacimiento).toISOString().split('T')[0];
+    } catch { showAlert('mascotaCRUDMessage', 'Error al cargar datos de la mascota', 'error'); }
   } else {
     title.textContent = 'Nueva Mascota';
   }
@@ -694,20 +435,16 @@ async function deleteMascotaCRUD(id) {
     if (res.status !== 204) throw new Error((await res.json()).message);
     showAlert('mascotaCRUDMessage', '✅ Mascota eliminada', 'success');
     loadMascotasCRUD();
-  } catch (err) {
-    showAlert('mascotaCRUDMessage', err.message, 'error');
-  }
+  } catch (err) { showAlert('mascotaCRUDMessage', err.message, 'error'); }
 }
 
 document.getElementById('btnNuevaMascotaCRUD')?.addEventListener('click', () => openMascotaCRUDModal());
-
 document.getElementById('closeMascotaCRUDModalBtn')?.addEventListener('click', () => {
   document.getElementById('mascotaCRUDModal').classList.remove('open');
 });
 document.getElementById('mascotaCRUDModal')?.addEventListener('click', e => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
 });
-
 document.getElementById('mascotaCRUDForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   const id = document.getElementById('mascotaCRUDId').value;
@@ -733,9 +470,7 @@ document.getElementById('mascotaCRUDForm')?.addEventListener('submit', async e =
     document.getElementById('mascotaCRUDModal').classList.remove('open');
     showAlert('mascotaCRUDMessage', id ? '✅ Mascota actualizada' : '✅ Mascota creada', 'success');
     loadMascotasCRUD();
-  } catch (err) {
-    showAlert('mascotaCRUDMessage', err.message, 'error');
-  }
+  } catch (err) { showAlert('mascotaCRUDMessage', err.message, 'error'); }
 });
 
 // ══════════════════════════════════════════════════════════════
@@ -755,9 +490,7 @@ document.getElementById('cambiarPassForm')?.addEventListener('submit', async e =
     if (!res.ok) throw new Error(data.message);
     showAlert('passMessage', '✅ Contraseña actualizada. Redirigiendo...', 'success');
     setTimeout(() => { clearTokens(); window.location.href = 'index.html'; }, 2000);
-  } catch (err) {
-    showAlert('passMessage', err.message, 'error');
-  }
+  } catch (err) { showAlert('passMessage', err.message, 'error'); }
 });
 
 // ══════════════════════════════════════════════════════════════
