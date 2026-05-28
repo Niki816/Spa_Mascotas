@@ -6,9 +6,6 @@
   <title>Gestión de Productos — Admin Pet Spa</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* ══════════════════════════════════════════════════════════
-       VARIABLES Y RESET
-    ══════════════════════════════════════════════════════════ */
     :root {
       --green-deep:  #1e3a2f;
       --green-mid:   #2d5a45;
@@ -26,423 +23,186 @@
       --radius:      16px;
       --radius-sm:   10px;
     }
-
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--cream);
-      color: var(--text-dark);
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* ══════════════════════════════════════════════════════════
-       SIDEBAR
-    ══════════════════════════════════════════════════════════ */
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-dark); display: flex; min-height: 100vh; }
+ 
+    /* ─── SIDEBAR ─── */
     .sidebar {
       width: 240px;
-      min-height: 100vh;
       height: 100vh;
       background: var(--green-deep);
       display: flex;
       flex-direction: column;
-      padding: 28px 16px;
+      padding: 28px 16px 20px;
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       z-index: 100;
       overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: var(--green-mid) transparent;
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 32px;
-      padding: 0 8px;
-    }
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: var(--amber);
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .logo-text {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-      color: var(--cream);
-    }
-    .logo-text span {
-      display: block;
-      font-size: 10px;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--green-light);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--green-mid); border-radius: 4px; }
+ 
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; padding: 0 8px; flex-shrink: 0; }
+    .logo-icon { width: 40px; height: 40px; background: var(--amber); border-radius: 12px; display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--cream); }
+    .logo-text span { display: block; font-size: 10px; font-family: 'DM Sans', sans-serif; color: var(--green-light); letter-spacing: .08em; text-transform: uppercase; }
+ 
+    /* etiqueta estática */
     .nav-label {
-      font-size: 10px;
-      letter-spacing: .12em;
+      font-size: 11px;
+      letter-spacing: .10em;
       text-transform: uppercase;
       color: var(--text-light);
       padding: 0 8px;
       margin: 16px 0 4px;
-    }
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 14px;
-      border-radius: var(--radius-sm);
-      color: var(--green-light);
-      cursor: pointer;
-      font-size: 13px;
-      margin-bottom: 2px;
-      transition: background .2s, color .2s;
-      text-decoration: none;
-    }
-    .nav-item:hover,
-    .nav-item.active { background: var(--green-mid); color: white; }
-    .nav-icon { font-size: 16px; width: 18px; text-align: center; }
-
-    .sidebar-footer {
-      margin-top: auto;
-      padding: 14px;
-      background: rgba(255,255,255,.05);
-      border-radius: var(--radius-sm);
-    }
-    .user-card { display: flex; align-items: center; gap: 10px; }
-    .user-avatar {
-      width: 36px;
-      height: 36px;
-      background: var(--amber);
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-size: 14px;
       flex-shrink: 0;
     }
-    .user-name {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--cream);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .user-role { font-size: 10px; color: var(--green-light); }
-    .icon-btn {
-      background: none;
-      border: none;
-      color: var(--green-light);
+ 
+    /* etiqueta acordeón */
+    .accordion-label {
       cursor: pointer;
-      font-size: 16px;
-      margin-left: auto;
-      line-height: 1;
-      padding: 4px;
-      border-radius: 6px;
-      transition: color .2s;
-    }
-    .icon-btn:hover { color: #ff7b7b; }
-
-    /* ══════════════════════════════════════════════════════════
-       MAIN CONTENT
-    ══════════════════════════════════════════════════════════ */
-    .main { margin-left: 240px; flex: 1; padding: 32px 36px; }
-
-    .topbar {
+      user-select: none;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 28px;
+      gap: 6px;
+      font-size: 11px;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      padding: 10px 8px;
+      margin: 8px 0 0;
+      transition: color .2s;
+      flex-shrink: 0;
     }
+    .accordion-label:hover { color: white; }
+ 
+    .accordion-arrow {
+      font-size: 9px;
+      display: inline-block;
+      transform: rotate(-90deg);
+      transition: transform .25s ease;
+    }
+    .accordion-label.open .accordion-arrow { transform: rotate(0deg); }
+ 
+    /* grupo acordeón */
+    .accordion-group {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height .35s ease, opacity .25s ease;
+      flex-shrink: 0;
+    }
+    .accordion-group.open { max-height: 600px; opacity: 1; }
+ 
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: var(--radius-sm); color: var(--green-light); cursor: pointer; font-size: 13px; margin-bottom: 2px; transition: background .2s, color .2s; text-decoration: none; }
+    .nav-item:hover, .nav-item.active { background: var(--green-mid); color: white; }
+    .nav-icon { font-size: 16px; width: 18px; text-align: center; }
+ 
+    .sidebar-footer { margin-top: 24px; padding: 14px; background: rgba(255,255,255,.05); border-radius: var(--radius-sm); flex-shrink: 0; }
+    .user-card { display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 36px; height: 36px; background: var(--amber); border-radius: 50%; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+    .user-name { font-size: 12px; font-weight: 600; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 10px; color: var(--green-light); }
+    .icon-btn { background: none; border: none; color: var(--green-light); cursor: pointer; font-size: 16px; margin-left: auto; line-height: 1; padding: 4px; border-radius: 6px; transition: color .2s; }
+    .icon-btn:hover { color: #ff7b7b; }
+ 
+    /* ─── MAIN ─── */
+    .main { margin-left: 240px; flex: 1; padding: 32px 36px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
     .page-title { font-family: 'Playfair Display', serif; font-size: 26px; }
     .page-sub { font-size: 13px; color: var(--text-light); margin-top: 2px; }
-
-    .badge-admin {
-      background: rgba(212,132,90,.15);
-      color: var(--amber);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      color: var(--green-soft);
-      text-decoration: none;
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
+    .badge-admin { background: rgba(212,132,90,.15); color: var(--amber); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .back-link { display: inline-flex; align-items: center; gap: 5px; color: var(--green-soft); text-decoration: none; font-size: 13px; margin-bottom: 16px; }
     .back-link:hover { text-decoration: underline; }
-
-    /* ══════════════════════════════════════════════════════════
-       CARDS
-    ══════════════════════════════════════════════════════════ */
-    .card {
-      background: white;
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 20px;
-    }
-    .card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+ 
+    /* ─── CARDS ─── */
+    .card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
     .card-title { font-family: 'Playfair Display', serif; font-size: 18px; }
     .card-title-sm { font-family: 'Playfair Display', serif; font-size: 15px; margin-bottom: 14px; }
-
-    /* ══════════════════════════════════════════════════════════
-       STATS
-    ══════════════════════════════════════════════════════════ */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .stats-grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 20px;
-    }
+ 
+    /* ─── STATS ─── */
+    .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 20px; }
+    .stats-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
     @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
-
-    .stat {
-      background: white;
-      border-radius: var(--radius);
-      padding: 16px 18px;
-      box-shadow: var(--shadow-sm);
-      border-top: 3px solid var(--green-soft);
-    }
+    .stat { background: white; border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); border-top: 3px solid var(--green-soft); }
     .stat.danger { border-top-color: #dc2626; }
     .stat.warn   { border-top-color: #f59e0b; }
     .stat-icon   { font-size: 20px; margin-bottom: 4px; }
     .stat-val    { font-family: 'Playfair Display', serif; font-size: 24px; line-height: 1; }
     .stat-lbl    { font-size: 11px; color: var(--text-light); margin-top: 2px; }
-
-    /* ══════════════════════════════════════════════════════════
-       FORMULARIOS
-    ══════════════════════════════════════════════════════════ */
+ 
+    /* ─── FORMS ─── */
     .form-group { margin-bottom: 13px; }
-    .form-label {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--text-mid);
-      margin-bottom: 4px;
-      letter-spacing: .05em;
-    }
-    .form-input,
-    .form-select {
-      width: 100%;
-      padding: 9px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      background: var(--cream);
-      outline: none;
-      transition: border-color .2s, background .2s;
-    }
-    .form-input:focus,
-    .form-select:focus { border-color: var(--green-soft); background: white; }
+    .form-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-mid); margin-bottom: 4px; letter-spacing: .05em; }
+    .form-input, .form-select { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--cream); outline: none; transition: border-color .2s, background .2s; }
+    .form-input:focus, .form-select:focus { border-color: var(--green-soft); background: white; }
     textarea.form-input { resize: vertical; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .required { color: #dc2626; }
-
-    /* ══════════════════════════════════════════════════════════
-       BOTONES
-    ══════════════════════════════════════════════════════════ */
-    .btn {
-      padding: 8px 18px;
-      border-radius: var(--radius-sm);
-      border: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .2s, opacity .2s, border-color .2s, color .2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
+ 
+    /* ─── BTNS ─── */
+    .btn { padding: 8px 18px; border-radius: var(--radius-sm); border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s, opacity .2s, border-color .2s, color .2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
-    .btn-primary   { background: var(--green-deep); color: white; }
-    .btn-primary:hover:not(:disabled)  { background: var(--green-mid); }
-    .btn-outline   { background: transparent; border: 1.5px solid #d0e4da; color: var(--text-mid); }
-    .btn-outline:hover:not(:disabled)  { border-color: var(--green-soft); color: var(--green-soft); }
-    .btn-danger    { background: #fee2e2; color: #dc2626; }
-    .btn-danger:hover:not(:disabled)   { background: #fecaca; }
-    .btn-amber     { background: var(--amber); color: white; }
-    .btn-amber:hover:not(:disabled)    { opacity: .9; }
+    .btn-primary  { background: var(--green-deep); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--green-mid); }
+    .btn-outline  { background: transparent; border: 1.5px solid #d0e4da; color: var(--text-mid); }
+    .btn-outline:hover:not(:disabled) { border-color: var(--green-soft); color: var(--green-soft); }
+    .btn-danger   { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover:not(:disabled) { background: #fecaca; }
+    .btn-amber    { background: var(--amber); color: white; }
+    .btn-amber:hover:not(:disabled) { opacity: .9; }
     .btn-sm { padding: 5px 12px; font-size: 12px; }
     .btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-
-    /* ══════════════════════════════════════════════════════════
-       ALERTAS / MENSAJES
-    ══════════════════════════════════════════════════════════ */
-    .alert {
-      padding: 10px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      margin-top: 12px;
-      display: none;
-    }
+ 
+    /* ─── ALERTS ─── */
+    .alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px; margin-top: 12px; display: none; }
     .alert.show    { display: block; }
     .alert-success { background: #e8f5ed; color: #2d5a45; border: 1px solid #a8d5b5; }
     .alert-error   { background: #fdecea; color: #c0392b; border: 1px solid #f5c6c0; }
     .alert-info    { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-
-    /* ══════════════════════════════════════════════════════════
-       TABLAS
-    ══════════════════════════════════════════════════════════ */
+ 
+    /* ─── TABLES ─── */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th {
-      text-align: left;
-      padding: 10px 12px;
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--text-light);
-      border-bottom: 1.5px solid #f0f5f2;
-    }
-    td {
-      padding: 11px 12px;
-      border-bottom: 1px solid #f8f9fa;
-      vertical-align: middle;
-    }
+    th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1.5px solid #f0f5f2; }
+    td { padding: 11px 12px; border-bottom: 1px solid #f8f9fa; vertical-align: middle; }
     tr:hover td { background: #fafffe; }
-
-    /* ══════════════════════════════════════════════════════════
-       BADGES DE STOCK
-    ══════════════════════════════════════════════════════════ */
+ 
+    /* ─── BADGES STOCK ─── */
     .badge-ok      { background: #e8f5ed; color: #2d5a45; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
     .badge-bajo    { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
     .badge-agotado { background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
-
-    /* ══════════════════════════════════════════════════════════
-       TOOLBAR DE FILTROS
-    ══════════════════════════════════════════════════════════ */
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
+ 
+    /* ─── TOOLBAR ─── */
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
     .toolbar .form-select { width: auto; }
     .toolbar .form-input  { width: 220px; }
-    .toolbar-check {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--text-mid);
-      cursor: pointer;
-      user-select: none;
-    }
+    .toolbar-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-mid); cursor: pointer; user-select: none; }
     .toolbar-check input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--green-soft); }
-
-    /* ══════════════════════════════════════════════════════════
-       MODALES
-    ══════════════════════════════════════════════════════════ */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.48);
-      z-index: 300;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+ 
+    /* ─── MODALES ─── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.48); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.open { display: flex; }
-    .modal {
-      background: white;
-      border-radius: var(--radius);
-      padding: 28px;
-      width: 100%;
-      max-width: 540px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 8px 40px rgba(0,0,0,.2);
-    }
-    .modal-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 19px;
-      margin-bottom: 16px;
-      color: var(--green-deep);
-    }
+    .modal { background: white; border-radius: var(--radius); padding: 28px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.2); }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 16px; color: var(--green-deep); }
     .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-
-    /* ══════════════════════════════════════════════════════════
-       PANEL LATERAL DE VARIANTES
-    ══════════════════════════════════════════════════════════ */
-    .side-panel {
-      display: none;
-      position: fixed;
-      right: 0;
-      top: 0;
-      width: 440px;
-      height: 100vh;
-      background: white;
-      z-index: 400;
-      box-shadow: -4px 0 24px rgba(0,0,0,.12);
-      flex-direction: column;
-      overflow: hidden;
-    }
+ 
+    /* ─── PANEL LATERAL VARIANTES ─── */
+    .side-panel { display: none; position: fixed; right: 0; top: 0; width: 440px; height: 100vh; background: white; z-index: 400; box-shadow: -4px 0 24px rgba(0,0,0,.12); flex-direction: column; overflow: hidden; }
     .side-panel.open { display: flex; }
-    .side-panel-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid #f0f5f2;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--green-pale);
-      flex-shrink: 0;
-    }
-    .side-panel-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 17px;
-    }
+    .side-panel-header { padding: 20px 24px; border-bottom: 1px solid #f0f5f2; display: flex; align-items: center; justify-content: space-between; background: var(--green-pale); flex-shrink: 0; }
+    .side-panel-title { font-family: 'Playfair Display', serif; font-size: 17px; }
     .side-panel-subtitle { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
     .side-panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
-    .side-panel-footer {
-      padding: 14px 24px;
-      border-top: 1px solid #f0f5f2;
-      background: #fafffe;
-      flex-shrink: 0;
-    }
-
-    /* ══════════════════════════════════════════════════════════
-       VARIANTE CARDS
-    ══════════════════════════════════════════════════════════ */
-    .variante-card {
-      background: var(--green-pale);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-left: 3px solid var(--green-soft);
-    }
+    .side-panel-footer { padding: 14px 24px; border-top: 1px solid #f0f5f2; background: #fafffe; flex-shrink: 0; }
+ 
+    /* ─── VARIANTE CARDS ─── */
+    .variante-card { background: var(--green-pale); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; border-left: 3px solid var(--green-soft); }
     .variante-inactiva { opacity: .6; border-left-color: #9ca3af; }
     .variante-info     { flex: 1; min-width: 0; }
     .variante-atributo { font-size: 13px; margin-bottom: 2px; }
@@ -450,89 +210,30 @@
     .variante-precio   { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
     .variante-stock    { font-size: 12px; margin-top: 3px; }
     .variante-actions  { display: flex; gap: 5px; flex-shrink: 0; }
-
-    /* ══════════════════════════════════════════════════════════
-       FORMULARIO RÁPIDO DE VARIANTES (BATCH)
-    ══════════════════════════════════════════════════════════ */
-    .variante-form-rapida {
-      background: #f0f5f2;
-      padding: 12px;
-      border-radius: var(--radius-sm);
-      margin-bottom: 16px;
-    }
+ 
+    /* ─── FORM RÁPIDO VARIANTES ─── */
+    .variante-form-rapida { background: #f0f5f2; padding: 12px; border-radius: var(--radius-sm); margin-bottom: 16px; }
     .variante-form-rapida h4 { margin: 0 0 8px; font-size: 13px; color: var(--text-mid); }
-    .variante-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 40px;
-      gap: 6px;
-      align-items: center;
-      margin-bottom: 8px;
-    }
+    .variante-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 40px; gap: 6px; align-items: center; margin-bottom: 8px; }
     .variante-row .form-input { padding: 6px 8px; font-size: 12px; }
-
-    /* ══════════════════════════════════════════════════════════
-       ALERTAS DE STOCK (sección)
-    ══════════════════════════════════════════════════════════ */
-    .alert-section {
-      background: white;
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 16px;
-      border-left: 4px solid #f59e0b;
-    }
-    .alert-section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 16px;
-      margin-bottom: 14px;
-      color: var(--text-dark);
-    }
-
-    /* ══════════════════════════════════════════════════════════
-       REPORTE
-    ══════════════════════════════════════════════════════════ */
-    .reporte-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-
-    /* ══════════════════════════════════════════════════════════
-       OVERVIEW — GRIDS
-    ══════════════════════════════════════════════════════════ */
-    .overview-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    @media (max-width: 900px) { .overview-grid { grid-template-columns: 1fr; } }
-
-    /* ══════════════════════════════════════════════════════════
-       PREVIEW DE IMAGEN
-    ══════════════════════════════════════════════════════════ */
-    #imgPreview {
-      width: 100%;
-      max-height: 120px;
-      object-fit: contain;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      margin-top: 8px;
-      display: none;
-    }
-
-    /* ══════════════════════════════════════════════════════════
-       STOCK DISPLAY (modal)
-    ══════════════════════════════════════════════════════════ */
-    .stock-display {
-      display: flex;
-      gap: 20px;
-      background: var(--green-pale);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      margin-bottom: 16px;
-    }
+ 
+    /* ─── ALERTAS STOCK SECCIÓN ─── */
+    .alert-section { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 16px; border-left: 4px solid #f59e0b; }
+    .alert-section-title { font-family: 'Playfair Display', serif; font-size: 16px; margin-bottom: 14px; color: var(--text-dark); }
+ 
+    /* ─── REPORTE ─── */
+    .reporte-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+ 
+    /* ─── OVERVIEW ─── */
+    .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 900px) { .overview-grid { grid-template-columns: 1fr; } .main { padding: 20px 16px; } }
+    @media (max-width: 700px) { .sidebar { display: none; } .main { margin-left: 0; } }
+ 
+    /* ─── PREVIEW IMAGEN ─── */
+    #imgPreview { width: 100%; max-height: 120px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); margin-top: 8px; display: none; }
+ 
+    /* ─── STOCK DISPLAY MODAL ─── */
+    .stock-display { display: flex; gap: 20px; background: var(--green-pale); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px; }
     .stock-display-item .lbl { font-size: 11px; color: var(--text-light); }
     .stock-display-item .val { font-size: 22px; font-weight: 700; line-height: 1.2; }
     .stock-display-item .val.warn { color: var(--amber); }
@@ -548,48 +249,69 @@
     <div class="logo-icon" aria-hidden="true">🐾</div>
     <div class="logo-text">Pet Spa <span>Administrador</span></div>
   </div>
-
-  <div class="nav-label">Principal</div>
+ 
+  <!-- INICIO -->
+  <div class="nav-label">Inicio</div>
   <a class="nav-item" href="admin-dashboard.html">
-    <span class="nav-icon" aria-hidden="true">🏠</span> Dashboard
+    <span class="nav-icon">🏠</span> Dashboard
   </a>
-
-  <div class="nav-label">Productos</div>
-  <a class="nav-item" href="#" data-section="inicio">
-    <span class="nav-icon" aria-hidden="true">📊</span> Overview
-  </a>
-  <a class="nav-item" href="#" data-section="productos">
-    <span class="nav-icon" aria-hidden="true">📦</span> Catálogo
-  </a>
-  <a class="nav-item" href="#" data-section="categorias">
-    <span class="nav-icon" aria-hidden="true">🗂️</span> Categorías
-  </a>
-  <a class="nav-item" href="#" data-section="alertas">
-    <span class="nav-icon" aria-hidden="true">🔔</span> Alertas de Stock
-  </a>
-  <a class="nav-item" href="#" data-section="reporte">
-    <span class="nav-icon" aria-hidden="true">📋</span> Reporte Inventario
-  </a>
-
-  <div class="nav-label">Otras secciones</div>
-  <a class="nav-item" href="admin-dashboard.html">
-    <span class="nav-icon" aria-hidden="true">💇</span> Servicios
-  </a>
-  <a class="nav-item" href="admin-availability.html">
-    <span class="nav-icon" aria-hidden="true">📆</span> Disponibilidad
-  </a>
-  <a class="nav-item" href="admin-dashboard.html">
-    <span class="nav-icon" aria-hidden="true">🔍</span> Auth Logs
-  </a>
-  <a class="nav-item" href="admin-dashboard.html">
-    <span class="nav-icon" aria-hidden="true">🔐</span> Seguridad
-  </a>
-
-  <div class="nav-label">Cuenta</div>
-  <a class="nav-item" href="#" id="logoutBtn">
-    <span class="nav-icon" aria-hidden="true">🚪</span> Cerrar sesión
-  </a>
-
+ 
+  <!-- PERSONAL & CLIENTES -->
+  <div class="nav-label accordion-label" data-group="personal">
+    <span class="accordion-arrow">▼</span> Personal &amp; Clientes
+  </div>
+  <div class="accordion-group" id="group-personal">
+    <a class="nav-item" href="admin-dashboard.html" data-section="crear-groomer"><span class="nav-icon">✂️</span> Crear Groomer</a>
+    <a class="nav-item" href="admin-dashboard.html" data-section="crear-recepcion"><span class="nav-icon">📞</span> Crear Recepcionista</a>
+    <a class="nav-item" href="admin-dashboard.html" data-section="crear-cliente"><span class="nav-icon">🐶</span> Crear Cliente</a>
+    <a class="nav-item" href="admin-dashboard.html" data-section="usuarios"><span class="nav-icon">👥</span> Ver Usuarios</a>
+  </div>
+ 
+  <!-- PRODUCTOS (abierto por defecto, es la página activa) -->
+  <div class="nav-label accordion-label open" data-group="productos">
+    <span class="accordion-arrow">▼</span> Productos
+  </div>
+  <div class="accordion-group open" id="group-productos">
+    <a class="nav-item" href="#" data-section="inicio"><span class="nav-icon">📊</span> Overview</a>
+    <a class="nav-item" href="#" data-section="productos"><span class="nav-icon">📦</span> Catálogo</a>
+    <a class="nav-item" href="#" data-section="categorias"><span class="nav-icon">🗂️</span> Categorías</a>
+    <a class="nav-item" href="#" data-section="alertas"><span class="nav-icon">🔔</span> Alertas de Stock</a>
+    <a class="nav-item" href="#" data-section="reporte"><span class="nav-icon">📋</span> Reporte Inventario</a>
+  </div>
+ 
+  <!-- AUDITORÍA -->
+  <div class="nav-label accordion-label" data-group="auditoria">
+    <span class="accordion-arrow">▼</span> Auditoría
+  </div>
+  <div class="accordion-group" id="group-auditoria">
+    <a class="nav-item" href="admin-dashboard.html" data-section="auth-logs"><span class="nav-icon">🔍</span> Auth Logs</a>
+  </div>
+ 
+  <!-- DISPONIBILIDAD -->
+  <div class="nav-label accordion-label" data-group="disponibilidad">
+    <span class="accordion-arrow">▼</span> Disponibilidad
+  </div>
+  <div class="accordion-group" id="group-disponibilidad">
+    <a class="nav-item" href="admin-availability.html"><span class="nav-icon">📆</span> Horarios &amp; Bloques</a>
+  </div>
+ 
+  <!-- SERVICIOS -->
+  <div class="nav-label accordion-label" data-group="servicios">
+    <span class="accordion-arrow">▼</span> Servicios
+  </div>
+  <div class="accordion-group" id="group-servicios">
+    <a class="nav-item" href="admin-dashboard.html" data-section="servicios"><span class="nav-icon">💇</span> Servicios</a>
+  </div>
+ 
+  <!-- CUENTA -->
+  <div class="nav-label accordion-label" data-group="cuenta">
+    <span class="accordion-arrow">▼</span> Cuenta
+  </div>
+  <div class="accordion-group" id="group-cuenta">
+    <a class="nav-item" href="admin-dashboard.html" data-section="seguridad"><span class="nav-icon">🔐</span> Seguridad &amp; 2FA</a>
+    <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+  </div>
+ 
   <div class="sidebar-footer">
     <div class="user-card">
       <div class="user-avatar" aria-hidden="true">🛡️</div>
@@ -1221,25 +943,67 @@
 ════════════════════════════════════════════════════════════ -->
 <script type="module" src="js/admin-productos.js"></script>
 <script>
-  /**
-   * Muestra/oculta campos condicionales del modal de producto
-   * según si se está creando (sin ID) o editando (con ID).
-   * Se activa al cambiar la clase `open` del overlay.
-   */
+  // ── ACORDEÓN ──
   document.addEventListener('DOMContentLoaded', () => {
-    const overlay         = document.getElementById('productoModal');
-    const stockInicialGrp = document.getElementById('stockInicialGroup'); // ya no existe, pero lo dejamos por si acaso
-    const estadoGrp       = document.getElementById('estadoProductoGroup');
-
-    function syncProductoModalFields() {
-      const isEditing = Boolean(document.getElementById('productoId')?.value);
-      if (stockInicialGrp) stockInicialGrp.style.display = isEditing ? 'none'  : 'block';
-      if (estadoGrp)       estadoGrp.style.display       = isEditing ? 'block' : 'none';
+    const labels = document.querySelectorAll('.accordion-label');
+ 
+    labels.forEach(label => {
+      label.addEventListener('click', () => {
+        const groupId = 'group-' + label.dataset.group;
+        const group = document.getElementById(groupId);
+        if (!group) return;
+ 
+        const isOpen = group.classList.contains('open');
+ 
+        // Cerrar todos
+        document.querySelectorAll('.accordion-group.open').forEach(g => g.classList.remove('open'));
+        document.querySelectorAll('.accordion-label.open').forEach(l => l.classList.remove('open'));
+ 
+        // Abrir el actual si estaba cerrado
+        if (!isOpen) {
+          group.classList.add('open');
+          label.classList.add('open');
+          setTimeout(() => {
+            group.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 50);
+        }
+      });
+    });
+ 
+    // ── Marcar item activo según sección cargada ──
+    function markActiveNavItem(section) {
+      document.querySelectorAll('.nav-item[data-section]').forEach(el => el.classList.remove('active'));
+      const active = document.querySelector(`.nav-item[data-section="${section}"]`);
+      if (active) active.classList.add('active');
     }
-
-    if (overlay) {
-      new MutationObserver(syncProductoModalFields)
-        .observe(overlay, { attributes: true, attributeFilter: ['class'] });
+ 
+    // ── Leer sección guardada en localStorage (desde el dashboard) ──
+    const seccionGuardada = localStorage.getItem('productos_seccion');
+    if (seccionGuardada) {
+      localStorage.removeItem('productos_seccion');
+      // Dejar que admin-productos.js maneje el showSection,
+      // pero marcamos el nav item aquí
+      markActiveNavItem(seccionGuardada);
+    } else {
+      markActiveNavItem('inicio');
+    }
+ 
+    // ── Sincronizar activo al hacer clic en links de sección ──
+    document.querySelectorAll('.nav-item[data-section]').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item[data-section]').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+      });
+    });
+ 
+    // ── Modal producto: mostrar/ocultar campo estado ──
+    const overlay   = document.getElementById('productoModal');
+    const estadoGrp = document.getElementById('estadoProductoGroup');
+    if (overlay && estadoGrp) {
+      new MutationObserver(() => {
+        const isEditing = Boolean(document.getElementById('productoId')?.value);
+        estadoGrp.style.display = isEditing ? 'block' : 'none';
+      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
     }
   });
 </script>

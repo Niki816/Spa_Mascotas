@@ -1531,5 +1531,8 @@ async function initFiltros() {
 // Inicializar fila vacía en ambos formularios batch
 addVarianteRow();
 addVarianteCatalogoRow();
-
-initFiltros().then(() => showSection('inicio'));
+initFiltros().then(() => {
+  const savedSection = localStorage.getItem('productos_seccion') || 'inicio';
+  localStorage.removeItem('productos_seccion');
+  showSection(savedSection);
+});

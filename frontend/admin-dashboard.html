@@ -6,37 +6,144 @@
   <title>Admin — Pet Spa</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--shadow-md:0 6px 24px rgba(30,58,47,.12);--radius:16px;--radius-sm:10px;}
+    :root{
+      --green-deep:#1e3a2f;
+      --green-mid:#2d5a45;
+      --green-soft:#4a8c6f;
+      --green-light:#a8d5b5;
+      --green-pale:#e8f5ed;
+      --cream:#faf7f2;
+      --amber:#d4845a;
+      --text-dark:#1a2e25;
+      --text-mid:#4a6355;
+      --text-light:#8aab97;
+      --shadow-sm:0 2px 8px rgba(30,58,47,.08);
+      --shadow-md:0 6px 24px rgba(30,58,47,.12);
+      --radius:16px;
+      --radius-sm:10px;
+    }
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
-
-    /* SIDEBAR */
-    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;z-index:100;height: 100vh; /* asegurar altura completa */
-    overflow-y: auto;}
-    .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
+ 
+    /* ─── SIDEBAR ─── */
+    .sidebar{
+      width:240px;
+      height:100vh;               /* altura fija al viewport */
+      background:var(--green-deep);
+      display:flex;
+      flex-direction:column;
+      padding:28px 16px 20px;
+      position:fixed;
+      top:0;left:0;
+      z-index:100;
+      overflow-y:auto;            /* scroll cuando el contenido no entra */
+      overflow-x:hidden;
+      scrollbar-width:thin;
+      scrollbar-color:var(--green-mid) transparent;
+    }
+    /* scrollbar webkit (Chrome/Safari) */
+    .sidebar::-webkit-scrollbar{width:4px;}
+    .sidebar::-webkit-scrollbar-track{background:transparent;}
+    .sidebar::-webkit-scrollbar-thumb{background:var(--green-mid);border-radius:4px;}
+ 
+    /* empujar el footer al final pero sin que quede cortado */
+    .sidebar-footer{
+      margin-top:24px;
+      padding:14px;
+      background:rgba(255,255,255,.05);
+      border-radius:var(--radius-sm);
+      flex-shrink:0;
+    }
+ 
+    .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;flex-shrink:0;}
     .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:12px;display:grid;place-items:center;font-size:20px;}
     .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
     .logo-text span{display:block;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--green-light);letter-spacing:.08em;text-transform:uppercase;}
-    .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-light);padding:0 8px;margin:16px 0 4px;}
-    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-sm);color:var(--green-light);cursor:pointer;font-size:13px;margin-bottom:2px;transition:all .2s;text-decoration:none;}
+ 
+    /* ── Etiquetas de sección (nav-label estático) ── */
+    .nav-label{
+      font-size:11px;             /* era 10px → un poco más grande */
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      color:var(--text-light);
+      padding:0 8px;
+      margin:16px 0 4px;
+      flex-shrink:0;
+    }
+ 
+    /* ── Etiquetas acordeón ── */
+    .accordion-label{
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;             /* era 10px */
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      color:var(--text-light);
+      padding:10px 8px;           /* un poco más de padding vertical */
+      margin:8px 0 0;
+      transition:color .2s;
+      flex-shrink:0;
+    }
+    .accordion-label:hover{color:white;}
+ 
+    .accordion-arrow{
+      font-size:9px;
+      transition:transform .2s;
+      display:inline-block;
+    }
+    .accordion-label.open .accordion-arrow{transform:rotate(0deg);}
+    /* flecha apunta a la derecha cuando cerrado */
+    .accordion-arrow{transform:rotate(-90deg);}
+    .accordion-label.open .accordion-arrow{transform:rotate(0deg);}
+ 
+    /* ── Grupo acordeón ── */
+    .accordion-group{
+      overflow:hidden;
+      max-height:0;
+      opacity:0;
+      transition:max-height .35s ease, opacity .25s ease;
+      flex-shrink:0;
+    }
+    .accordion-group.open{
+      max-height:600px;           /* suficiente para 6-7 items */
+      opacity:1;
+    }
+ 
+    /* ── Items de nav ── */
+    .nav-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:11px 14px;
+      border-radius:var(--radius-sm);
+      color:var(--green-light);
+      cursor:pointer;
+      font-size:13px;
+      margin-bottom:2px;
+      transition:all .2s;
+      text-decoration:none;
+    }
     .nav-item:hover,.nav-item.active{background:var(--green-mid);color:white;}
     .nav-icon{font-size:16px;width:18px;text-align:center;}
-    .sidebar-footer{margin-top:auto;padding:14px;background:rgba(255,255,255,.05);border-radius:var(--radius-sm);}
+ 
     .user-card{display:flex;align-items:center;gap:10px;}
     .user-avatar{width:36px;height:36px;background:var(--amber);border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0;}
     .user-name{font-size:12px;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .user-role{font-size:10px;color:var(--green-light);}
     .logout-btn{background:none;border:none;color:var(--green-light);cursor:pointer;font-size:16px;margin-left:auto;}
     .logout-btn:hover{color:#ff7b7b;}
-
-    /* MAIN */
+ 
+    /* ─── MAIN ─── */
     .main{margin-left:240px;flex:1;padding:32px 36px;}
     .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
     .page-title{font-family:'Playfair Display',serif;font-size:26px;}
     .page-sub{font-size:13px;color:var(--text-light);margin-top:2px;}
     .badge-admin{background:rgba(212,132,90,.15);color:var(--amber);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;}
-
-    /* STATS */
+ 
+    /* ─── STATS ─── */
     .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
     .stat{background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
     .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
@@ -47,15 +154,15 @@
     .stat-icon{font-size:24px;margin-bottom:8px;}
     .stat-val{font-family:'Playfair Display',serif;font-size:28px;line-height:1;}
     .stat-lbl{font-size:12px;color:var(--text-light);margin-top:3px;}
-
-    /* CARD */
+ 
+    /* ─── CARD ─── */
     .card{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
     .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
     .card-title{font-family:'Playfair Display',serif;font-size:17px;}
     .card-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--green-pale);color:var(--green-soft);}
     .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-
-    /* FORM */
+ 
+    /* ─── FORM ─── */
     .form-group{margin-bottom:13px;}
     .form-label{display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;}
     .form-input{width:100%;padding:9px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-dark);background:var(--cream);outline:none;transition:border-color .2s;}
@@ -64,8 +171,8 @@
     .pass-wrap{position:relative;}
     .pass-wrap .form-input{padding-right:40px;}
     .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-light);}
-
-    /* BTNS */
+ 
+    /* ─── BTNS ─── */
     .btn{padding:9px 20px;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
     .btn-primary{background:var(--green-deep);color:white;width:100%;justify-content:center;}
     .btn-primary:hover{background:var(--green-mid);}
@@ -76,14 +183,14 @@
     .btn-danger{background:#fee2e2;color:#dc2626;border:none;padding:4px 10px;font-size:11px;}
     .btn-danger:hover{background:#fecaca;}
     .btn-sm{padding:5px 12px;font-size:12px;}
-
-    /* ALERT */
+ 
+    /* ─── ALERT ─── */
     .alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;margin-top:10px;display:none;}
     .alert.show{display:block;}
     .alert-success{background:#e8f5ed;color:#2d5a45;border:1px solid #a8d5b5;}
     .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
-
-    /* TABLE */
+ 
+    /* ─── TABLE ─── */
     .table-wrap{overflow-x:auto;}
     table{width:100%;border-collapse:collapse;font-size:13px;}
     th{text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light);border-bottom:1.5px solid #f0f5f2;}
@@ -95,46 +202,34 @@
     .rol-cliente{background:var(--green-pale);color:var(--green-soft);}
     .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;}
     .dot-active{background:#22c55e;}.dot-inactive{background:#ef4444;}
-
-    /* LOG FILTERS */
+ 
+    /* ─── LOG FILTERS ─── */
     .log-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
     .form-select{padding:8px 12px;border:1.5px solid #e0ebe5;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cream);outline:none;cursor:pointer;}
     .form-select:focus{border-color:var(--green-soft);}
     .log-pagination{display:flex;align-items:center;gap:8px;margin-top:12px;justify-content:center;}
     .log-pagination span{font-size:12px;color:var(--text-light);}
-
-    /* 2FA */
+ 
+    /* ─── 2FA ─── */
     .twofa-box{background:var(--green-pale);border:1px dashed var(--green-light);border-radius:var(--radius-sm);padding:14px;text-align:center;margin:12px 0;}
     .twofa-box img{max-width:160px;border-radius:8px;}
     .secret-box{font-family:monospace;font-size:11px;background:white;padding:8px 12px;border-radius:8px;border:1px solid #d0e4da;word-break:break-all;margin-top:8px;color:var(--green-deep);}
-
-    /* MODAL */
+ 
+    /* ─── MODAL ─── */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;}
     .modal-overlay.open{display:flex;}
     .modal{background:white;border-radius:var(--radius);padding:28px;width:100%;max-width:420px;box-shadow:var(--shadow-md);}
     .modal-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:12px;}
-
+ 
+    .horario-display{background:var(--green-pale);border:1.5px solid var(--green-light);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--green-deep);font-weight:500;display:flex;align-items:center;gap:8px;}
+    .password-strength{font-size:11px;margin-top:4px;transition:all .2s;}
+ 
     .paw-bg{position:fixed;right:-60px;bottom:-60px;font-size:200px;opacity:.03;pointer-events:none;}
+ 
+    /* ─── RESPONSIVE ─── */
     @media(max-width:1100px){.stats{grid-template-columns:1fr 1fr;}}
     @media(max-width:900px){.grid-2{grid-template-columns:1fr;}.main{padding:20px 16px;}}
     @media(max-width:700px){.sidebar{display:none;}.main{margin-left:0;}}
-    .horario-display {
-  background: var(--green-pale);
-  border: 1.5px solid var(--green-light);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--green-deep);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.password-strength {
-  font-size: 11px;
-  margin-top: 4px;
-  transition: all 0.2s;
-}
   </style>
 </head>
 
@@ -146,37 +241,69 @@
     <div class="logo-icon">🐾</div>
     <div class="logo-text">Pet Spa <span>Administrador</span></div>
   </div>
-
+ 
+  <!-- INICIO -->
   <div class="nav-label">Inicio</div>
-  <a class="nav-item active" href="#" data-section="inicio"><span class="nav-icon">🏠</span> Dashboard</a>
-
-<div class="nav-label">Personal & Clientes</div>
-<a class="nav-item" href="#" data-section="crear-groomer"><span class="nav-icon">✂️</span> Crear Groomer</a>
-<a class="nav-item" href="#" data-section="crear-recepcion"><span class="nav-icon">📞</span> Crear Recepcionista</a>  <!-- NUEVO -->
-<a class="nav-item" href="#" data-section="crear-cliente"><span class="nav-icon">🐶</span> Crear Cliente</a>
-<a class="nav-item" href="#" data-section="usuarios"><span class="nav-icon">👥</span> Ver Usuarios</a>
-
-  <div class="nav-label">Auditoría</div>
-  <a class="nav-item" href="#" data-section="auth-logs"><span class="nav-icon">🔍</span> Auth Logs</a>
-
-
-  <div class="nav-label">Cuenta</div>
-  <a class="nav-item" href="#" data-section="seguridad"><span class="nav-icon">🔐</span> Seguridad &amp; 2FA</a>
-  <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
-
-  <div class="nav-label">Disponibilidad</div>
-  <a class="nav-item" href="admin-availability.html"><span class="nav-icon">📆</span> Horarios & Bloques</a>
-
-  <div class="nav-label">Servicios</div>
-  <a class="nav-item" href="#" data-section="servicios"><span class="nav-icon">💇</span> Servicios</a>
-
-  <div class="nav-label">Productos</div>
-  <a class="nav-item" href="admin-productos.html" data-section="inicio"><span class="nav-icon">📊</span> Overview</a>
-  <a class="nav-item" href="admin-productos.html" data-section="productos"><span class="nav-icon">📦</span> Catálogo</a>
-  <a class="nav-item" href="admin-productos.html" data-section="categorias"><span class="nav-icon">🗂️</span> Categorías</a>
-  <a class="nav-item" href="admin-productos.html" data-section="alertas"><span class="nav-icon">🔔</span> Alertas de Stock</a>
-  <a class="nav-item" href="admin-productos.html" data-section="reporte"><span class="nav-icon">📋</span> Reporte Inventario</a>
-
+  <a class="nav-item active" href="#" data-section="inicio">
+    <span class="nav-icon">🏠</span> Dashboard
+  </a>
+ 
+  <!-- PERSONAL & CLIENTES -->
+  <div class="nav-label accordion-label" data-group="personal">
+    <span class="accordion-arrow">▼</span> Personal &amp; Clientes
+  </div>
+  <div class="accordion-group" id="group-personal">
+    <a class="nav-item" href="#" data-section="crear-groomer"><span class="nav-icon">✂️</span> Crear Groomer</a>
+    <a class="nav-item" href="#" data-section="crear-recepcion"><span class="nav-icon">📞</span> Crear Recepcionista</a>
+    <a class="nav-item" href="#" data-section="crear-cliente"><span class="nav-icon">🐶</span> Crear Cliente</a>
+    <a class="nav-item" href="#" data-section="usuarios"><span class="nav-icon">👥</span> Ver Usuarios</a>
+  </div>
+ 
+  <!-- PRODUCTOS -->
+  <div class="nav-label accordion-label" data-group="productos">
+    <span class="accordion-arrow">▼</span> Productos
+  </div>
+  <div class="accordion-group" id="group-productos">
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="inicio"><span class="nav-icon">📊</span> Overview</a>
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="productos"><span class="nav-icon">📦</span> Catálogo</a>
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="categorias"><span class="nav-icon">🗂️</span> Categorías</a>
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="alertas"><span class="nav-icon">🔔</span> Alertas de Stock</a>
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="reporte"><span class="nav-icon">📋</span> Reporte Inventario</a>
+  </div>
+ 
+  <!-- AUDITORÍA -->
+  <div class="nav-label accordion-label" data-group="auditoria">
+    <span class="accordion-arrow">▼</span> Auditoría
+  </div>
+  <div class="accordion-group" id="group-auditoria">
+    <a class="nav-item" href="#" data-section="auth-logs"><span class="nav-icon">🔍</span> Auth Logs</a>
+  </div>
+ 
+  <!-- DISPONIBILIDAD -->
+  <div class="nav-label accordion-label" data-group="disponibilidad">
+    <span class="accordion-arrow">▼</span> Disponibilidad
+  </div>
+  <div class="accordion-group" id="group-disponibilidad">
+    <a class="nav-item" href="admin-availability.html"><span class="nav-icon">📆</span> Horarios &amp; Bloques</a>
+  </div>
+ 
+  <!-- SERVICIOS -->
+  <div class="nav-label accordion-label" data-group="servicios">
+    <span class="accordion-arrow">▼</span> Servicios
+  </div>
+  <div class="accordion-group" id="group-servicios">
+    <a class="nav-item" href="#" data-section="servicios"><span class="nav-icon">💇</span> Servicios</a>
+  </div>
+ 
+  <!-- CUENTA -->
+  <div class="nav-label accordion-label" data-group="cuenta">
+    <span class="accordion-arrow">▼</span> Cuenta
+  </div>
+  <div class="accordion-group" id="group-cuenta">
+    <a class="nav-item" href="#" data-section="seguridad"><span class="nav-icon">🔐</span> Seguridad &amp; 2FA</a>
+    <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+  </div>
+ 
   <div class="sidebar-footer">
     <div class="user-card">
       <div class="user-avatar">🛡️</div>
@@ -188,7 +315,7 @@
     </div>
   </div>
 </aside>
-
+ 
 <!-- MAIN -->
 <main class="main">
   <div class="topbar">
@@ -820,4 +947,90 @@ function validarPassword(el) {
 </div>
 
 </body>
-</html>
+</html><script>
+  // ── Toggle contraseñas ──
+  function togglePass(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+  }
+ 
+  // ── ACORDEÓN ──
+  document.addEventListener('DOMContentLoaded', () => {
+    const labels = document.querySelectorAll('.accordion-label');
+ 
+    labels.forEach(label => {
+      label.addEventListener('click', () => {
+        const groupId = 'group-' + label.dataset.group;
+        const group = document.getElementById(groupId);
+        if (!group) return;
+ 
+        const isOpen = group.classList.contains('open');
+ 
+        // Cerrar todos
+        document.querySelectorAll('.accordion-group.open').forEach(g => {
+          g.classList.remove('open');
+        });
+        document.querySelectorAll('.accordion-label.open').forEach(l => {
+          l.classList.remove('open');
+        });
+ 
+        // Abrir el actual si estaba cerrado
+        if (!isOpen) {
+          group.classList.add('open');
+          label.classList.add('open');
+ 
+          // Scroll suave para que el grupo sea visible
+          setTimeout(() => {
+            group.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 50);
+        }
+      });
+    });
+ 
+    // ── Links a productos: guardar sección ──
+    document.querySelectorAll('.producto-link').forEach(link => {
+      link.addEventListener('click', () => {
+        const seccion = link.dataset.prodSection;
+        if (seccion) localStorage.setItem('productos_seccion', seccion);
+      });
+    });
+  });
+  // ── Leer sección destino enviada desde otra página ──
+const gotoSection = localStorage.getItem('goto_section');
+if (gotoSection) {
+  localStorage.removeItem('goto_section');
+ 
+  // 1. Abrir el grupo de acordeón que contiene esa sección
+  const targetLink = document.querySelector(`.nav-item[data-section="${gotoSection}"]`);
+  if (targetLink) {
+    // Subir hasta encontrar el accordion-group padre
+    const group = targetLink.closest('.accordion-group');
+    if (group) {
+      // Cerrar todos primero
+      document.querySelectorAll('.accordion-group.open').forEach(g => g.classList.remove('open'));
+      document.querySelectorAll('.accordion-label.open').forEach(l => l.classList.remove('open'));
+      // Abrir el grupo correcto
+      group.classList.add('open');
+      const label = group.previousElementSibling;
+      if (label && label.classList.contains('accordion-label')) {
+        label.classList.add('open');
+      }
+    }
+    // Marcar el item activo
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    targetLink.classList.add('active');
+  }
+ 
+  // 2. Mostrar la sección correspondiente
+  // (Usando la función showSection que ya existe en admin-dashboard.js)
+  if (typeof showSection === 'function') {
+    showSection(gotoSection);
+  } else {
+    // Fallback manual si showSection no está disponible aún
+    document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+    const target = document.getElementById(`section-${gotoSection}`);
+    if (target) target.style.display = '';
+  }
+}
+</script>
