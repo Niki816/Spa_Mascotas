@@ -62,20 +62,84 @@
     .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
     .paw-bg{position:fixed;right:-60px;bottom:-60px;font-size:220px;opacity:.03;pointer-events:none;}
     @media(max-width:700px){.sidebar{display:none;}.main{margin-left:0;padding:20px 16px;}.stats{grid-template-columns:1fr;}}
+    /* Estilos para la agenda (timeline) */
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f5f2;
+}
+.timeline-time {
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 80px;
+  color: var(--green-deep);
+}
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--green-soft);
+  margin-top: 6px;
+}
+.timeline-content {
+  flex: 1;
+}
+.cita-mascota {
+  font-size: 15px;
+  font-weight: 500;
+}
+.cita-servicio {
+  font-size: 13px;
+  color: var(--text-mid);
+}
+.cita-estado {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  margin-left: 8px;
+}
+.estado-agendada { background: #fef3c7; color: #d97706; }
+.estado-confirmada { background: #d1fae5; color: #065f46; }
+.estado-en_progreso { background: #dbeafe; color: #1e40af; }
+.estado-completada { background: #f3f4f6; color: #374151; }
   </style>
 </head>
 <body>
+<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon">✂️</div>
     <div class="logo-text">Pet Spa <span>Groomer</span></div>
   </div>
+
   <div class="nav-label">Mi trabajo</div>
-  <a class="nav-item active" href="#" data-section="inicio"><span class="nav-icon">🏠</span> Inicio</a>
-  <a class="nav-item" href="#" data-section="citas"><span class="nav-icon">📅</span> Mis citas</a>
+  <a class="nav-item" href="#" data-section="agenda">
+    <span class="nav-icon">📅</span> Mi Agenda
+  </a>
+  <a class="nav-item" href="#" data-section="fichas">
+    <span class="nav-icon">📋</span> Fichas Activas
+  </a>
+  <a class="nav-item" href="#" data-section="checklist">
+    <span class="nav-icon">✅</span> Checklist
+  </a>
+  <a class="nav-item" href="#" data-section="fotos">
+    <span class="nav-icon">📸</span> Fotos
+  </a>
+  <a class="nav-item" href="#" data-section="insumos">
+    <span class="nav-icon">🧴</span> Insumos
+  </a>
+
   <div class="nav-label">Cuenta</div>
-  <a class="nav-item" href="#" data-section="perfil"><span class="nav-icon">👤</span> Mi perfil</a>
-  <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+  <a class="nav-item" href="#" data-section="perfil">
+    <span class="nav-icon">👤</span> Mi perfil
+  </a>
+  <a class="nav-item" href="#" id="logoutBtn">
+    <span class="nav-icon">🚪</span> Cerrar sesión
+  </a>
+
   <div class="sidebar-footer">
     <div class="user-card">
       <div class="user-avatar">✂️</div>
@@ -97,25 +161,55 @@
     <span class="badge-groomer">✂️ Groomer</span>
   </div>
 
-  <div id="section-inicio">
-    <div class="stats">
-      <div class="stat"><div class="stat-icon">📅</div><div class="stat-val" id="citasHoy">0</div><div class="stat-lbl">Citas hoy</div></div>
-      <div class="stat"><div class="stat-icon">✅</div><div class="stat-val" id="citasCompletadas">0</div><div class="stat-lbl">Completadas esta semana</div></div>
-      <div class="stat"><div class="stat-icon">⭐</div><div class="stat-val">—</div><div class="stat-lbl">Calificación promedio</div></div>
-    </div>
+  <!-- AGENDA -->
+  <div id="section-agenda" style="display:block;">
     <div class="card">
-      <div class="card-head"><div class="card-title">Citas de Hoy</div><span class="card-badge" id="hoyCount">0</span></div>
-      <div id="citasHoyList"><div class="empty-state"><div class="icon">📅</div><p>No tienes citas para hoy.</p></div></div>
+      <div class="card-head">
+        <div class="card-title">📅 Mi Agenda de Hoy</div>
+        <button class="btn btn-outline btn-sm" id="refreshAgendaBtn">🔄 Actualizar</button>
+      </div>
+      <div id="agendaContainer">
+        <div class="empty-state">
+          <div class="icon">📅</div>
+          <p>Cargando agenda...</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="section-citas" style="display:none;">
+  <!-- FICHAS ACTIVAS (placeholder) -->
+  <div id="section-fichas" style="display:none;">
     <div class="card">
-      <div class="card-head"><div class="card-title">Todas mis citas</div><span class="card-badge" id="totalCount">0</span></div>
-      <div id="todasCitasList"><div class="empty-state"><div class="icon">📅</div><p>Sin citas registradas.</p></div></div>
+      <div class="card-head"><div class="card-title">📋 Fichas Activas</div></div>
+      <p style="color:var(--text-light);">Próximamente</p>
     </div>
   </div>
 
+  <!-- CHECKLIST (placeholder) -->
+  <div id="section-checklist" style="display:none;">
+    <div class="card">
+      <div class="card-head"><div class="card-title">✅ Checklist de Tareas</div></div>
+      <p style="color:var(--text-light);">Próximamente</p>
+    </div>
+  </div>
+
+  <!-- FOTOS (placeholder) -->
+  <div id="section-fotos" style="display:none;">
+    <div class="card">
+      <div class="card-head"><div class="card-title">📸 Galería de Fotos</div></div>
+      <p style="color:var(--text-light);">Próximamente</p>
+    </div>
+  </div>
+
+  <!-- INSUMOS (placeholder) -->
+  <div id="section-insumos" style="display:none;">
+    <div class="card">
+      <div class="card-head"><div class="card-title">🧴 Insumos Asignados</div></div>
+      <p style="color:var(--text-light);">Próximamente</p>
+    </div>
+  </div>
+
+  <!-- PERFIL (mantenemos el cambio de contraseña) -->
   <div id="section-perfil" style="display:none;">
     <div class="card" style="max-width:480px;">
       <div class="card-head"><div class="card-title">Cambiar Contraseña</div></div>

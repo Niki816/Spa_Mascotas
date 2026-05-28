@@ -1,25 +1,40 @@
 import { authFetch, getAccessToken, getUser, clearTokens, API_URL } from './auth.js';
 
+// Verificación de autenticación y rol
 const token = getAccessToken();
-const user  = getUser();
+const user = getUser();
 if (!token || !user) { window.location.href = 'index.html'; }
 if (user?.rol !== 'groomer') { window.location.href = 'dashboard.html'; }
 
 document.getElementById('sidebarName').textContent = user.email.split('@')[0];
 document.getElementById('groomerEmail').textContent = user.email;
 
-const sections = ['inicio', 'citas', 'perfil'];
-document.querySelectorAll('.nav-item[data-section]').forEach(link => {
+// Navegación entre secciones
+const sections = ['agenda', 'fichas', 'checklist', 'fotos', 'insumos', 'perfil'];
+const navItems = document.querySelectorAll('.nav-item[data-section]');
+
+function showSection(sec) {
+  sections.forEach(s => {
+    const el = document.getElementById(`section-${s}`);
+    if (el) el.style.display = s === sec ? 'block' : 'none';
+  });
+  navItems.forEach(item => {
+    item.classList.toggle('active', item.dataset.section === sec);
+  });
+
+  // Cargar datos cuando se entra en la sección agenda
+  if (sec === 'agenda') loadAgendaHoy();
+}
+
+navItems.forEach(link => {
   link.addEventListener('click', e => {
     e.preventDefault();
     const sec = link.dataset.section;
-    sections.forEach(s => document.getElementById(`section-${s}`).style.display = s === sec ? 'block' : 'none');
-    document.querySelectorAll('.nav-item').forEach(l => l.classList.remove('active'));
-    link.classList.add('active');
-    if (sec === 'citas') loadTodasCitas();
+    if (sec) showSection(sec);
   });
 });
 
+// Logout
 function doLogout() {
   authFetch(`${API_URL}/logout`, { method: 'POST' }).catch(() => {});
   clearTokens();
@@ -28,46 +43,57 @@ function doLogout() {
 document.getElementById('logoutBtn').addEventListener('click', e => { e.preventDefault(); doLogout(); });
 document.getElementById('logoutBtn2').addEventListener('click', doLogout);
 
-function renderCita(c) {
-  const statusClass = { agendada:'st-agendada', confirmada:'st-confirmada', en_progreso:'st-en_progreso', completada:'st-completada' };
-  return `<div class="cita-item">
-    <div class="cita-head">
-      <span class="cita-service">${c.servicio} · 🐶 ${c.mascota}</span>
-      <span class="cita-status ${statusClass[c.estado] || ''}">${c.estado}</span>
-    </div>
-    <div class="cita-meta">📅 ${new Date(c.fecha_hora_inicio).toLocaleString('es-BO')} · ⏱ ${c.duracion_estimada_min} min</div>
-  </div>`;
-}
+// ─── AGENDA ─────────────────────────────────────────────
+async function loadAgendaHoy() {
+  const container = document.getElementById('agendaContainer');
+  if (!container) return;
+  container.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Cargando agenda...</p></div>';
 
-async function loadCitasHoy() {
   try {
-    const res  = await authFetch(`${API_URL.replace('/auth', '')}/groomers/mis-citas/hoy`);
+    const res = await authFetch(`${API_URL.replace('/auth', '')}/groomers/agenda/hoy`);
+    if (!res.ok) throw new Error('Error al obtener la agenda');
     const data = await res.json();
-    document.getElementById('citasHoy').textContent  = data.length ?? 0;
-    document.getElementById('hoyCount').textContent  = data.length ?? 0;
-    const el = document.getElementById('citasHoyList');
-    el.innerHTML = data.length
-      ? data.map(renderCita).join('')
-      : '<div class="empty-state"><div class="icon">📅</div><p>No tienes citas para hoy.</p></div>';
-  } catch { }
+
+    if (!data.agenda || data.agenda.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>No tienes citas programadas para hoy 🎉</p></div>';
+      return;
+    }
+
+    // Construir timeline
+    let html = `<div style="margin-top: 8px;">`;
+    data.agenda.forEach((cita, index) => {
+      const horaInicio = new Date(cita.horaInicio).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
+      const horaFin = new Date(cita.horaFin).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
+      const estadoClass = cita.estado.replace('_', '-'); // en_progreso → en-progreso
+      html += `
+        <div class="timeline-item">
+          <div class="timeline-time">${horaInicio} – ${horaFin}</div>
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="cita-mascota">
+              🐶 ${cita.mascota.nombre} 
+              <span class="cita-estado estado-${estadoClass}">${cita.estado}</span>
+            </div>
+            <div class="cita-servicio">✂️ ${cita.servicio.nombre} · ${cita.duracionEstimada} min</div>
+            ${cita.notas ? `<div style="font-size:12px;color:var(--text-light);margin-top:4px;">📝 ${cita.notas}</div>` : ''}
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+  } catch (error) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Error al cargar la agenda: ${error.message}</p></div>`;
+  }
 }
 
-async function loadTodasCitas() {
-  try {
-    const res  = await authFetch(`${API_URL.replace('/auth', '')}/groomers/mis-citas`);
-    const data = await res.json();
-    document.getElementById('totalCount').textContent = data.length ?? 0;
-    const el = document.getElementById('todasCitasList');
-    el.innerHTML = data.length
-      ? data.map(renderCita).join('')
-      : '<div class="empty-state"><div class="icon">📅</div><p>Sin citas.</p></div>';
-  } catch { }
-}
+// Botón de refrescar
+document.getElementById('refreshAgendaBtn')?.addEventListener('click', loadAgendaHoy);
 
-document.getElementById('changePasswordForm').addEventListener('submit', async e => {
+// Cambio de contraseña (igual que antes)
+document.getElementById('changePasswordForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   try {
-    const res  = await authFetch(`${API_URL}/change-password`, {
+    const res = await authFetch(`${API_URL}/change-password`, {
       method: 'POST',
       body: JSON.stringify({
         oldPassword: document.getElementById('oldPassword').value,
@@ -87,4 +113,5 @@ document.getElementById('changePasswordForm').addEventListener('submit', async e
   }
 });
 
-loadCitasHoy();
+// Al cargar la página, mostrar agenda por defecto
+showSection('agenda');

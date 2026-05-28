@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Checklist — Admin Pet Spa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep:  #1e3a2f;
+      --green-mid:   #2d5a45;
+      --green-soft:  #4a8c6f;
+      --green-light: #a8d5b5;
+      --green-pale:  #e8f5ed;
+      --cream:       #faf7f2;
+      --amber:       #d4845a;
+      --text-dark:   #1a2e25;
+      --text-mid:    #4a6355;
+      --text-light:  #8aab97;
+      --border:      #e0ebe5;
+      --shadow-sm:   0 2px 8px rgba(30,58,47,.08);
+      --shadow-md:   0 4px 16px rgba(30,58,47,.12);
+      --radius:      16px;
+      --radius-sm:   10px;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-dark); display: flex; min-height: 100vh; }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: 240px; height: 100vh; background: var(--green-deep);
+      display: flex; flex-direction: column; padding: 28px 16px 20px;
+      position: fixed; top: 0; left: 0; z-index: 100;
+      overflow-y: auto; overflow-x: hidden;
+      scrollbar-width: thin; scrollbar-color: var(--green-mid) transparent;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--green-mid); border-radius: 4px; }
+
+    .sidebar-footer {
+      margin-top: 24px; padding: 14px; background: rgba(255,255,255,.05);
+      border-radius: var(--radius-sm); flex-shrink: 0;
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; padding: 0 8px; flex-shrink: 0; }
+    .logo-icon { width: 40px; height: 40px; background: var(--amber); border-radius: 12px; display: grid; place-items: center; font-size: 20px; }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--cream); }
+    .logo-text span { display: block; font-size: 10px; font-family: 'DM Sans', sans-serif; color: var(--green-light); letter-spacing: .08em; text-transform: uppercase; }
+
+    .nav-label {
+      font-size: 11px; letter-spacing: .10em; text-transform: uppercase;
+      color: var(--text-light); padding: 0 8px; margin: 16px 0 4px; flex-shrink: 0;
+    }
+
+    /* ── Acordeón ── */
+    .accordion-label {
+      cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px;
+      font-size: 11px; letter-spacing: .10em; text-transform: uppercase;
+      color: var(--text-light); padding: 10px 8px; margin: 8px 0 0;
+      transition: color .2s; flex-shrink: 0;
+    }
+    .accordion-label:hover { color: white; }
+
+    .accordion-arrow {
+      font-size: 9px; transition: transform .2s; display: inline-block;
+    }
+    .accordion-arrow { transform: rotate(-90deg); }
+    .accordion-label.open .accordion-arrow { transform: rotate(0deg); }
+
+    .accordion-group {
+      overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height .35s ease, opacity .25s ease; flex-shrink: 0;
+    }
+    .accordion-group.open { max-height: 600px; opacity: 1; }
+
+    /* ── Items de nav ── */
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+      border-radius: var(--radius-sm); color: var(--green-light); cursor: pointer;
+      font-size: 13px; margin-bottom: 2px; transition: background .2s, color .2s; text-decoration: none;
+    }
+    .nav-item:hover, .nav-item.active { background: var(--green-mid); color: white; }
+    .nav-icon { font-size: 16px; width: 18px; text-align: center; }
+
+    .user-card { display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 36px; height: 36px; background: var(--amber); border-radius: 50%; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+    .user-name { font-size: 12px; font-weight: 600; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 10px; color: var(--green-light); }
+    .logout-btn { background: none; border: none; color: var(--green-light); cursor: pointer; font-size: 16px; margin-left: auto; }
+    .logout-btn:hover { color: #ff7b7b; }
+
+    /* ─── MAIN ─── */
+    .main { margin-left: 240px; flex: 1; padding: 32px 36px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 26px; }
+    .page-sub { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+    .badge-admin { background: rgba(212,132,90,.15); color: var(--amber); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .back-link { display: inline-flex; align-items: center; gap: 5px; color: var(--green-soft); text-decoration: none; font-size: 13px; margin-bottom: 16px; }
+
+    /* ─── CARDS ─── */
+    .card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+    .card-title { font-family: 'Playfair Display', serif; font-size: 18px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    .stat { background: white; border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); border-top: 3px solid var(--green-soft); }
+    .stat-icon { font-size: 20px; margin-bottom: 4px; }
+    .stat-val { font-family: 'Playfair Display', serif; font-size: 24px; line-height: 1; }
+    .stat-lbl { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+    /* ─── FORMS ─── */
+    .form-group { margin-bottom: 13px; }
+    .form-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-mid); margin-bottom: 4px; letter-spacing: .05em; }
+    .form-input, .form-select { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--cream); outline: none; transition: border-color .2s, background .2s; }
+    .form-input:focus, .form-select:focus { border-color: var(--green-soft); background: white; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* ─── BTNS ─── */
+    .btn { padding: 8px 18px; border-radius: var(--radius-sm); border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s, opacity .2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-primary { background: var(--green-deep); color: white; }
+    .btn-primary:hover { background: var(--green-mid); }
+    .btn-outline { background: transparent; border: 1.5px solid #d0e4da; color: var(--text-mid); }
+    .btn-outline:hover { border-color: var(--green-soft); color: var(--green-soft); }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-amber { background: var(--amber); color: white; }
+    .btn-amber:hover { background: #c0714a; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    /* ─── ALERTS ─── */
+    .alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px; margin-top: 12px; display: none; }
+    .alert.show { display: block; }
+    .alert-success { background: #e8f5ed; color: #2d5a45; border: 1px solid #a8d5b5; }
+    .alert-error { background: #fdecea; color: #c0392b; border: 1px solid #f5c6c0; }
+    .alert-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+    /* ─── TABLES ─── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1.5px solid #f0f5f2; }
+    td { padding: 11px 12px; border-bottom: 1px solid #f8f9fa; vertical-align: middle; }
+    tr:hover td { background: #fafffe; }
+
+    /* ─── BADGES ─── */
+    .card-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; background: var(--green-pale); color: var(--green-soft); }
+    .badge-ok { background: #e8f5ed; color: #2d5a45; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+    .badge-warn { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+    .badge-inactive { background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 8px; font-size: 11px; }
+
+    /* ─── TOOLBAR ─── */
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .toolbar .form-input { width: 220px; }
+
+    /* ─── MODAL ─── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.48); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: var(--radius); padding: 28px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.2); }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 16px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+
+    /* ─── CHECKLIST ESPECÍFICO ─── */
+    .servicio-card { background: var(--green-pale); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px; border-left: 3px solid var(--green-soft); }
+    .servicio-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .servicio-card-header h4 { font-size: 14px; margin: 0; }
+    .item-tag { display: inline-flex; align-items: center; gap: 6px; background: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; margin: 3px; border: 1px solid var(--border); }
+    .item-tag.obligatorio { border-left: 3px solid var(--amber); }
+    .item-tag.opcional { border-left: 3px solid #94a3b8; opacity: 0.8; }
+    .monto { font-weight: 600; color: var(--green-deep); }
+    .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 22px; transition: .3s; }
+    .toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .3s; }
+    input:checked + .toggle-slider { background-color: var(--green-soft); }
+    input:checked + .toggle-slider:before { transform: translateX(18px); }
+    .progress-bar { width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+    .progress-fill { height: 100%; background: var(--green-soft); border-radius: 4px; transition: width .3s; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1100px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 900px) { .main { padding: 20px 16px; } }
+    @media (max-width: 700px) { .sidebar { display: none; } .main { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════ SIDEBAR COMPLETO ═══ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🐾</div>
+    <div class="logo-text">Pet Spa <span>Administrador</span></div>
+  </div>
+
+  <!-- INICIO -->
+  <div class="nav-label">Inicio</div>
+  <a class="nav-item" href="admin-dashboard.html">
+    <span class="nav-icon">🏠</span> Dashboard
+  </a>
+
+  <!-- PERSONAL & CLIENTES -->
+  <div class="nav-label accordion-label" data-group="personal">
+    <span class="accordion-arrow">▼</span> Personal &amp; Clientes
+  </div>
+  <div class="accordion-group" id="group-personal">
+    <a class="nav-item" href="#" data-section="crear-groomer"><span class="nav-icon">✂️</span> Crear Groomer</a>
+    <a class="nav-item" href="#" data-section="crear-recepcion"><span class="nav-icon">📞</span> Crear Recepcionista</a>
+    <a class="nav-item" href="#" data-section="crear-cliente"><span class="nav-icon">🐶</span> Crear Cliente</a>
+    <a class="nav-item" href="#" data-section="usuarios"><span class="nav-icon">👥</span> Ver Usuarios</a>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div class="nav-label accordion-label" data-group="productos">
+    <span class="accordion-arrow">▼</span> Productos
+  </div>
+  <div class="accordion-group" id="group-productos">
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="inicio"><span class="nav-icon">📊</span> Overview</a>
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="productos"><span class="nav-icon">📦</span> Catálogo</a>
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="categorias"><span class="nav-icon">🗂️</span> Categorías</a>
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="alertas"><span class="nav-icon">🔔</span> Alertas de Stock</a>
+    <a class="nav-item producto-link" href="admin-productos.html" data-prod-section="reporte"><span class="nav-icon">📋</span> Reporte Inventario</a>
+  </div>
+
+  <!-- AUDITORÍA -->
+  <div class="nav-label accordion-label" data-group="auditoria">
+    <span class="accordion-arrow">▼</span> Auditoría
+  </div>
+  <div class="accordion-group" id="group-auditoria">
+    <a class="nav-item" href="#" data-section="auth-logs"><span class="nav-icon">🔍</span> Auth Logs</a>
+  </div>
+
+  <!-- DISPONIBILIDAD -->
+  <div class="nav-label accordion-label" data-group="disponibilidad">
+    <span class="accordion-arrow">▼</span> Disponibilidad
+  </div>
+  <div class="accordion-group" id="group-disponibilidad">
+    <a class="nav-item" href="admin-availability.html"><span class="nav-icon">📆</span> Horarios &amp; Bloques</a>
+  </div>
+
+  <!-- SERVICIOS -->
+  <div class="nav-label accordion-label" data-group="servicios">
+    <span class="accordion-arrow">▼</span> Servicios
+  </div>
+  <div class="accordion-group" id="group-servicios">
+    <a class="nav-item" href="#" data-section="servicios"><span class="nav-icon">💇</span> Servicios</a>
+  </div>
+
+  <!-- CHECKLIST (NUEVA SECCIÓN) -->
+  <div class="nav-label accordion-label" data-group="checklist">
+    <span class="accordion-arrow">▼</span> Checklist
+  </div>
+  <div class="accordion-group" id="group-checklist">
+    <a class="nav-item" href="admin-checklist.html" data-section="resumen"><span class="nav-icon">📊</span> Resumen</a>
+    <a class="nav-item" href="admin-checklist.html" data-section="items"><span class="nav-icon">📦</span> Ítems</a>
+    <a class="nav-item" href="admin-checklist.html" data-section="templates"><span class="nav-icon">🗂️</span> Templates</a>
+    <a class="nav-item" href="admin-checklist.html" data-section="fichas"><span class="nav-icon">🔔</span> Fichas Completadas</a>
+    <a class="nav-item" href="admin-checklist.html" data-section="consumo"><span class="nav-icon">📋</span> Consumo Insumos</a>
+  </div>
+  <!-- CUENTA -->
+  <div class="nav-label accordion-label" data-group="cuenta">
+    <span class="accordion-arrow">▼</span> Cuenta
+  </div>
+  <div class="accordion-group" id="group-cuenta">
+    <a class="nav-item" href="#" data-section="seguridad"><span class="nav-icon">🔐</span> Seguridad &amp; 2FA</a>
+    <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">🛡️</div>
+      <div style="flex:1;min-width:0;">
+        <div class="user-name" id="sidebarName">—</div>
+        <div class="user-role">Administrador</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn2">✕</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════ MAIN ═══ -->
+<main class="main">
+  <a href="admin-dashboard.html" class="back-link">← Volver al dashboard</a>
+
+  <div class="topbar">
+    <div>
+      <h1 class="page-title">📋 Gestión de Checklist</h1>
+      <p class="page-sub">Ítems, templates, supervisión de fichas y consumo de insumos</p>
+    </div>
+    <span class="badge-admin">🛡️ Administrador</span>
+  </div>
+
+  <!-- ═══════════════ SECCIÓN: RESUMEN ═══ -->
+  <section id="section-resumen">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-icon">📋</div><div class="stat-val" id="statTotalItems">—</div><div class="stat-lbl">Ítems totales</div></div>
+      <div class="stat"><div class="stat-icon">✅</div><div class="stat-val" id="statItemsActivos">—</div><div class="stat-lbl">Ítems activos</div></div>
+      <div class="stat"><div class="stat-icon">🔗</div><div class="stat-val" id="statServiciosConfig">—</div><div class="stat-lbl">Servicios configurados</div></div>
+      <div class="stat"><div class="stat-icon">📝</div><div class="stat-val" id="statFichasHoy">—</div><div class="stat-lbl">Fichas completadas hoy</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2 class="card-title">🧴 Consumo de insumos hoy</h2></div>
+      <p style="font-size:14px;"><strong id="resumenConsumoCount">—</strong> registros · <strong id="resumenConsumoCantidad">—</strong> unidades totales</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SECCIÓN: ÍTEMS ═══ -->
+  <section id="section-items" style="display:none;">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">📋 Catálogo de Ítems</h2>
+        <button class="btn btn-primary" id="btnNuevoItem">➕ Nuevo ítem</button>
+      </div>
+      <div class="toolbar">
+        <select id="filtroEstadoItem" class="form-select" style="width:auto;">
+          <option value="">Todos</option>
+          <option value="activo">Activos</option>
+          <option value="inactivo">Inactivos</option>
+        </select>
+        <input type="search" id="buscarItemInput" class="form-input" placeholder="Buscar ítem...">
+        <button class="btn btn-outline btn-sm" id="btnBuscarItem">🔍</button>
+        <button class="btn btn-outline btn-sm" id="btnRefrescarItems">🔄</button>
+      </div>
+      <div class="alert" id="itemsMessage"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Nombre</th><th>Observación</th><th>Orden</th><th>Asignado a</th><th>Usado</th><th>Estado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="itemsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SECCIÓN: TEMPLATES ═══ -->
+  <section id="section-templates" style="display:none;">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">🔗 Templates por Servicio</h2>
+        <button class="btn btn-primary" id="btnNuevoTemplate">➕ Asignar ítems</button>
+      </div>
+      <div class="alert" id="templatesMessage"></div>
+      <div id="templatesContainer"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SECCIÓN: FICHAS ═══ -->
+  <section id="section-fichas" style="display:none;">
+    <div class="card">
+      <div class="card-head"><h2 class="card-title">✅ Fichas de Checklist Completadas</h2></div>
+      <div class="toolbar">
+        <input type="date" id="filtroFechaFichas" class="form-input" style="width:auto;">
+        <select id="filtroServicioFichas" class="form-select" style="width:auto;"><option value="">Todos los servicios</option></select>
+        <button class="btn btn-outline btn-sm" id="btnBuscarFichas">🔍 Buscar</button>
+      </div>
+      <div id="fichasContainer"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SECCIÓN: CONSUMO ═══ -->
+  <section id="section-consumo" style="display:none;">
+    <div class="card">
+      <div class="card-head"><h2 class="card-title">🧴 Consumo de Insumos</h2></div>
+      <div class="toolbar">
+        <input type="date" id="filtroFechaConsumo" class="form-input" style="width:auto;">
+        <button class="btn btn-outline btn-sm" id="btnBuscarConsumo">🔍 Buscar</button>
+      </div>
+      <div class="alert alert-info" id="consumoResumen" style="display:block; margin-bottom:12px;"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Ficha</th><th>Mascota</th><th>Servicio</th><th>Producto</th><th>Variante</th><th>Cantidad</th><th>Costo</th><th>Descontado</th><th>Fecha</th></tr>
+          </thead>
+          <tbody id="consumoTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════ MODAL: ITEM ═══ -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal">
+    <h2 class="modal-title" id="itemModalTitle">➕ Nuevo Ítem</h2>
+    <form id="itemForm">
+      <input type="hidden" id="itemId">
+      <div class="form-group">
+        <label class="form-label" for="itemNombre">Nombre *</label>
+        <input type="text" id="itemNombre" class="form-input" required placeholder="Ej: Revisión de orejas">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="itemDescripcion">Descripción</label>
+        <textarea id="itemDescripcion" class="form-input" rows="2" placeholder="Instrucciones para el groomer..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="itemOrden">Orden</label>
+          <input type="number" id="itemOrden" class="form-input" min="1" value="1">
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;padding-top:24px;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="itemRequiereObs">
+            <span class="toggle-slider"></span>
+          </label>
+          <span style="font-size:12px;">Requiere observación</span>
+        </div>
+      </div>
+      <div class="alert" id="itemModalAlert"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">💾 Guardar</button>
+        <button type="button" class="btn btn-outline" id="closeItemModalBtn">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════ MODAL: TEMPLATE ═══ -->
+<div class="modal-overlay" id="templateModal">
+  <div class="modal" style="max-width:650px;">
+    <h2 class="modal-title">🔗 Asignar Ítems a Servicio</h2>
+    <form id="templateForm">
+      <div class="form-group">
+        <label class="form-label" for="templateServicio">Servicio *</label>
+        <select id="templateServicio" class="form-select" required><option value="">— Seleccionar —</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ítems disponibles</label>
+        <div id="itemsDisponibles" style="max-height:250px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;"></div>
+      </div>
+      <div class="alert" id="templateModalAlert"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">💾 Guardar asignaciones</button>
+        <button type="button" class="btn btn-outline" id="closeTemplateModalBtn">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════ SCRIPTS ═══ -->
+<script>
+  // ── Toggle contraseñas (por si se usa en otro contexto) ──
+  function togglePass(id, btn) {
+    const inp = document.getElementById(id);
+    if (!inp) return;
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+  }
+
+  // ── ACORDEONES ──
+  document.addEventListener('DOMContentLoaded', () => {
+    const labels = document.querySelectorAll('.accordion-label');
+
+    labels.forEach(label => {
+      label.addEventListener('click', () => {
+        const groupId = 'group-' + label.dataset.group;
+        const group = document.getElementById(groupId);
+        if (!group) return;
+
+        const isOpen = group.classList.contains('open');
+
+        // Cerrar todos
+        document.querySelectorAll('.accordion-group.open').forEach(g => g.classList.remove('open'));
+        document.querySelectorAll('.accordion-label.open').forEach(l => l.classList.remove('open'));
+
+        // Abrir el actual si estaba cerrado
+        if (!isOpen) {
+          group.classList.add('open');
+          label.classList.add('open');
+
+          setTimeout(() => {
+            group.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 50);
+        }
+      });
+    });
+
+    // ── Links a productos: guardar sección ──
+    document.querySelectorAll('.producto-link').forEach(link => {
+      link.addEventListener('click', () => {
+        const seccion = link.dataset.prodSection;
+        if (seccion) localStorage.setItem('productos_seccion', seccion);
+      });
+    });
+
+    // ── Navegación interna: mostrar/ocultar secciones ──
+    const secciones = document.querySelectorAll('[id^="section-"]');
+    const navItems = document.querySelectorAll('.nav-item[data-section]');
+
+    function mostrarSeccion(seccionId) {
+      secciones.forEach(s => s.style.display = 'none');
+      const target = document.getElementById('section-' + seccionId);
+      if (target) {
+        target.style.display = '';
+      } else {
+        // Fallback: redirigir al dashboard si la sección no existe aquí
+        window.location.href = 'admin-dashboard.html';
+        return;
+      }
+      navItems.forEach(item => item.classList.remove('active'));
+      const activeItem = document.querySelector(`.nav-item[data-section="${seccionId}"]`);
+      if (activeItem) activeItem.classList.add('active');
+    }
+
+    navItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        const seccion = item.dataset.section;
+        if (seccion) {
+          e.preventDefault();
+          mostrarSeccion(seccion);
+        }
+      });
+    });
+
+    // ── Leer sección destino enviada desde otra página ──
+    const gotoSection = localStorage.getItem('goto_section');
+    if (gotoSection) {
+      localStorage.removeItem('goto_section');
+      const targetLink = document.querySelector(`.nav-item[data-section="${gotoSection}"]`);
+      if (targetLink) {
+        const group = targetLink.closest('.accordion-group');
+        if (group) {
+          document.querySelectorAll('.accordion-group.open').forEach(g => g.classList.remove('open'));
+          document.querySelectorAll('.accordion-label.open').forEach(l => l.classList.remove('open'));
+          group.classList.add('open');
+          const label = group.previousElementSibling;
+          if (label && label.classList.contains('accordion-label')) {
+            label.classList.add('open');
+          }
+        }
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        targetLink.classList.add('active');
+      }
+      mostrarSeccion(gotoSection);
+    }
+  });
+</script>
+
+<script type="module">
+  import { authFetch, getAccessToken, getUser, clearTokens, API_URL } from './js/auth.js';
+
+  // ── Proteger ruta ──
+  const token = getAccessToken();
+  const user  = getUser();
+  if (!token || !user)       { window.location.href = 'index.html'; }
+  if (user?.rol !== 'admin') { window.location.href = 'dashboard.html'; }
+
+  // ── Verificar cambio obligatorio de contraseña ──
+  if (user?.debeCambiarPassword) {
+    window.location.href = 'change-password-required.html';
+    throw new Error('Debe cambiar contraseña');
+  }
+
+  // ── Forzar activación de 2FA si no está habilitado ──
+  async function verificar2FAObligatorio() {
+    try {
+      const res = await authFetch(`${API_URL}/me`);
+      if (!res.ok) {
+        if (res.status === 401) {
+          clearTokens();
+          window.location.href = 'index.html';
+        }
+        throw new Error('Error al obtener perfil');
+      }
+      const data = await res.json();
+      if (!data.twoFactorEnabled) {
+        window.location.href = '2fa-verify.html';
+      }
+    } catch (err) {
+      console.error('Error verificando 2FA:', err);
+      clearTokens();
+      window.location.href = 'index.html';
+    }
+  }
+  verificar2FAObligatorio();
+
+  // ── Nombre en sidebar ──
+  document.getElementById('sidebarName').textContent = user?.email || '—';
+
+  // ── Logout ──
+  function cerrarSesion() {
+    clearTokens();
+    window.location.href = 'index.html';
+  }
+  document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
+  document.getElementById('logoutBtn2')?.addEventListener('click', cerrarSesion);
+
+  // ── Cargar lógica específica del checklist ──
+  import './js/admin-checklist.js';
+</script>
+</body>
+</html>

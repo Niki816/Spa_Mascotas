@@ -10,6 +10,8 @@ import './config/env';
 import './config/passport';
 import pagosRoutes from './routes/pagos.routes';
 import path from 'path';
+import checklistRoutes from './routes/admin-checklist.routes';
+import groomerRoutes from './routes/groomer.routes';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -26,8 +28,11 @@ app.use((req, _res, next) => {
 app.use('/api/auth',      authRoutes);
 app.use('/api/admin',     adminRoutes);
 app.use('/api/admin',     productosRoutes);
+app.use('/api/admin/checklist', checklistRoutes);
 app.use('/api/recepcion', recepcionRoutes);
+app.use('/api/groomers', groomerRoutes);
 app.use('/api/recepcion', pagosRoutes); 
+
 app.use(express.static(path.join(__dirname, 'public')));
 console.log('✓ Router /api/recepcion registrado');
 app.get('/', (_req, res) => {
