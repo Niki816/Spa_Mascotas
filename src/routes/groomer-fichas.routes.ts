@@ -13,33 +13,30 @@ import {
   getProductosConsumibles,
 } from '../controllers/groomer-fichas.controller';
 
+
 const router = Router();
 
-// ─── FICHAS ───
+// ─── FICHAS GENERALES ─────────────────────────────────────────────────────
 router.get('/activas', getFichasActivas);
-
-// ─── PRODUCTOS ───
 router.get('/productos-consumo', getProductosConsumibles);
 
-
-
+// ─── DETALLE + ACCIONES POR CITA ──────────────────────────────────────────
 router.get('/:citaId', getFichaDetalle);
 router.post('/:citaId/iniciar', iniciarServicio);
+
+
+// ─── TOGGLE LEGACY (si groomer-dashboard lo usa directamente) ─────────────
+//    Mantenemos el endpoint viejo para no romper frontend existente.
 router.put('/:citaId/checklist/:itemId', toggleChecklistItem);
 
-// ─── FOTOS (con multer) ───
-router.post(
-  '/:citaId/foto',
-  uploadFichaFoto.single('foto'),
-  subirFotoFicha
-);
+// ─── FOTOS (con multer) ───────────────────────────────────────────────────
+router.post('/:citaId/foto', uploadFichaFoto.single('foto'), subirFotoFicha);
 
-// ─── CONSUMO DE INSUMOS ───
+// ─── CONSUMO DE INSUMOS ───────────────────────────────────────────────────
 router.post('/:citaId/consumo', registrarConsumo);
 router.delete('/:citaId/consumo/:consumoId', eliminarConsumo);
 
-// ─── CIERRE DE FICHA ───
+// ─── CIERRE DE FICHA ─────────────────────────────────────────────────────
 router.post('/:citaId/cerrar', cerrarFicha);
-
 
 export default router;

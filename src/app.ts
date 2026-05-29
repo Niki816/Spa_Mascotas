@@ -4,13 +4,12 @@ import passport from 'passport';
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
 import recepcionRoutes from './routes/recepcion.routes';
-import productosRoutes from './routes/productos.routes'; 
+import productosRoutes from './routes/productos.routes';
 import { AppError } from './utils/errors';
 import './config/env';
 import './config/passport';
 import pagosRoutes from './routes/pagos.routes';
 import path from 'path';
-import checklistRoutes from './routes/admin-checklist.routes';
 import groomerRoutes from './routes/groomer.routes';
 
 const app = express();
@@ -21,7 +20,7 @@ app.use(cors({
   credentials: true,
 }));
 
-// ✅ CRÍTICO: express.json() solo cuando NO es multipart
+// ✅ express.json() solo cuando NO es multipart
 app.use((req, res, next) => {
   const ct = req.headers['content-type'] || '';
   if (ct.includes('multipart/form-data')) {
@@ -37,20 +36,25 @@ app.use((req, _res, next) => {
   next();
 });
 
+// ─── RUTAS ────────────────────────────────────────────────────────────────
 app.use('/api/auth',            authRoutes);
 app.use('/api/admin',           adminRoutes);
 app.use('/api/admin',           productosRoutes);
-app.use('/api/admin/checklist', checklistRoutes);
 app.use('/api/recepcion',       recepcionRoutes);
 app.use('/api/recepcion',       pagosRoutes);
-app.use('/api/groomers',        groomerRoutes);
 
+// ✅ groomerRoutes incluye /fichas → /fichas/:citaId/checklist de forma anidada
+//    con authMiddleware ya aplicado en groomer.routes.ts
+app.use('/api/groomers', groomerRoutes);
+
+// ─── STATIC ───────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/', (_req, res) => {
   res.json({ status: 'ok', message: 'Servidor Pet Spa funcionando 🐾' });
 });
 
+// ─── ERROR HANDLER ────────────────────────────────────────────────────────
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({ message: err.message });

@@ -4,7 +4,8 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 import { getAgendaHoy, getAgendaSemana } from '../controllers/groomer.controller';
 import fichasRoutes from './groomer-fichas.routes';
 import { getProductosConsumibles } from '../controllers/groomer-fichas.controller';
-
+import { getGaleriaFotos } from '../controllers/groomer-galeria.controller';
+import { getHistorialConsumo } from '../controllers/groomer-insumos.controller';
 const router = Router();
 
 // Todas las rutas requieren autenticación
@@ -13,7 +14,8 @@ router.use(authMiddleware);
 // ─── AGENDA ───
 router.get('/agenda/hoy', getAgendaHoy);
 router.get('/agenda/semana', getAgendaSemana);
-
+router.get('/galeria', getGaleriaFotos);
+router.get('/insumos', getHistorialConsumo);
 // ─── FICHAS (subrouter sin prefijo duplicado) ───
 router.use('/fichas', fichasRoutes);
 

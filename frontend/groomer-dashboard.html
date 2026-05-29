@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Groomer — Pet Spa Manager</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     /* ─────────────────────────────────────────────────────── */
-    /* VARIABLES Y RESET                                       */
+    /* VARIABLES Y RESET (sin cambios)                        */
     /* ─────────────────────────────────────────────────────── */
     :root {
       --green-deep: #1e3a2f;
@@ -985,6 +985,13 @@
       <span class="nav-icon">📋</span> Fichas Activas
     </a>
 
+    <a class="nav-item" href="groomer-galeria.html">
+      <span class="nav-icon">🖼️</span> Galería
+    </a>
+
+    <a class="nav-item" href="groomer-insumos.html">
+      <span class="nav-icon">🧴</span> Insumos
+    </a>
     <div class="nav-label">Cuenta</div>
     <a class="nav-item" href="#" data-section="perfil">
       <span class="nav-icon">👤</span> Mi perfil
@@ -1034,7 +1041,7 @@
     </div>
 
     <!-- ────── FICHAS ACTIVAS ────── -->
-    <div id="section-fichas" style="display: none;">
+    <div id="section-fichas" style="display:none;">
       <div class="card">
         <div class="card-head">
           <div class="card-title">📋 Fichas Activas Hoy</div>
@@ -1152,6 +1159,27 @@
       </div>
     </div>
   </div>
+
+  <!-- ════════════════════════════════════════════════════════ -->
+<!-- MODAL: CONFIRMACIÓN                                     -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal" style="max-width: 420px;">
+    <div class="modal-header">
+      <h3 id="confirmModalTitle">Confirmar acción</h3>
+      <button class="modal-close" id="confirmModalClose">✕</button>
+    </div>
+    <div class="modal-body" style="text-align: center;">
+      <p id="confirmModalMessage" style="font-size: 14px; margin-bottom: 24px; color: var(--text-mid);">¿Estás seguro?</p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn btn-outline" id="confirmCancelBtn">Cancelar</button>
+        <button class="btn btn-amber" id="confirmOkBtn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div id="toast" class="toast"><span id="toastMsg"></span></div>
 
   <script type="module" src="js/groomer-dashboard.js"></script>
 </body>

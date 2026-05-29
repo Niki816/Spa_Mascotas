@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galería de Evolución — Pet Spa Groomer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green-deep: #1e3a2f;
+      --green-mid: #2d5a45;
+      --green-soft: #4a8c6f;
+      --green-light: #a8d5b5;
+      --green-pale: #e8f5ed;
+      --cream: #faf7f2;
+      --amber: #d4845a;
+      --text-dark: #1a2e25;
+      --text-mid: #4a6355;
+      --text-light: #8aab97;
+      --shadow-sm: 0 2px 8px rgba(30,58,47,.08);
+      --shadow-md: 0 4px 16px rgba(30,58,47,.12);
+      --shadow-lg: 0 8px 32px rgba(30,58,47,.15);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      display: flex;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--green-deep) 0%, #1a3227 100%);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 16px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: var(--shadow-md);
+    }
+    .logo { display:flex; align-items:center; gap:12px; margin-bottom:32px; padding:0 8px; }
+    .logo-icon { width:44px; height:44px; background:linear-gradient(135deg,#7b9de0,#5a7ba8); border-radius:12px; display:grid; place-items:center; font-size:22px; flex-shrink:0; box-shadow:0 2px 8px rgba(123,157,224,.3); }
+    .logo-text { font-family:'Playfair Display',serif; font-size:18px; color:white; font-weight:600; }
+    .logo-text span { display:block; font-size:10px; font-family:'DM Sans',sans-serif; color:var(--green-light); letter-spacing:.08em; text-transform:uppercase; font-weight:500; }
+    .nav-label { font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-light); padding:0 8px; margin:20px 0 8px; font-weight:600; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:var(--green-light); cursor:pointer; font-size:13px; margin-bottom:4px; transition:var(--transition); text-decoration:none; font-weight:500; background:transparent; border:none; width:100%; text-align:left; }
+    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,.1); color:white; transform:translateX(4px); }
+    .nav-icon { font-size:18px; width:20px; text-align:center; }
+    .sidebar-footer { margin-top:auto; padding:16px; background:rgba(255,255,255,.05); border-radius:10px; border:1px solid rgba(255,255,255,.08); }
+    .user-card { display:flex; align-items:center; gap:12px; }
+    .user-avatar { width:40px; height:40px; background:linear-gradient(135deg,#7b9de0,#5a7ba8); border-radius:50%; display:grid; place-items:center; font-size:18px; flex-shrink:0; }
+    .user-name { font-size:13px; font-weight:600; color:white; }
+    .user-role { font-size:11px; color:var(--green-light); margin-top:2px; }
+    .logout-btn { background:none; border:none; color:var(--green-light); cursor:pointer; font-size:18px; margin-left:auto; transition:var(--transition); }
+    .logout-btn:hover { color:#ff7b7b; transform:scale(1.1); }
+
+    /* MAIN */
+    .main { margin-left:260px; flex:1; padding:32px 36px; }
+
+    .page-title { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--text-dark); margin-bottom:8px; }
+    .page-sub { font-size:14px; color:var(--text-light); margin-bottom:32px; }
+
+    /* GALERÍA */
+    .galeria-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .servicio-card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+    .servicio-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f5f2;
+    }
+    .mascota-info h3 { font-family:'Playfair Display',serif; font-size:18px; color:var(--text-dark); }
+    .mascota-info span { font-size:13px; color:var(--text-mid); }
+    .servicio-info { font-size:13px; color:var(--text-light); margin-top:4px; display: flex; align-items: center; gap: 6px; }
+    .fecha { font-size:12px; color:var(--text-light); margin-top:4px; }
+
+    .fotos-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      background: #f0f0f0;
+    }
+    .foto-wrapper {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+      background: #e0e0e0;
+    }
+    .foto-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .foto-wrapper img:hover { transform: scale(1.05); }
+    .foto-label {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0,0,0,0.65);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .empty-foto {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1 / 1;
+      background: #f5f5f5;
+      color: #ccc;
+      font-size: 28px;
+    }
+
+    /* LIGHTBOX */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.4); }
+
+    /* ESTADOS */
+    .loading-state, .empty-state { text-align: center; padding: 80px 32px; color: var(--text-light); }
+    .spinner { width:40px; height:40px; border:3px solid var(--green-pale); border-top-color:var(--green-soft); border-radius:50%; margin:0 auto 16px; animation:spin .8s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    @media (max-width: 900px) {
+      .sidebar { width:200px; }
+      .main { margin-left:200px; padding: 20px 24px; }
+    }
+    @media (max-width: 700px) {
+      .sidebar { display:none; }
+      .main { margin-left:0; }
+      .galeria-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">✂️</div>
+      <div>
+        <div class="logo-text">Pet Spa</div>
+        <div class="logo-text"><span>Groomer</span></div>
+      </div>
+    </div>
+
+    <div class="nav-label">Mi trabajo</div>
+    <a class="nav-item" href="groomer-dashboard.html"><span class="nav-icon">📅</span> Mi Agenda</a>
+    <a class="nav-item" href="groomer-dashboard.html" data-section="fichas"><span class="nav-icon">📋</span> Fichas Activas</a>
+    <a class="nav-item active" href="groomer-galeria.html"><span class="nav-icon">🖼️</span> Galería</a>
+<a class="nav-item" href="groomer-insumos.html"><span class="nav-icon">🧴</span> Insumos</a>
+    <div class="nav-label">Cuenta</div>
+    <a class="nav-item" href="groomer-dashboard.html" data-section="perfil"><span class="nav-icon">👤</span> Mi perfil</a>
+    <button class="nav-item" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</button>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">✂️</div>
+        <div>
+          <div class="user-name" id="sidebarName">Groomer</div>
+          <div class="user-role" id="groomerEmail">usuario@email.com</div>
+        </div>
+        <button class="logout-btn" id="logoutBtn2" title="Salir">✕</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <h1 class="page-title">Galería de Evolución 🖼️</h1>
+    <p class="page-sub">Fotos de antes y después de todos tus servicios</p>
+
+    <div id="galeriaContainer">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando galería...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <img src="" alt="Foto ampliada" id="lightboxImg" />
+  </div>
+
+  <script type="module" src="js/groomer-galeria.js"></script>
+</body>
+</html>

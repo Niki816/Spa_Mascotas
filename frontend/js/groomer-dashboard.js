@@ -66,6 +66,35 @@ function openModal(modalId) {
 function closeModal(modalId) {
   document.getElementById(modalId)?.classList.remove('show');
 }
+// ─────────────────────────────────────────────────────────
+// MODAL DE CONFIRMACIÓN
+// ─────────────────────────────────────────────────────────
+function showConfirm(mensaje, onConfirm) {
+  document.getElementById('confirmModalMessage').textContent = mensaje;
+  openModal('confirmModal');
+
+  // Limpiar callbacks anteriores
+  const okBtn = document.getElementById('confirmOkBtn');
+  const cancelBtn = document.getElementById('confirmCancelBtn');
+  const closeBtn = document.getElementById('confirmModalClose');
+
+  function limpiarYConfirmar() {
+    closeModal('confirmModal');
+    onConfirm();
+  }
+
+  // Reemplazar listeners para evitar duplicados
+  const newOkBtn = okBtn.cloneNode(true);
+  okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+  const newCancelBtn = cancelBtn.cloneNode(true);
+  cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+  const newCloseBtn = closeBtn.cloneNode(true);
+  closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+
+  document.getElementById('confirmOkBtn').addEventListener('click', limpiarYConfirmar);
+  document.getElementById('confirmCancelBtn').addEventListener('click', () => closeModal('confirmModal'));
+  document.getElementById('confirmModalClose').addEventListener('click', () => closeModal('confirmModal'));
+}
 
 // ─────────────────────────────────────────────────────────
 // AGENDA HOY
@@ -90,8 +119,12 @@ async function loadAgendaHoy() {
       const horaInicio = new Date(cita.horaInicio).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
       const horaFin = new Date(cita.horaFin).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
       const estadoClass = cita.estado.replace(/_/g, '_');
+      
+      // ✅ CAMBIADO: en lugar de redirigir a la página checklist, abrimos el modal de ficha
+      const onclick = `abrirFicha(${cita.cita_id})`;
+
       html += `
-        <div class="timeline-item" onclick="abrirFicha(${cita.cita_id})">
+        <div class="timeline-item" onclick="${onclick}">
           <div class="timeline-time">${horaInicio}</div>
           <div class="timeline-dot"></div>
           <div class="timeline-content">
@@ -119,7 +152,6 @@ async function loadFichasActivas() {
   const container = document.getElementById('fichasActivasList');
   if (!container) return;
   container.innerHTML = '<div class="empty-state">⏳ Cargando...</div>';
-
   try {
     const res = await authFetch(`${API_URL.replace('/auth', '')}/groomers/fichas/activas`);
     if (!res.ok) throw new Error('Error al cargar fichas');
@@ -130,25 +162,23 @@ async function loadFichasActivas() {
       return;
     }
 
-    const html = `
-      <div class="fichas-grid">
-        ${data.agenda.map(f => `
-          <div class="ficha-card">
-            <div class="ficha-head">
-              <div class="ficha-mascota-img">🐶</div>
-              <div class="ficha-info">
-                <div class="ficha-mascota-name">${f.mascota.nombre}</div>
-                <div class="ficha-mascota-raza">${f.mascota.raza || f.mascota.especie || 'Mascota'}</div>
-                <div class="ficha-servicio">✂️ ${f.servicio.nombre}</div>
-              </div>
+    container.innerHTML = data.agenda.map(f => {
+      const estadoClass = f.estado.replace(/_/g, '_');
+      return `
+        <div class="ficha-card">
+          <div class="ficha-head">
+            <div class="ficha-mascota-img">🐶</div>
+            <div class="ficha-info">
+              <div class="ficha-mascota-name">${f.mascota.nombre}</div>
+              <div class="ficha-mascota-raza">${f.mascota.raza || f.mascota.especie || 'Mascota'}</div>
+              <div class="ficha-servicio">✂️ ${f.servicio.nombre}</div>
             </div>
-            <span class="ficha-estado-badge estado-${f.estado.replace(/_/g, '_')}">${f.estado}</span>
-            <button class="btn btn-outline btn-sm ficha-btn" onclick="abrirFicha(${f.cita_id})">📋 Ver ficha</button>
           </div>
-        `).join('')}
-      </div>
-    `;
-    container.innerHTML = html;
+          <span class="ficha-estado-badge estado-${estadoClass}">${f.estado}</span>
+          <!-- ✅ CAMBIADO: abrir modal en lugar de navegar -->
+          <button class="btn btn-outline btn-sm ficha-btn" onclick="abrirFicha(${f.cita_id})">📋 Ver ficha</button>
+        </div>`;
+    }).join('');
   } catch (err) {
     container.innerHTML = `<div class="empty-state">❌ ${err.message}</div>`;
   }
@@ -171,10 +201,8 @@ window.abrirFicha = async function(citaId) {
     const data = await res.json();
 
     if (!data.ficha) {
-      // Ficha no iniciada aún
       renderizarFichaNoIniciada(data, citaId);
     } else {
-      // Ficha ya iniciada
       renderizarFichaIniciada(data, citaId);
     }
   } catch (err) {
@@ -290,8 +318,10 @@ window.iniciarServicio = async function(citaId) {
     const res = await authFetch(`${API_URL.replace('/auth', '')}/groomers/fichas/${citaId}/iniciar`, { method: 'POST' });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
-    window.abrirFicha(citaId);
-    showNotification('✓ Servicio iniciado', 'success');
+    
+    // ✅ CAMBIADO: en lugar de redirigir a la página checklist, recargamos el modal
+    showNotification('✅ Servicio iniciado', 'success');
+    window.abrirFicha(citaId);  // Esto vuelve a cargar el detalle (ahora con ficha iniciada)
   } catch (err) {
     showNotification(err.message, 'error');
   }
@@ -316,7 +346,7 @@ window.toggleChecklistItem = async function(citaId, itemId, checked) {
     showNotification(checked ? '✓ Ítem completado' : 'Ítem desmarcado', 'success');
   } catch (err) {
     showNotification(err.message, 'error');
-    window.abrirFicha(citaId); // Recargar
+    window.abrirFicha(citaId); // Recargar el modal para reflejar el estado real
   }
 };
 
@@ -365,7 +395,6 @@ document.getElementById('fotoForm')?.addEventListener('submit', async e => {
       {
         method: 'POST',
         body: formData,
-        isMultipart: true,
       }
     );
     const data = await res.json();
@@ -373,7 +402,7 @@ document.getElementById('fotoForm')?.addEventListener('submit', async e => {
 
     showNotification('✓ Foto subida correctamente', 'success');
     closeModal('fotoModal');
-    window.abrirFicha(fichaActualCitaId);
+    window.abrirFicha(fichaActualCitaId); // Recargar el modal principal
   } catch (err) {
     showNotification(err.message, 'error');
   }
@@ -385,7 +414,6 @@ document.getElementById('fotoForm')?.addEventListener('submit', async e => {
 window.abrirModalConsumo = async function(citaId) {
   fichaActualCitaId = citaId;
   
-  // Cargar productos si no están cargados
   if (!productosDisponibles.length) {
     await cargarProductos();
   }
@@ -393,7 +421,6 @@ window.abrirModalConsumo = async function(citaId) {
   document.getElementById('consumoForm').reset();
   document.getElementById('consumoMessage').innerHTML = '';
   
-  // Llenar select de productos
   const selectProducto = document.getElementById('consumoProducto');
   selectProducto.innerHTML = '<option value="">Selecciona un producto</option>';
   productosDisponibles.forEach(p => {
@@ -454,7 +481,7 @@ document.getElementById('consumoForm')?.addEventListener('submit', async e => {
 
     showNotification('✓ Consumo registrado', 'success');
     closeModal('consumoModal');
-    window.abrirFicha(fichaActualCitaId);
+    window.abrirFicha(fichaActualCitaId); // Recargar
   } catch (err) {
     showNotification(err.message, 'error');
   }
@@ -464,40 +491,46 @@ document.getElementById('consumoForm')?.addEventListener('submit', async e => {
 // ELIMINAR CONSUMO
 // ─────────────────────────────────────────────────────────
 window.eliminarConsumo = async function(citaId, consumoId) {
-  if (!confirm('¿Eliminar este registro de consumo?')) return;
+  showConfirm(
+    '¿Eliminar este registro de consumo?',
+    async () => {
+      try {
+        const res = await authFetch(`${API_URL.replace('/auth', '')}/groomers/fichas/${citaId}/consumo/${consumoId}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
 
-  try {
-    const res = await authFetch(`${API_URL.replace('/auth', '')}/groomers/fichas/${citaId}/consumo/${consumoId}`, {
-      method: 'DELETE',
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
-
-    showNotification('✓ Consumo eliminado', 'success');
-    window.abrirFicha(citaId);
-  } catch (err) {
-    showNotification(err.message, 'error');
-  }
+        showNotification('✓ Consumo eliminado', 'success');
+        window.abrirFicha(citaId);
+      } catch (err) {
+        showNotification(err.message, 'error');
+      }
+    }
+  );
 };
 
 // ─────────────────────────────────────────────────────────
 // CERRAR FICHA
 // ─────────────────────────────────────────────────────────
 window.cerrarFicha = async function(citaId) {
-  if (!confirm('¿Cerrar la ficha? Se descontará el inventario y la cita se marcará como completada.')) return;
+  showConfirm(
+    '¿Cerrar la ficha? Se descontará el inventario y la cita se marcará como completada.',
+    async () => {
+      try {
+        const res = await authFetch(`${API_URL.replace('/auth', '')}/groomers/fichas/${citaId}/cerrar`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
 
-  try {
-    const res = await authFetch(`${API_URL.replace('/auth', '')}/groomers/fichas/${citaId}/cerrar`, { method: 'POST' });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
-
-    showNotification('✓ Ficha cerrada exitosamente', 'success');
-    closeModal('fichaModal');
-    loadFichasActivas();
-    loadAgendaHoy();
-  } catch (err) {
-    showNotification(err.message, 'error');
-  }
+        showNotification('✓ Ficha cerrada exitosamente', 'success');
+        closeModal('fichaModal');
+        loadFichasActivas();
+        loadAgendaHoy();
+      } catch (err) {
+        showNotification(err.message, 'error');
+      }
+    }
+  );
 };
 
 // ─────────────────────────────────────────────────────────
@@ -530,7 +563,6 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
 // NOTIFICACIONES
 // ─────────────────────────────────────────────────────────
 function showNotification(message, type = 'info') {
-  // Buscar alert visible
   const messageEls = document.querySelectorAll('.alert');
   messageEls.forEach(el => {
     if (el.classList.contains('show')) {
@@ -538,13 +570,12 @@ function showNotification(message, type = 'info') {
     }
   });
 
-  // Mostrar en el que sea visible
   const alertEl = document.querySelector('.alert:not(.show)') || document.getElementById('fotoMessage') || document.getElementById('consumoMessage') || document.getElementById('pwMessage');
   if (alertEl) {
     alertEl.textContent = message;
     alertEl.className = `alert alert-${type} show`;
   } else {
-    alert(message); // Fallback
+    alert(message);
   }
 }
 
@@ -556,10 +587,10 @@ document.addEventListener('keydown', e => {
     closeModal('fichaModal');
     closeModal('fotoModal');
     closeModal('consumoModal');
+    closeModal('confirmModal');  // ← añadir
   }
 });
 
-// Cerrar modal al hacer click fuera
 document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
   backdrop.addEventListener('click', e => {
     if (e.target === backdrop) {
