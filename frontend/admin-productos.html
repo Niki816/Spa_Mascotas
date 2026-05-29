@@ -741,6 +741,37 @@
                   placeholder="Descripción del producto..."></textarea>
       </div>
 
+      <!-- DESPUÉS del form-group de descripción, ANTES del de imagen -->
+      <div class="form-group">
+        <label class="form-label">¿Este producto tendrá variantes?</label>
+        <div style="display:flex;gap:16px;align-items:center;margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+            <input type="radio" name="tieneVariantes" id="siVariantes" value="si">
+            Sí, tendrá variantes (el stock lo manejan las variantes)
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+            <input type="radio" name="tieneVariantes" id="noVariantes" value="no" checked>
+            No, stock directo
+          </label>
+        </div>
+      </div>
+
+      <!-- Stock inicial — solo visible si NO tiene variantes -->
+      <div class="form-group" id="stockInicialGroup">
+        <label class="form-label" for="productoStockInicial">Stock inicial</label>
+        <input type="number" id="productoStockInicial" class="form-input" min="0" value="0">
+        <small style="color:var(--text-light);font-size:11px;">
+          Puedes ajustarlo después desde el botón 📦 en el catálogo
+        </small>
+      </div>
+
+      <!-- Aviso cuando SÍ tiene variantes -->
+      <div id="stockVariantesAviso" style="display:none;background:#e8f5ed;border:1px solid #a8d5b5;
+          border-radius:10px;padding:10px 14px;font-size:12px;color:#2d5a45;margin-bottom:12px;">
+        ℹ️ El stock se calculará automáticamente sumando el stock de cada variante que agregues.
+        No necesitas ingresar stock aquí.
+      </div>
+
       <div class="form-group">
         <label class="form-label" for="productoImagenFile">Imagen del producto</label>
         <input type="file" id="productoImagenFile" accept="image/*">

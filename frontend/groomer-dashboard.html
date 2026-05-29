@@ -3,226 +3,1156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Groomer — Pet Spa</title>
+  <title>Groomer — Pet Spa Manager</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--radius:16px;--radius-sm:10px;}
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
-    .sidebar{width:240px;min-height:100vh;background:var(--green-deep);display:flex;flex-direction:column;padding:28px 16px;position:fixed;top:0;left:0;}
-    .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
-    .logo-icon{width:40px;height:40px;background:#7b9de0;border-radius:12px;display:grid;place-items:center;font-size:20px;}
-    .logo-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
-    .logo-text span{display:block;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--green-light);letter-spacing:.08em;text-transform:uppercase;}
-    .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-light);padding:0 8px;margin:16px 0 4px;}
-    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;color:var(--green-light);cursor:pointer;font-size:13px;margin-bottom:2px;transition:all .2s;text-decoration:none;}
-    .nav-item:hover,.nav-item.active{background:var(--green-mid);color:white;}
-    .nav-icon{font-size:16px;width:18px;text-align:center;}
-    .sidebar-footer{margin-top:auto;padding:14px;background:rgba(255,255,255,.05);border-radius:10px;}
-    .user-card{display:flex;align-items:center;gap:10px;}
-    .user-avatar{width:36px;height:36px;background:#7b9de0;border-radius:50%;display:grid;place-items:center;font-size:14px;}
-    .user-name{font-size:12px;font-weight:600;color:var(--cream);}
-    .user-role{font-size:10px;color:var(--green-light);}
-    .logout-btn{background:none;border:none;color:var(--green-light);cursor:pointer;font-size:16px;margin-left:auto;}
-    .logout-btn:hover{color:#ff7b7b;}
-    .main{margin-left:240px;flex:1;padding:32px 36px;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
-    .page-title{font-family:'Playfair Display',serif;font-size:26px;}
-    .page-sub{font-size:13px;color:var(--text-light);margin-top:2px;}
-    .badge-groomer{background:#e8f0fd;color:#3456a0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px;}
-    .stat{background:white;border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
-    .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-    .stat:nth-child(1)::before{background:#7b9de0;}.stat:nth-child(2)::before{background:var(--green-soft);}.stat:nth-child(3)::before{background:var(--amber);}
-    .stat-icon{font-size:26px;margin-bottom:10px;}
-    .stat-val{font-family:'Playfair Display',serif;font-size:30px;line-height:1;}
-    .stat-lbl{font-size:12px;color:var(--text-light);margin-top:4px;}
-    .card{background:white;border-radius:var(--radius);padding:26px;box-shadow:var(--shadow-sm);margin-bottom:22px;}
-    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-    .card-title{font-family:'Playfair Display',serif;font-size:17px;}
-    .card-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:#e8f0fd;color:#3456a0;}
-    .cita-item{padding:14px;border:1px solid #f0f5f2;border-radius:10px;margin-bottom:10px;}
-    .cita-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-    .cita-service{font-weight:600;font-size:14px;}
-    .cita-status{padding:3px 10px;border-radius:12px;font-size:11px;}
-    .st-agendada{background:#fef3c7;color:#d97706;}.st-confirmada{background:#d1fae5;color:#065f46;}.st-en_progreso{background:#dbeafe;color:#1e40af;}.st-completada{background:#f3f4f6;color:#374151;}
-    .cita-meta{font-size:12px;color:var(--text-light);}
-    .empty-state{text-align:center;padding:40px;color:var(--text-light);}
-    .empty-state .icon{font-size:48px;margin-bottom:12px;}
-    .form-group{margin-bottom:14px;}
-    .form-label{display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-mid);margin-bottom:5px;}
-    .form-input{width:100%;padding:10px 13px;border:1.5px solid #e0ebe5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-dark);background:var(--cream);outline:none;}
-    .form-input:focus{border-color:var(--green-soft);background:white;}
-    .btn{padding:10px 22px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px;}
-    .btn-primary{background:var(--green-deep);color:white;width:100%;justify-content:center;}
-    .btn-primary:hover{background:var(--green-mid);}
-    .alert{padding:11px 14px;border-radius:10px;font-size:12px;margin-top:10px;display:none;}
-    .alert.show{display:block;}
-    .alert-success{background:#e8f5ed;color:#2d5a45;border:1px solid #a8d5b5;}
-    .alert-error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0;}
-    .paw-bg{position:fixed;right:-60px;bottom:-60px;font-size:220px;opacity:.03;pointer-events:none;}
-    @media(max-width:700px){.sidebar{display:none;}.main{margin-left:0;padding:20px 16px;}.stats{grid-template-columns:1fr;}}
-    /* Estilos para la agenda (timeline) */
-.timeline-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f5f2;
-}
-.timeline-time {
-  font-weight: 600;
-  font-size: 14px;
-  min-width: 80px;
-  color: var(--green-deep);
-}
-.timeline-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--green-soft);
-  margin-top: 6px;
-}
-.timeline-content {
-  flex: 1;
-}
-.cita-mascota {
-  font-size: 15px;
-  font-weight: 500;
-}
-.cita-servicio {
-  font-size: 13px;
-  color: var(--text-mid);
-}
-.cita-estado {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  margin-left: 8px;
-}
-.estado-agendada { background: #fef3c7; color: #d97706; }
-.estado-confirmada { background: #d1fae5; color: #065f46; }
-.estado-en_progreso { background: #dbeafe; color: #1e40af; }
-.estado-completada { background: #f3f4f6; color: #374151; }
+    /* ─────────────────────────────────────────────────────── */
+    /* VARIABLES Y RESET                                       */
+    /* ─────────────────────────────────────────────────────── */
+    :root {
+      --green-deep: #1e3a2f;
+      --green-mid: #2d5a45;
+      --green-soft: #4a8c6f;
+      --green-light: #a8d5b5;
+      --green-pale: #e8f5ed;
+      --cream: #faf7f2;
+      --amber: #d4845a;
+      --red-soft: #f85555;
+      --text-dark: #1a2e25;
+      --text-mid: #4a6355;
+      --text-light: #8aab97;
+      --shadow-sm: 0 2px 8px rgba(30, 58, 47, 0.08);
+      --shadow-md: 0 4px 16px rgba(30, 58, 47, 0.12);
+      --shadow-lg: 0 8px 32px rgba(30, 58, 47, 0.15);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      display: flex;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* SIDEBAR                                                 */
+    /* ─────────────────────────────────────────────────────── */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--green-deep) 0%, #1a3227 100%);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 16px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: var(--shadow-md);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      padding: 0 8px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #7b9de0 0%, #5a7ba8 100%);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(123, 157, 224, 0.3);
+    }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      color: white;
+      font-weight: 600;
+    }
+
+    .logo-text span {
+      display: block;
+      font-size: 10px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--green-light);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      padding: 0 8px;
+      margin: 20px 0 8px;
+      font-weight: 600;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: var(--green-light);
+      cursor: pointer;
+      font-size: 13px;
+      margin-bottom: 4px;
+      transition: var(--transition);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      transform: translateX(4px);
+    }
+
+    .nav-icon {
+      font-size: 18px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #7b9de0 0%, #5a7ba8 100%);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(123, 157, 224, 0.3);
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--green-light);
+      margin-top: 2px;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: var(--green-light);
+      cursor: pointer;
+      font-size: 18px;
+      margin-left: auto;
+      transition: var(--transition);
+    }
+
+    .logout-btn:hover {
+      color: #ff7b7b;
+      transform: scale(1.1);
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* MAIN CONTENT                                            */
+    /* ─────────────────────────────────────────────────────── */
+    .main {
+      margin-left: 260px;
+      flex: 1;
+      padding: 32px 36px;
+      max-width: 100%;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+
+    .badge-groomer {
+      background: linear-gradient(135deg, #e8f0fd 0%, #dfe9f6 100%);
+      color: #3456a0;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* CARDS                                                   */
+    /* ─────────────────────────────────────────────────────── */
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .card-badge {
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: #e8f0fd;
+      color: #3456a0;
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* FORMS                                                   */
+    /* ─────────────────────────────────────────────────────── */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      margin-bottom: 6px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #e0ebe5;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: var(--cream);
+      color: var(--text-dark);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--green-soft);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(74, 140, 111, 0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* BUTTONS                                                 */
+    /* ─────────────────────────────────────────────────────── */
+    .btn {
+      padding: 11px 24px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 100%);
+      color: white;
+      width: 100%;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(30, 58, 47, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(30, 58, 47, 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #d0e4da;
+      color: var(--text-mid);
+      transition: var(--transition);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--green-soft);
+      color: var(--green-soft);
+      background: rgba(74, 140, 111, 0.05);
+    }
+
+    .btn-amber {
+      background: linear-gradient(135deg, var(--amber) 0%, #c0714a 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(212, 132, 90, 0.2);
+    }
+
+    .btn-amber:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(212, 132, 90, 0.3);
+    }
+
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* ALERTS Y ESTADOS                                        */
+    /* ─────────────────────────────────────────────────────── */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin: 12px 0 0;
+      display: none;
+      animation: slideDown 0.3s ease-out;
+      border-left: 4px solid transparent;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: #e8f5ed;
+      color: #2d5a45;
+      border-left-color: var(--green-soft);
+    }
+
+    .alert-error {
+      background: #fdecea;
+      color: #c0392b;
+      border-left-color: #ff6b6b;
+    }
+
+    .alert-warning {
+      background: #fef3c7;
+      color: #92400e;
+      border-left-color: #f59e0b;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* EMPTY STATE                                             */
+    /* ─────────────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 40px;
+      color: var(--text-light);
+    }
+
+    .empty-state .icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      margin: 0;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* TIMELINE (AGENDA)                                       */
+    /* ─────────────────────────────────────────────────────── */
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f5f2;
+      transition: var(--transition);
+    }
+
+    .timeline-item:last-child {
+      border-bottom: none;
+    }
+
+    .timeline-item:hover {
+      background: rgba(74, 140, 111, 0.02);
+      padding: 16px 12px;
+      margin: 0 -12px;
+    }
+
+    .timeline-time {
+      font-weight: 700;
+      font-size: 15px;
+      min-width: 90px;
+      color: var(--green-deep);
+      font-family: 'Playfair Display', serif;
+    }
+
+    .timeline-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--green-soft);
+      margin-top: 4px;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 4px rgba(74, 140, 111, 0.1);
+    }
+
+    .timeline-content {
+      flex: 1;
+      padding-top: 2px;
+    }
+
+    .cita-mascota {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cita-mascota .cita-estado {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cita-servicio {
+      font-size: 13px;
+      color: var(--text-mid);
+      margin-top: 4px;
+    }
+
+    .estado-agendada {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .estado-confirmada {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .estado-en_progreso {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .estado-completada {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* FICHAS ACTIVAS                                          */
+    /* ─────────────────────────────────────────────────────── */
+    .fichas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .ficha-card {
+      background: white;
+      border: 1.5px solid #e0ebe5;
+      border-radius: 12px;
+      padding: 18px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ficha-card:hover {
+      border-color: var(--green-soft);
+      box-shadow: 0 4px 16px rgba(74, 140, 111, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .ficha-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .ficha-mascota-img {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #e8f5ed 0%, #d5eee4 100%);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(74, 140, 111, 0.1);
+    }
+
+    .ficha-info {
+      flex: 1;
+    }
+
+    .ficha-mascota-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .ficha-mascota-raza {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    .ficha-servicio {
+      font-size: 13px;
+      color: var(--text-mid);
+      margin-top: 8px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .ficha-estado-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .ficha-btn {
+      margin-top: auto;
+      padding: 8px 12px;
+      font-size: 11px;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* MODALES                                                 */
+    /* ─────────────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: slideInUp 0.3s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0ebe5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--text-dark);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .modal-close:hover {
+      color: var(--text-dark);
+      transform: scale(1.1);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e0ebe5;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* CHECKLIST                                               */
+    /* ─────────────────────────────────────────────────────── */
+    .checklist-section {
+      margin-bottom: 28px;
+    }
+
+    .checklist-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-mid);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0ebe5;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f5f2;
+    }
+
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .checklist-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      cursor: pointer;
+      accent-color: var(--green-soft);
+    }
+
+    .checklist-item-content {
+      flex: 1;
+    }
+
+    .checklist-item-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dark);
+      cursor: pointer;
+    }
+
+    .checklist-item input[type="checkbox"]:checked + .checklist-item-label {
+      color: var(--green-soft);
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    .checklist-obs {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: #f0f5f2;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-mid);
+    }
+
+    .checklist-time {
+      font-size: 10px;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* FOTOS                                                   */
+    /* ─────────────────────────────────────────────────────── */
+    .foto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .foto-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f0f5f2;
+      aspect-ratio: 1;
+    }
+
+    .foto-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .foto-label {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .foto-delete {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #ff6b6b;
+      border: none;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .foto-item:hover .foto-delete {
+      display: flex;
+    }
+
+    .foto-delete:hover {
+      background: #ee5a52;
+      transform: scale(1.1);
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* CONSUMO DE INSUMOS                                      */
+    /* ─────────────────────────────────────────────────────── */
+    .consumo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .consumo-item {
+      background: #f9fdfb;
+      border: 1px solid #e0ebe5;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--transition);
+    }
+
+    .consumo-item:hover {
+      border-color: var(--green-soft);
+      background: rgba(74, 140, 111, 0.02);
+    }
+
+    .consumo-info {
+      flex: 1;
+    }
+
+    .consumo-producto {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .consumo-detalle {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    .consumo-cantidad {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green-soft);
+      text-align: center;
+      margin: 0 16px;
+    }
+
+    .consumo-delete {
+      background: none;
+      border: none;
+      color: #ff6b6b;
+      cursor: pointer;
+      font-size: 18px;
+      transition: var(--transition);
+    }
+
+    .consumo-delete:hover {
+      transform: scale(1.2);
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* RESPONSIVE                                              */
+    /* ─────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .sidebar { width: 200px; }
+      .main { margin-left: 200px; padding: 20px 24px; }
+      .fichas-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+      .page-title { font-size: 24px; }
+      .modal { width: 95%; max-width: none; }
+    }
+
+    /* ─────────────────────────────────────────────────────── */
+    /* UTILIDADES                                              */
+    /* ─────────────────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: #e0ebe5;
+      margin: 16px 0;
+    }
+
+    .text-center { text-align: center; }
+    .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; }
   </style>
 </head>
 <body>
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">✂️</div>
-    <div class="logo-text">Pet Spa <span>Groomer</span></div>
-  </div>
-
-  <div class="nav-label">Mi trabajo</div>
-  <a class="nav-item" href="#" data-section="agenda">
-    <span class="nav-icon">📅</span> Mi Agenda
-  </a>
-  <a class="nav-item" href="#" data-section="fichas">
-    <span class="nav-icon">📋</span> Fichas Activas
-  </a>
-  <a class="nav-item" href="#" data-section="checklist">
-    <span class="nav-icon">✅</span> Checklist
-  </a>
-  <a class="nav-item" href="#" data-section="fotos">
-    <span class="nav-icon">📸</span> Fotos
-  </a>
-  <a class="nav-item" href="#" data-section="insumos">
-    <span class="nav-icon">🧴</span> Insumos
-  </a>
-
-  <div class="nav-label">Cuenta</div>
-  <a class="nav-item" href="#" data-section="perfil">
-    <span class="nav-icon">👤</span> Mi perfil
-  </a>
-  <a class="nav-item" href="#" id="logoutBtn">
-    <span class="nav-icon">🚪</span> Cerrar sesión
-  </a>
-
-  <div class="sidebar-footer">
-    <div class="user-card">
-      <div class="user-avatar">✂️</div>
+  <!-- ────────────────────────────────────────────────────── -->
+  <!-- SIDEBAR                                               -->
+  <!-- ────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">✂️</div>
       <div>
-        <div class="user-name" id="sidebarName">—</div>
-        <div class="user-role">Groomer</div>
+        <div class="logo-text">Pet Spa</div>
+        <div class="logo-text" style="font-size: 11px; color: var(--green-light);">Groomer</div>
       </div>
-      <button class="logout-btn" id="logoutBtn2">✕</button>
     </div>
-  </div>
-</aside>
 
-<main class="main">
-  <div class="topbar">
-    <div>
-      <div class="page-title">Panel Groomer ✂️</div>
-      <div class="page-sub" id="groomerEmail">—</div>
-    </div>
-    <span class="badge-groomer">✂️ Groomer</span>
-  </div>
+    <div class="nav-label">Mi trabajo</div>
+    <a class="nav-item active" href="#" data-section="agenda">
+      <span class="nav-icon">📅</span> Mi Agenda
+    </a>
+    <a class="nav-item" href="#" data-section="fichas">
+      <span class="nav-icon">📋</span> Fichas Activas
+    </a>
 
-  <!-- AGENDA -->
-  <div id="section-agenda" style="display:block;">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">📅 Mi Agenda de Hoy</div>
-        <button class="btn btn-outline btn-sm" id="refreshAgendaBtn">🔄 Actualizar</button>
+    <div class="nav-label">Cuenta</div>
+    <a class="nav-item" href="#" data-section="perfil">
+      <span class="nav-icon">👤</span> Mi perfil
+    </a>
+    <a class="nav-item" href="#" id="logoutBtn">
+      <span class="nav-icon">🚪</span> Cerrar sesión
+    </a>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">✂️</div>
+        <div>
+          <div class="user-name" id="sidebarName">Groomer</div>
+          <div class="user-role" id="groomerEmail">usuario@email.com</div>
+        </div>
+        <button class="logout-btn" id="logoutBtn2">✕</button>
       </div>
-      <div id="agendaContainer">
-        <div class="empty-state">
-          <div class="icon">📅</div>
-          <p>Cargando agenda...</p>
+    </div>
+  </aside>
+
+  <!-- ────────────────────────────────────────────────────── -->
+  <!-- MAIN CONTENT                                           -->
+  <!-- ────────────────────────────────────────────────────── -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Panel Groomer ✂️</div>
+        <div class="page-sub" id="groomerEmail">—</div>
+      </div>
+      <span class="badge-groomer">✂️ Especialista en grooming</span>
+    </div>
+
+    <!-- ────── AGENDA ────── -->
+    <div id="section-agenda" style="display: block;">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📅 Mi Agenda de Hoy</div>
+          <button class="btn btn-outline btn-sm" id="refreshAgendaBtn">🔄 Actualizar</button>
+        </div>
+        <div id="agendaContainer">
+          <div class="empty-state">
+            <div class="icon">⏳</div>
+            <p>Cargando agenda...</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- FICHAS ACTIVAS (placeholder) -->
-  <div id="section-fichas" style="display:none;">
-    <div class="card">
-      <div class="card-head"><div class="card-title">📋 Fichas Activas</div></div>
-      <p style="color:var(--text-light);">Próximamente</p>
+    <!-- ────── FICHAS ACTIVAS ────── -->
+    <div id="section-fichas" style="display: none;">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📋 Fichas Activas Hoy</div>
+          <button class="btn btn-outline btn-sm" id="refreshFichasBtn">🔄 Actualizar</button>
+        </div>
+        <div id="fichasActivasList"></div>
+      </div>
+    </div>
+
+    <!-- ────── PERFIL ────── -->
+    <div id="section-perfil" style="display: none;">
+      <div class="card" style="max-width: 480px;">
+        <div class="card-head">
+          <div class="card-title">Cambiar Contraseña</div>
+        </div>
+        <form id="changePasswordForm">
+          <div class="form-group">
+            <label class="form-label">Contraseña actual</label>
+            <input type="password" id="oldPassword" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nueva contraseña</label>
+            <input type="password" id="newPassword" class="form-input" required />
+          </div>
+          <button type="submit" class="btn btn-primary">🔒 Actualizar contraseña</button>
+          <div class="alert" id="pwMessage"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- MODAL: DETALLE DE FICHA                                 -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="fichaModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="fichaModalTitle">Ficha de Grooming</h3>
+        <button class="modal-close" id="fichaModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="fichaModalBody">
+        <!-- Contenido dinámico -->
+      </div>
     </div>
   </div>
 
-  <!-- CHECKLIST (placeholder) -->
-  <div id="section-checklist" style="display:none;">
-    <div class="card">
-      <div class="card-head"><div class="card-title">✅ Checklist de Tareas</div></div>
-      <p style="color:var(--text-light);">Próximamente</p>
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- MODAL: SUBIR FOTO                                        -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="fotoModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Subir Foto</h3>
+        <button class="modal-close" id="fotoModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="fotoForm">
+          <div class="form-group">
+            <label class="form-label">Tipo de foto</label>
+            <select id="fotoTipo" class="form-select" required>
+              <option value="">Selecciona tipo de foto</option>
+              <option value="antes">📷 Antes</option>
+              <option value="despues">✨ Después</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Seleccionar imagen</label>
+            <input type="file" id="fotoFile" class="form-input" accept="image/*" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descripción (opcional)</label>
+            <input type="text" id="fotoDescripcion" class="form-input" placeholder="Ej: Baño completo" />
+          </div>
+          <button type="submit" class="btn btn-primary">📤 Subir foto</button>
+          <div class="alert" id="fotoMessage"></div>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- FOTOS (placeholder) -->
-  <div id="section-fotos" style="display:none;">
-    <div class="card">
-      <div class="card-head"><div class="card-title">📸 Galería de Fotos</div></div>
-      <p style="color:var(--text-light);">Próximamente</p>
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- MODAL: CONSUMO DE INSUMOS                               -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="consumoModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Registrar Consumo de Insumos</h3>
+        <button class="modal-close" id="consumoModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="consumoForm">
+          <div class="form-group">
+            <label class="form-label">Producto</label>
+            <select id="consumoProducto" class="form-select" required>
+              <option value="">Cargando productos...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Variante (opcional)</label>
+            <select id="consumoVariante" class="form-select">
+              <option value="">Sin variante</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cantidad utilizada</label>
+            <input type="number" id="consumoCantidad" class="form-input" step="0.001" placeholder="Ej: 0.5 (500ml de 1L)" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descripción (opcional)</label>
+            <input type="text" id="consumoDescripcion" class="form-input" placeholder="Detalle del consumo" />
+          </div>
+          <button type="submit" class="btn btn-primary">➕ Registrar consumo</button>
+          <div class="alert" id="consumoMessage"></div>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- INSUMOS (placeholder) -->
-  <div id="section-insumos" style="display:none;">
-    <div class="card">
-      <div class="card-head"><div class="card-title">🧴 Insumos Asignados</div></div>
-      <p style="color:var(--text-light);">Próximamente</p>
-    </div>
-  </div>
-
-  <!-- PERFIL (mantenemos el cambio de contraseña) -->
-  <div id="section-perfil" style="display:none;">
-    <div class="card" style="max-width:480px;">
-      <div class="card-head"><div class="card-title">Cambiar Contraseña</div></div>
-      <form id="changePasswordForm">
-        <div class="form-group"><label class="form-label">Contraseña actual</label><input type="password" id="oldPassword" class="form-input" required></div>
-        <div class="form-group"><label class="form-label">Nueva contraseña</label><input type="password" id="newPassword" class="form-input" required></div>
-        <button type="submit" class="btn btn-primary">🔒 Actualizar contraseña</button>
-        <div class="alert" id="pwMessage"></div>
-      </form>
-    </div>
-  </div>
-</main>
-<div class="paw-bg">🐾</div>
-<script type="module" src="js/groomer-dashboard.js"></script>
+  <script type="module" src="js/groomer-dashboard.js"></script>
 </body>
 </html>

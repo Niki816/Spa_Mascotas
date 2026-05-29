@@ -1,4 +1,4 @@
-// ─── src/controllers/productos.controller.ts ─────────────────────────────────
+// ─── src/controllers/productos.controller.ts (VERSIÓN CORREGIDA) ──────────
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../config/database';
 import { AppError } from '../utils/errors';
@@ -17,7 +17,6 @@ export const getCategorias = async (_req: Request, res: Response, next: NextFunc
       },
     });
 
-    // Resolver nombre del padre manualmente
     const padreIds = [...new Set(categorias.map(c => c.padre_id).filter(Boolean))] as number[];
     const padres   = padreIds.length
       ? await prisma.categorias_producto.findMany({
@@ -95,7 +94,6 @@ export const deleteCategoria = async (req: Request, res: Response, next: NextFun
       );
     }
 
-    // Desvincular subcategorías antes de eliminar
     await prisma.categorias_producto.updateMany({
       where: { padre_id: id },
       data:  { padre_id: null },
@@ -206,6 +204,8 @@ export const createProducto = async (req: Request, res: Response, next: NextFunc
 
     if (parseFloat(precio_base) < 0) throw new AppError('El precio no puede ser negativo', 400);
 
+    console.log('[CREATE PRODUCTO] Payload recibido:', { nombre, stock, stock_minimo, precio_base });
+
     const producto = await prisma.productos.create({
       data: {
         nombre:        nombre.trim(),
@@ -220,6 +220,8 @@ export const createProducto = async (req: Request, res: Response, next: NextFunc
       },
     });
 
+    console.log('[CREATE PRODUCTO] ✅ Creado exitosamente:', { id: producto.id, stock: producto.stock });
+
     res.status(201).json({
       message: `Producto "${nombre}" creado exitosamente`,
       producto: { ...producto, precio_base: Number(producto.precio_base) },
@@ -227,44 +229,141 @@ export const createProducto = async (req: Request, res: Response, next: NextFunc
   } catch (error) { next(error); }
 };
 
+/**
+ * UPDATE PRODUCTO - CORREGIDO
+ * 
+ * ✅ AHORA INCLUYE STOCK EN LA ACTUALIZACIÓN
+ * ✅ Si tiene variantes, no permite cambiar stock (debe venir de variantes)
+ * ✅ Si NO tiene variantes, permite actualizar stock directamente
+ */
 export const updateProducto = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) throw new AppError('ID inválido', 400);
 
-    const existe = await prisma.productos.findUnique({ where: { id } });
+    console.log('\n╔════════════════════════════════════════════════════════════╗');
+    console.log('║           [UPDATE PRODUCTO] INICIADO                     ║');
+    console.log('╚════════════════════════════════════════════════════════════╝');
+    console.log('📝 ID:', id);
+    console.log('📋 Body completo:', JSON.stringify(req.body, null, 2));
+
+    // Obtener producto con sus variantes
+    const existe = await prisma.productos.findUnique({ 
+      where: { id },
+      include: { 
+        variantes_producto: { where: { estado_activo: true } },
+        categorias_producto: { select: { nombre: true } }
+      }
+    });
+    
     if (!existe) throw new AppError('Producto no encontrado', 404);
+    console.log('✅ Producto encontrado:', existe.nombre);
+    console.log('   Variantes activas:', existe.variantes_producto.length);
+    console.log('   Stock actual:', existe.stock);
 
-    const { nombre, descripcion, categoria_id, sku, precio_base, stock_minimo, imagen_url, estado_activo } = req.body;
-
-    if (sku && sku.trim() !== existe.sku) {
-      const skuExiste = await prisma.productos.findUnique({ where: { sku: sku.trim() } });
-      if (skuExiste) throw new AppError(`El SKU "${sku}" ya está registrado`, 409);
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🔴 VALIDACIÓN: Si tiene variantes, NO permitir cambiar stock
+    // ═══════════════════════════════════════════════════════════════════════
+    if (existe.variantes_producto.length > 0 && req.body.stock !== undefined) {
+      console.log('❌ RECHAZADO: Intento de cambiar stock en producto con variantes');
+      throw new AppError(
+        'No se puede editar el stock directamente de un producto con variantes. ' +
+        'Edita el stock desde las variantes individuales (se sumará automáticamente).',
+        400
+      );
     }
 
-    if (precio_base !== undefined && parseFloat(precio_base) < 0) {
-      throw new AppError('El precio no puede ser negativo', 400);
+    // Desestructurar TODO incluyendo stock ✅
+    const { 
+      nombre, 
+      descripcion, 
+      categoria_id, 
+      sku, 
+      precio_base, 
+      stock,           // ✅ AHORA SÍ INCLUYE STOCK
+      stock_minimo, 
+      imagen_url, 
+      estado_activo 
+    } = req.body;
+
+    console.log('🔄 Campos a actualizar:');
+    console.log('   nombre:', nombre);
+    console.log('   stock (recibido):', stock);
+    console.log('   stock_minimo:', stock_minimo);
+    console.log('   precio_base:', precio_base);
+
+    // Construir objeto de actualización
+    const dataUpdate: any = {};
+
+    if (nombre?.trim()) {
+      dataUpdate.nombre = nombre.trim();
+      console.log('   ✓ nombre actualizado');
+    }
+    if (descripcion !== undefined) {
+      dataUpdate.descripcion = descripcion?.trim() || null;
+      console.log('   ✓ descripcion actualizada');
+    }
+    if (categoria_id) {
+      dataUpdate.categoria_id = Number(categoria_id);
+      console.log('   ✓ categoria_id actualizado');
+    }
+    if (sku?.trim()) {
+      dataUpdate.sku = sku.trim();
+      console.log('   ✓ sku actualizado');
+    }
+    if (precio_base !== undefined) {
+      dataUpdate.precio_base = parseFloat(precio_base);
+      console.log('   ✓ precio_base actualizado a:', dataUpdate.precio_base);
     }
 
+    // ✅ AQUÍ ESTÁ LA CLAVE: Incluir stock si fue enviado
+    if (stock !== undefined && stock !== null && stock !== '') {
+      const stockParsed = parseInt(stock);
+      if (!isNaN(stockParsed) && stockParsed >= 0) {
+        dataUpdate.stock = stockParsed;
+        console.log('   ✓ stock actualizado a:', stockParsed);
+      } else {
+        console.warn('   ⚠️ Stock recibido pero no es válido:', stock);
+      }
+    } else {
+      console.log('   ⚠️ Stock no fue enviado o es inválido');
+    }
+
+    if (stock_minimo !== undefined) {
+      dataUpdate.stock_minimo = parseInt(stock_minimo);
+      console.log('   ✓ stock_minimo actualizado a:', dataUpdate.stock_minimo);
+    }
+    if (imagen_url !== undefined) {
+      dataUpdate.imagen_url = imagen_url?.trim() || null;
+      console.log('   ✓ imagen_url actualizada');
+    }
+    if (estado_activo !== undefined) {
+      dataUpdate.estado_activo = Boolean(estado_activo);
+      console.log('   ✓ estado_activo actualizado a:', dataUpdate.estado_activo);
+    }
+
+    console.log('\n🔧 Objeto de actualización final:', JSON.stringify(dataUpdate, null, 2));
+
+    // Ejecutar actualización
     const updated = await prisma.productos.update({
       where: { id },
-      data: {
-        nombre:        nombre?.trim()     || undefined,
-        descripcion:   descripcion !== undefined ? (descripcion?.trim() || null) : undefined,
-        categoria_id:  categoria_id  ? Number(categoria_id) : undefined,
-        sku:           sku?.trim()        || undefined,
-        precio_base:   precio_base  !== undefined ? parseFloat(precio_base) : undefined,
-        stock_minimo:  stock_minimo !== undefined ? parseInt(stock_minimo)  : undefined,
-        imagen_url:    imagen_url   !== undefined ? (imagen_url?.trim() || null) : undefined,
-        estado_activo: estado_activo !== undefined ? Boolean(estado_activo) : undefined,
-      },
+      data: dataUpdate,
+      include: { variantes_producto: { where: { estado_activo: true } } }
     });
+
+    console.log('\n✅ ACTUALIZADO EXITOSAMENTE');
+    console.log('   Stock en BD después del update:', updated.stock);
+    console.log('   Estado activo:', updated.estado_activo);
+    console.log('╚════════════════════════════════════════════════════════════╝\n');
 
     res.json({
       message:  'Producto actualizado correctamente',
       producto: { ...updated, precio_base: Number(updated.precio_base) },
     });
-  } catch (error) { next(error); }
+  } catch (error) { 
+    console.error('\n❌ ERROR EN UPDATE PRODUCTO:', error);
+    next(error); 
+  }
 };
 
 export const deleteProducto = async (req: Request, res: Response, next: NextFunction) => {
@@ -324,7 +423,6 @@ export const subirImagenProducto = async (req: Request, res: Response, next: Nex
   try {
     if (!req.file) throw new AppError('No se ha subido ningún archivo', 400);
 
-    // Construir la URL pública (asumiendo que la carpeta 'uploads' está expuesta)
     const url = `/fotos/productos/${req.file.filename}`;
     res.json({ url });
   } catch (error) { next(error); }
@@ -395,7 +493,6 @@ export const createVariante = async (req: Request, res: Response, next: NextFunc
   } catch (error) { next(error); }
 };
 
-// ★ NUEVO: Creación por lotes de variantes
 export const createVariantesBatch = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const productoId = parseInt(req.params.id as string);
@@ -404,19 +501,17 @@ export const createVariantesBatch = async (req: Request, res: Response, next: Ne
     const producto = await prisma.productos.findUnique({ where: { id: productoId }, select: { id: true, precio_base: true } });
     if (!producto) throw new AppError('Producto no encontrado', 404);
 
-    const { variantes } = req.body; // array de objetos {atributo, valor, sku_variante, precio_extra, stock}
+    const { variantes } = req.body;
     if (!Array.isArray(variantes) || !variantes.length) {
       throw new AppError('Se requiere un array de variantes', 400);
     }
 
-    // Validar cada variante
     for (const v of variantes) {
       if (!v.atributo?.trim() || !v.valor?.trim() || !v.sku_variante?.trim()) {
         throw new AppError(`Cada variante debe tener atributo, valor y sku_variante. Error en: ${JSON.stringify(v)}`, 400);
       }
     }
 
-    // Verificar SKU duplicados en la base de datos
     const skus = variantes.map(v => v.sku_variante.trim());
     const existentes = await prisma.variantes_producto.findMany({
       where: { sku_variante: { in: skus } },
@@ -518,14 +613,12 @@ export const getAlertasStock = async (_req: Request, res: Response, next: NextFu
     const bajoStock   = productos.filter(p => p.stock > 0 && p.stock <= p.stock_minimo);
     const enRiesgo    = productos.filter(p => p.stock > p.stock_minimo && p.stock <= p.stock_minimo * 1.5);
 
-    // Variantes con poco stock (≤ 3 unidades)
     const variantesBajas = await prisma.variantes_producto.findMany({
       where:   { estado_activo: true, stock: { lte: 3 } },
       include: { productos: { select: { id: true, nombre: true, sku: true } } },
       orderBy: { stock: 'asc' },
     });
 
-    // Alto consumo de insumos en los últimos 30 días
     const treintaDias = new Date();
     treintaDias.setDate(treintaDias.getDate() - 30);
 
@@ -671,7 +764,6 @@ export const getReporteInventario = async (_req: Request, res: Response, next: N
   } catch (error) { next(error); }
 };
 
-// ★ NUEVO: Reporte PDF
 export const getReportePDF = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const productos = await prisma.productos.findMany({
@@ -685,13 +777,11 @@ export const getReportePDF = async (_req: Request, res: Response, next: NextFunc
     res.setHeader('Content-Disposition', _req.query.download ? `attachment; filename="${filename}"` : `inline; filename="${filename}"`);
     doc.pipe(res);
 
-    // Título
     doc.fontSize(18).font('Helvetica-Bold').text('Reporte de Inventario', { align: 'center' });
     doc.moveDown();
     doc.fontSize(12).font('Helvetica').text(`Fecha: ${new Date().toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' })}`);
     doc.moveDown(1.5);
 
-    // Resumen general
     const totalActivos = productos.filter(p => p.estado_activo).length;
     const valorTotal = productos.filter(p => p.estado_activo).reduce((s, p) => s + Number(p.precio_base) * p.stock, 0);
     const agotados = productos.filter(p => p.estado_activo && p.stock === 0).length;
@@ -709,11 +799,9 @@ export const getReportePDF = async (_req: Request, res: Response, next: NextFunc
     resumenItems.forEach(item => doc.fontSize(11).font('Helvetica').text(item));
     doc.moveDown(1);
 
-    // Tabla de productos
     doc.fontSize(14).font('Helvetica-Bold').text('Listado de Productos');
     doc.moveDown(0.5);
 
-    // Configurar columnas de la tabla
     const tableTop = doc.y + 5;
     const col1X = 30;
     const col2X = 55;
@@ -723,7 +811,6 @@ export const getReportePDF = async (_req: Request, res: Response, next: NextFunc
     const col6X = 465;
     const colWidths = { id: 25, nombre: 165, categoria: 95, precio: 80, stock: 70, valor: 50 };
 
-    // Encabezados
     const headerY = tableTop;
     doc.font('Helvetica-Bold').fontSize(9);
     doc.text('ID', col1X, headerY, { width: colWidths.id, align: 'left' });
@@ -740,11 +827,9 @@ export const getReportePDF = async (_req: Request, res: Response, next: NextFunc
     doc.font('Helvetica').fontSize(9);
 
     for (const p of productos) {
-      // Verificar espacio para nueva línea
       if (y + 16 > pageHeight) {
         doc.addPage();
         y = 30;
-        // Repetir encabezados
         doc.font('Helvetica-Bold').fontSize(9);
         doc.text('ID', col1X, y, { width: colWidths.id, align: 'left' });
         doc.text('Producto', col2X, y, { width: colWidths.nombre, align: 'left' });
@@ -786,7 +871,6 @@ export const getMasVendidos = async (req: Request, res: Response, next: NextFunc
     const treintaDias = new Date();
     treintaDias.setDate(treintaDias.getDate() - 30);
 
-    // Paso 1: obtener los IDs de los pedidos válidos
     const pedidosValidos = await prisma.pedidos.findMany({
       where: {
         creado_en: { gte: treintaDias },
@@ -797,7 +881,6 @@ export const getMasVendidos = async (req: Request, res: Response, next: NextFunc
 
     const idsPedidos = pedidosValidos.map(p => p.id);
 
-    // Paso 2: agrupar usando esos IDs
     const ventas = await prisma.detalle_pedido.groupBy({
       by: ['producto_id'],
       where: {
@@ -806,7 +889,6 @@ export const getMasVendidos = async (req: Request, res: Response, next: NextFunc
       _sum: { cantidad: true },
     });
 
-    // El resto del código sigue igual...
     const productosIds = ventas.map(v => v.producto_id);
     const productos = await prisma.productos.findMany({
       where: { id: { in: productosIds } },
@@ -862,5 +944,36 @@ export const getMasUsados = async (req: Request, res: Response, next: NextFuncti
       .slice(0, 5);
 
     res.json(result);
+  } catch (error) { next(error); }
+};
+
+export const deleteProductoPermanent = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id as string);
+    if (isNaN(id)) throw new AppError('ID inválido', 400);
+
+    const producto = await prisma.productos.findUnique({ 
+      where: { id },
+      include: { variantes_producto: true }
+    });
+
+    if (!producto) throw new AppError('Producto no encontrado', 404);
+
+    if (producto.estado_activo) {
+      throw new AppError(
+        'No se puede eliminar un producto activo. Desactívalo primero desde el catálogo.',
+        400
+      );
+    }
+
+    if (producto.variantes_producto.length > 0) {
+      await prisma.variantes_producto.deleteMany({
+        where: { producto_id: id }
+      });
+    }
+
+    await prisma.productos.delete({ where: { id } });
+
+    res.status(204).send();
   } catch (error) { next(error); }
 };

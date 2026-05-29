@@ -14,6 +14,7 @@ import {
   getAlertasStock, getReporteInventario, getReportePDF,
   subirImagenProducto,
   getMasVendidos, getMasUsados,
+  deleteProductoPermanent,
 } from '../controllers/productos.controller';
 
 const router = Router();
@@ -21,7 +22,7 @@ const router = Router();
 // ── Configuración de multer para subida de imágenes ────────────────────
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '..', 'public', 'fotos', 'productos');
+    const uploadPath = path.join(process.cwd(), 'public', 'fotos', 'productos');
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -82,6 +83,11 @@ router.post  ('/productos',              createProducto);
 router.put   ('/productos/:id',          updateProducto);
 router.delete('/productos/:id',          deleteProducto);
 router.patch ('/productos/:id/stock',    updateStock);
+// Dentro del router, en la sección de PRODUCTOS
+router.delete('/productos/:id/permanent', deleteProductoPermanent);
+
+// Asegúrate que esté ANTES de esta línea:
+router.delete('/productos/:id',          deleteProducto);
 
 // ═══════════════════════════════════════════════════════════════════
 // VARIANTES (individuales y por lote)

@@ -30,8 +30,12 @@ export function getUser() {
 
 export async function authFetch(url, options = {}) {
     let accessToken = getAccessToken();
+    
+    // ✅ Si el body es FormData, NO pongas Content-Type
+    const isFormData = options.body instanceof FormData;
+    
     options.headers = {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...options.headers,
         'Authorization': `Bearer ${accessToken}`
     };

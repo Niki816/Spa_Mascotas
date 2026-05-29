@@ -1,3 +1,4 @@
+// src/controllers/groomer.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../config/database';
 import { AppError } from '../utils/errors';
@@ -77,15 +78,48 @@ export const getAgendaHoy = async (
 
 /**
  * GET /api/groomers/agenda/semana
- * Obtiene las citas de la semana actual (lunes a domingo) para el groomer
- * (Opcional: podemos implementarlo más adelante)
+ * Obtiene las citas de la semana actual
  */
 export const getAgendaSemana = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
-  // Similar a getAgendaHoy pero con rango de fechas
-  // Lo dejamos preparado para el futuro
-  res.json({ message: 'Próximamente' });
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new AppError('No autorizado', 401);
+
+    const groomer = await prisma.groomers.findUnique({
+      where: { usuario_id: userId },
+      select: { id: true },
+    });
+    if (!groomer) throw new AppError('Groomer no encontrado', 404);
+
+    // Obtener inicio de semana (lunes)
+    const hoy = new Date();
+    const dia = hoy.getDay();
+    const diferencia = hoy.getDate() - dia + (dia === 0 ? -6 : 1);
+    const inicioSemana = new Date(hoy.setDate(diferencia));
+    inicioSemana.setHours(0, 0, 0, 0);
+    
+    const finSemana = new Date(inicioSemana);
+    finSemana.setDate(finSemana.getDate() + 7);
+
+    const citas = await prisma.citas.findMany({
+      where: {
+        groomer_id: groomer.id,
+        fecha_hora_inicio: { gte: inicioSemana, lt: finSemana },
+        estado: { notIn: ['cancelada', 'no_asistio'] },
+      },
+      include: {
+        mascotas: { select: { nombre: true, raza: true } },
+        servicios: { select: { nombre: true } },
+      },
+      orderBy: { fecha_hora_inicio: 'asc' },
+    });
+
+    res.json({ agenda: citas });
+  } catch (error) {
+    next(error);
+  }
 };

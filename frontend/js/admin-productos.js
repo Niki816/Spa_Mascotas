@@ -513,28 +513,33 @@ async function loadProductos() {
                 ? '<span class="badge-ok">Activo</span>'
                 : '<span class="badge-agotado">Inactivo</span>'}</td>
           <td style="display:flex;gap:4px;flex-wrap:wrap;">
-            <button class="btn btn-outline btn-sm" data-action="editar"      data-id="${p.id}">✏️</button>
-            <button class="btn btn-outline btn-sm" data-action="stock"       data-id="${p.id}">📦</button>
-            <button class="btn btn-outline btn-sm" data-action="variantes"   data-id="${p.id}">🔀</button>
-            ${p.estado_activo
-              ? `<button class="btn btn-danger btn-sm"  data-action="desactivar" data-id="${p.id}">🚫</button>`
-              : `<button class="btn btn-outline btn-sm" data-action="reactivar"  data-id="${p.id}">♻️</button>`}
+            ${p.estado_activo ? `
+              <!-- PRODUCTO ACTIVO: mostrar opciones normales -->
+              <button class="btn btn-outline btn-sm" data-action="editar"      data-id="${p.id}">✏️</button>
+              <button class="btn btn-outline btn-sm" data-action="stock"       data-id="${p.id}">📦</button>
+              <button class="btn btn-outline btn-sm" data-action="variantes"   data-id="${p.id}">🔀</button>
+              <button class="btn btn-danger btn-sm"  data-action="desactivar" data-id="${p.id}">🚫</button>
+            ` : `
+              <!-- PRODUCTO INACTIVO: mostrar opciones de reactivar y eliminar -->
+              <button class="btn btn-outline btn-sm" data-action="reactivar"  data-id="${p.id}">♻️ Reactivar</button>
+              <button class="btn btn-danger btn-sm"  data-action="eliminar-permanente" data-id="${p.id}">🗑️ Eliminar</button>
+            `}
           </td>
         </tr>`).join('');
 
       tbody.querySelectorAll('button[data-action]').forEach(btn => {
         const id = parseInt(btn.dataset.id);
         const actions = {
-          editar:      () => openProductoModal(id),
-          stock:       () => openStockModal(id),
-          variantes:   () => openVariantesPanel(id),
-          desactivar:  () => toggleProductoEstado(id, false),
-          reactivar:   () => toggleProductoEstado(id, true),
+          editar:                () => openProductoModal(id),
+          stock:                 () => openStockModal(id),
+          variantes:             () => openVariantesPanel(id),
+          desactivar:            () => toggleProductoEstado(id, false),
+          reactivar:             () => toggleProductoEstado(id, true),
+          'eliminar-permanente': () => deleteProductoPermanent(id),  // ← NUEVA ACCIÓN
         };
         btn.addEventListener('click', () => actions[btn.dataset.action]?.());
       });
     }
-
     // Banner de alertas inline
     try {
       const alertRes  = await authFetch(`${ADMIN_API}/productos/alertas`);
@@ -584,6 +589,7 @@ buscarInput?.addEventListener('keydown', e => {
 document.getElementById('btnRefrescarProductos')?.addEventListener('click', loadProductos);
 document.getElementById('btnNuevoProducto')      ?.addEventListener('click', () => openProductoModal());
 
+
 // ══════════════════════════════════════════════════════════════════════════════
 // MODAL: CREAR / EDITAR PRODUCTO
 // ══════════════════════════════════════════════════════════════════════════════
@@ -602,6 +608,13 @@ async function openProductoModal(id = null) {
   if (fileInput) fileInput.value = '';
   const urlInput = document.getElementById('productoImagenUrl');
   if (urlInput) urlInput.value = '';
+
+  // ✅ Reset del toggle de variantes (siempre al abrir)
+  const noVariantesRadio = document.getElementById('noVariantes');
+  if (noVariantesRadio) {
+    noVariantesRadio.checked = true;
+    actualizarVistaStock();
+  }
 
   // Asegurar categorías cargadas
   if (!state.categorias.length) await loadCategorias();
@@ -630,6 +643,31 @@ async function openProductoModal(id = null) {
         imgPreview.src = resolveImgUrl(p.imagen_url);
         imgPreview.style.display = 'block';
       }
+
+      const stockInputGroup = document.getElementById('stockInicialGroup');
+      const productoStockInicial = document.getElementById('productoStockInicial');
+      
+      if (p.variantes_count > 0) {
+        // Tiene variantes: ocultar y desactivar stock
+        stockInputGroup.style.display = 'none';
+        if (productoStockInicial) productoStockInicial.disabled = true;
+      } else {
+        // Sin variantes: mostrar y permitir editar
+        stockInputGroup.style.display = 'block';
+        if (productoStockInicial) {
+          productoStockInicial.disabled = false;
+          productoStockInicial.value = p.stock; // ← Llenar con stock actual
+        }
+      }
+      // Si ya tiene variantes, marcar "Sí tendrá variantes"
+      if (p.variantes_count > 0) {
+        const siVariantesRadio = document.getElementById('siVariantes');
+        if (siVariantesRadio) {
+          siVariantesRadio.checked = true;
+          actualizarVistaStock();
+        }
+      }
+
     } catch (err) {
       alert(`Error cargando producto: ${err.message}`);
       return;
@@ -646,6 +684,18 @@ function closeProductoModal() {
 }
 
 document.getElementById('closeProductoModalBtn')?.addEventListener('click', closeProductoModal);
+// ── Toggle stock/variantes en el modal ───────────────────────
+function actualizarVistaStock() {
+  const tieneVariantes = document.querySelector('input[name="tieneVariantes"]:checked')?.value === 'si';
+  const stockGroup  = document.getElementById('stockInicialGroup');
+  const aviso       = document.getElementById('stockVariantesAviso');
+  if (stockGroup) stockGroup.style.display  = tieneVariantes ? 'none' : 'block';
+  if (aviso)      aviso.style.display       = tieneVariantes ? 'block' : 'none';
+}
+
+document.querySelectorAll('input[name="tieneVariantes"]').forEach(radio => {
+  radio.addEventListener('change', actualizarVistaStock);
+});
 document.getElementById('productoModal')?.addEventListener('click', e => {
   if (e.target === e.currentTarget) closeProductoModal();
 });
@@ -685,7 +735,7 @@ document.getElementById('productoNombre')    ?.addEventListener('change', onProd
 document.getElementById('productoForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   const id = document.getElementById('productoId').value;
-
+  
   // Subir imagen si se seleccionó un archivo local
   let imagenUrl = document.getElementById('productoImagenUrl')?.value || null;
   if (state.imagenSeleccionada) {
@@ -718,12 +768,16 @@ document.getElementById('productoForm')?.addEventListener('submit', async e => {
     estado_activo: document.getElementById('productoEstado').value === 'true',
   };
 
-  if (!payload.nombre || !payload.categoria_id || !payload.sku || isNaN(payload.precio_base)) {
-    return showAlert('productoAlert', '⚠️ Completa todos los campos obligatorios', 'error');
+  // ✅ SIEMPRE INCLUIR STOCK (sea creación o edición)
+  const productoStockInicial = document.getElementById('productoStockInicial');
+  if (productoStockInicial) {
+    payload.stock = parseInt(productoStockInicial.value) || 0;
   }
 
-  if (!id) {
-    payload.stock = parseInt(document.getElementById('productoStockInicial')?.value) || 0;
+  console.log('Payload final con STOCK:', payload);
+
+  if (!payload.nombre || !payload.categoria_id || !payload.sku || isNaN(payload.precio_base)) {
+    return showAlert('productoAlert', '⚠️ Completa todos los campos obligatorios', 'error');
   }
 
   const btn = e.target.querySelector('button[type="submit"]');
@@ -733,13 +787,21 @@ document.getElementById('productoForm')?.addEventListener('submit', async e => {
   try {
     const url    = id ? `${ADMIN_API}/productos/${id}` : `${ADMIN_API}/productos`;
     const method = id ? 'PUT' : 'POST';
+    
+    console.log('URL:', url, '| Método:', method);
+    console.log('Stock a guardar:', payload.stock);
+
     const res    = await authFetch(url, { method, body: JSON.stringify(payload) });
     const data   = await res.json();
+    
+    console.log('Respuesta:', { status: res.status, data });
+
     if (!res.ok) throw new Error(data.message);
 
     showAlert('productoAlert', `✅ ${data.message}`, 'success');
     setTimeout(() => { closeProductoModal(); loadProductos(); loadOverview(); }, 1000);
   } catch (err) {
+    console.error('Error:', err);
     showAlert('productoAlert', `❌ ${err.message}`, 'error');
   } finally {
     btn.disabled = false;
@@ -1527,6 +1589,36 @@ async function initFiltros() {
     console.error('[Init] Error cargando filtros:', err);
   }
 }
+async function deleteProductoPermanent(id) {
+  const producto = state.productos.find(p => p.id === id);
+  if (!producto) return;
+
+  // Confirmación doble para evitar accidentes
+  if (!confirm(`⚠️ ¿Estás seguro de que deseas ELIMINAR permanentemente el producto "${producto.nombre}"?\n\nEsta acción NO se puede deshacer.`)) {
+    return;
+  }
+
+  if (!confirm('Esta acción es IRREVERSIBLE. ¿Confirmar eliminación?')) {
+    return;
+  }
+
+  try {
+    const res = await authFetch(`${ADMIN_API}/productos/${id}/permanent`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || 'Error al eliminar');
+    }
+
+    showAlert('productosMessage', '✅ Producto eliminado permanentemente', 'success');
+    await loadProductos();
+    await loadOverview();
+  } catch (err) {
+    showAlert('productosMessage', `❌ ${err.message}`, 'error');
+  }
+}
 
 // Inicializar fila vacía en ambos formularios batch
 addVarianteRow();
@@ -1536,3 +1628,4 @@ initFiltros().then(() => {
   localStorage.removeItem('productos_seccion');
   showSection(savedSection);
 });
+window.showSection = showSection;
