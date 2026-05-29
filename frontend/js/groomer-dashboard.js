@@ -455,7 +455,10 @@ function actualizarVariantes() {
   const selectVariante = document.getElementById('consumoVariante');
   selectVariante.innerHTML = '<option value="">Sin variante</option>';
   variantes.forEach(v => {
-    selectVariante.innerHTML += `<option value="${v.id}">${v.atributo}: ${v.valor} (Stock: ${v.stock})</option>`;
+    const restante = (v.cantidad_actual !== null && v.cantidad_actual > 0)
+      ? ` | Abierta: ${v.cantidad_actual} ${v.unidad_medida || ''}`
+      : '';
+    selectVariante.innerHTML += `<option value="${v.id}">${v.atributo}: ${v.valor} (Stock: ${v.stock}${restante})</option>`;
   });
 }
 
@@ -483,6 +486,7 @@ document.getElementById('consumoForm')?.addEventListener('submit', async e => {
     closeModal('consumoModal');
     window.abrirFicha(fichaActualCitaId); // Recargar
   } catch (err) {
+    window.alert('Error al registrar consumo: ' + err.message);
     showNotification(err.message, 'error');
   }
 });
@@ -563,6 +567,7 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
 // NOTIFICACIONES
 // ─────────────────────────────────────────────────────────
 function showNotification(message, type = 'info') {
+  // Buscar elemento .alert visible
   const messageEls = document.querySelectorAll('.alert');
   messageEls.forEach(el => {
     if (el.classList.contains('show')) {
@@ -570,12 +575,17 @@ function showNotification(message, type = 'info') {
     }
   });
 
-  const alertEl = document.querySelector('.alert:not(.show)') || document.getElementById('fotoMessage') || document.getElementById('consumoMessage') || document.getElementById('pwMessage');
+  const alertEl = document.querySelector('.alert:not(.show)') 
+    || document.getElementById('fotoMessage') 
+    || document.getElementById('consumoMessage') 
+    || document.getElementById('pwMessage');
+
   if (alertEl) {
     alertEl.textContent = message;
     alertEl.className = `alert alert-${type} show`;
   } else {
-    alert(message);
+    // ✅ FALLBACK: si no hay elemento alert, usar window.alert
+    window.alert(message); 
   }
 }
 

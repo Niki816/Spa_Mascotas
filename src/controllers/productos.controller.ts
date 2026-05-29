@@ -1,12 +1,12 @@
-// ─── src/controllers/productos.controller.ts (VERSIÓN CORREGIDA) ──────────
+// ─── src/controllers/productos.controller.ts ───────────────────────────────
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../config/database';
 import { AppError } from '../utils/errors';
 import PDFDocument from 'pdfkit';
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // CATEGORÍAS
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 
 export const getCategorias = async (_req: Request, res: Response, next: NextFunction) => {
   try {
@@ -18,20 +18,20 @@ export const getCategorias = async (_req: Request, res: Response, next: NextFunc
     });
 
     const padreIds = [...new Set(categorias.map(c => c.padre_id).filter(Boolean))] as number[];
-    const padres   = padreIds.length
+    const padres = padreIds.length
       ? await prisma.categorias_producto.findMany({
-          where:  { id: { in: padreIds } },
+          where: { id: { in: padreIds } },
           select: { id: true, nombre: true },
         })
       : [];
     const padreMap = Object.fromEntries(padres.map(p => [p.id, p.nombre]));
 
     res.json(categorias.map(c => ({
-      id:              c.id,
-      nombre:          c.nombre,
-      descripcion:     c.descripcion,
-      padre_id:        c.padre_id,
-      padre_nombre:    c.padre_id ? (padreMap[c.padre_id] ?? null) : null,
+      id: c.id,
+      nombre: c.nombre,
+      descripcion: c.descripcion,
+      padre_id: c.padre_id,
+      padre_nombre: c.padre_id ? (padreMap[c.padre_id] ?? null) : null,
       total_productos: c._count.productos,
     })));
   } catch (error) { next(error); }
@@ -49,9 +49,9 @@ export const createCategoria = async (req: Request, res: Response, next: NextFun
 
     const categoria = await prisma.categorias_producto.create({
       data: {
-        nombre:      nombre.trim(),
+        nombre: nombre.trim(),
         descripcion: descripcion?.trim() || null,
-        padre_id:    padre_id ? Number(padre_id) : null,
+        padre_id: padre_id ? Number(padre_id) : null,
       },
     });
     res.status(201).json({ message: `Categoría "${nombre}" creada`, categoria });
@@ -72,9 +72,9 @@ export const updateCategoria = async (req: Request, res: Response, next: NextFun
     const updated = await prisma.categorias_producto.update({
       where: { id },
       data: {
-        nombre:      nombre?.trim()     || undefined,
+        nombre: nombre?.trim() || undefined,
         descripcion: descripcion !== undefined ? (descripcion?.trim() || null) : undefined,
-        padre_id:    padre_id   !== undefined ? (padre_id ? Number(padre_id) : null) : undefined,
+        padre_id: padre_id !== undefined ? (padre_id ? Number(padre_id) : null) : undefined,
       },
     });
     res.json({ message: 'Categoría actualizada', categoria: updated });
@@ -96,7 +96,7 @@ export const deleteCategoria = async (req: Request, res: Response, next: NextFun
 
     await prisma.categorias_producto.updateMany({
       where: { padre_id: id },
-      data:  { padre_id: null },
+      data: { padre_id: null },
     });
 
     await prisma.categorias_producto.delete({ where: { id } });
@@ -104,9 +104,9 @@ export const deleteCategoria = async (req: Request, res: Response, next: NextFun
   } catch (error) { next(error); }
 };
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // PRODUCTOS
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 
 export const getProductos = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -114,12 +114,12 @@ export const getProductos = async (req: Request, res: Response, next: NextFuncti
 
     const where: any = {};
     if (categoria_id) where.categoria_id = Number(categoria_id);
-    if (estado === 'activo')   where.estado_activo = true;
+    if (estado === 'activo') where.estado_activo = true;
     if (estado === 'inactivo') where.estado_activo = false;
     if (search) {
       where.OR = [
         { nombre: { contains: String(search) } },
-        { sku:    { contains: String(search) } },
+        { sku: { contains: String(search) } },
       ];
     }
 
@@ -127,8 +127,21 @@ export const getProductos = async (req: Request, res: Response, next: NextFuncti
       where,
       include: {
         categorias_producto: { select: { id: true, nombre: true } },
-        variantes_producto:  { where: { estado_activo: true }, select: { id: true, atributo: true, valor: true, sku_variante: true, precio_extra: true, stock: true } },
-        _count:              { select: { variantes_producto: true } },
+        variantes_producto: {
+          where: { estado_activo: true },
+          select: {
+            id: true,
+            atributo: true,
+            valor: true,
+            sku_variante: true,
+            precio_extra: true,
+            stock: true,
+            cantidad: true,
+            unidad_medida: true,
+            cantidad_actual: true,
+          },
+        },
+        _count: { select: { variantes_producto: true } },
       },
       orderBy: { nombre: 'asc' },
     });
@@ -139,22 +152,24 @@ export const getProductos = async (req: Request, res: Response, next: NextFuncti
     }
 
     res.json(result.map(p => ({
-      id:              p.id,
-      nombre:          p.nombre,
-      descripcion:     p.descripcion,
-      sku:             p.sku,
-      precio_base:     Number(p.precio_base),
-      stock:           p.stock,
-      stock_minimo:    p.stock_minimo,
-      imagen_url:      p.imagen_url,
-      estado_activo:   p.estado_activo,
-      bajo_stock:      p.stock <= p.stock_minimo,
-      agotado:         p.stock === 0,
-      categoria:       p.categorias_producto,
-      variantes:       p.variantes_producto.map(v => ({
+      id: p.id,
+      nombre: p.nombre,
+      descripcion: p.descripcion,
+      sku: p.sku,
+      precio_base: Number(p.precio_base),
+      stock: p.stock,
+      stock_minimo: p.stock_minimo,
+      imagen_url: p.imagen_url,
+      estado_activo: p.estado_activo,
+      bajo_stock: p.stock <= p.stock_minimo,
+      agotado: p.stock === 0,
+      categoria: p.categorias_producto,
+      variantes: p.variantes_producto.map(v => ({
         ...v,
-        precio_extra:   Number(v.precio_extra),
-        precio_final:   Number(p.precio_base) + Number(v.precio_extra),
+        precio_extra: Number(v.precio_extra),
+        precio_final: Number(p.precio_base) + Number(v.precio_extra),
+        cantidad: v.cantidad !== null ? Number(v.cantidad) : null,
+        cantidad_actual: v.cantidad_actual !== null ? Number(v.cantidad_actual) : null,
       })),
       variantes_count: p._count.variantes_producto,
     })));
@@ -167,10 +182,10 @@ export const getProductoById = async (req: Request, res: Response, next: NextFun
     if (isNaN(id)) throw new AppError('ID inválido', 400);
 
     const producto = await prisma.productos.findUnique({
-      where:   { id },
+      where: { id },
       include: {
         categorias_producto: true,
-        variantes_producto:  true,
+        variantes_producto: true,
       },
     });
 
@@ -183,7 +198,10 @@ export const getProductoById = async (req: Request, res: Response, next: NextFun
         ...v,
         precio_extra: Number(v.precio_extra),
         precio_final: Number(producto.precio_base) + Number(v.precio_extra),
+        cantidad: v.cantidad !== null ? Number(v.cantidad) : null,
+        cantidad_actual: v.cantidad_actual !== null ? Number(v.cantidad_actual) : null,
       })),
+      variantes_count: producto.variantes_producto.length,
     });
   } catch (error) { next(error); }
 };
@@ -204,23 +222,19 @@ export const createProducto = async (req: Request, res: Response, next: NextFunc
 
     if (parseFloat(precio_base) < 0) throw new AppError('El precio no puede ser negativo', 400);
 
-    console.log('[CREATE PRODUCTO] Payload recibido:', { nombre, stock, stock_minimo, precio_base });
-
     const producto = await prisma.productos.create({
       data: {
-        nombre:        nombre.trim(),
-        descripcion:   descripcion?.trim() || null,
-        categoria_id:  Number(categoria_id),
-        sku:           sku.trim(),
-        precio_base:   parseFloat(precio_base),
-        stock:         stock !== undefined ? parseInt(stock) : 0,
-        stock_minimo:  stock_minimo !== undefined ? parseInt(stock_minimo) : 5,
-        imagen_url:    imagen_url?.trim() || null,
+        nombre: nombre.trim(),
+        descripcion: descripcion?.trim() || null,
+        categoria_id: Number(categoria_id),
+        sku: sku.trim(),
+        precio_base: parseFloat(precio_base),
+        stock: stock !== undefined ? parseInt(stock) : 0,
+        stock_minimo: stock_minimo !== undefined ? parseInt(stock_minimo) : 5,
+        imagen_url: imagen_url?.trim() || null,
         estado_activo: true,
       },
     });
-
-    console.log('[CREATE PRODUCTO] ✅ Creado exitosamente:', { id: producto.id, stock: producto.stock });
 
     res.status(201).json({
       message: `Producto "${nombre}" creado exitosamente`,
@@ -229,149 +243,84 @@ export const createProducto = async (req: Request, res: Response, next: NextFunc
   } catch (error) { next(error); }
 };
 
-/**
- * UPDATE PRODUCTO - CORREGIDO
- * 
- * ✅ AHORA INCLUYE STOCK EN LA ACTUALIZACIÓN
- * ✅ Si tiene variantes, no permite cambiar stock (debe venir de variantes)
- * ✅ Si NO tiene variantes, permite actualizar stock directamente
- */
 export const updateProducto = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) throw new AppError('ID inválido', 400);
 
-    console.log('\n╔════════════════════════════════════════════════════════════╗');
-    console.log('║           [UPDATE PRODUCTO] INICIADO                     ║');
-    console.log('╚════════════════════════════════════════════════════════════╝');
-    console.log('📝 ID:', id);
-    console.log('📋 Body completo:', JSON.stringify(req.body, null, 2));
-
-    // Obtener producto con sus variantes
-    const existe = await prisma.productos.findUnique({ 
+    const existe = await prisma.productos.findUnique({
       where: { id },
-      include: { 
+      include: {
         variantes_producto: { where: { estado_activo: true } },
-        categorias_producto: { select: { nombre: true } }
-      }
+        categorias_producto: { select: { nombre: true } },
+      },
     });
-    
     if (!existe) throw new AppError('Producto no encontrado', 404);
-    console.log('✅ Producto encontrado:', existe.nombre);
-    console.log('   Variantes activas:', existe.variantes_producto.length);
-    console.log('   Stock actual:', existe.stock);
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // 🔴 VALIDACIÓN: Si tiene variantes, NO permitir cambiar stock
-    // ═══════════════════════════════════════════════════════════════════════
+    // No permitir modificar stock directamente si tiene variantes
     if (existe.variantes_producto.length > 0 && req.body.stock !== undefined) {
-      console.log('❌ RECHAZADO: Intento de cambiar stock en producto con variantes');
       throw new AppError(
         'No se puede editar el stock directamente de un producto con variantes. ' +
         'Edita el stock desde las variantes individuales (se sumará automáticamente).',
-        400
+        400,
       );
     }
 
-    // Desestructurar TODO incluyendo stock ✅
-    const { 
-      nombre, 
-      descripcion, 
-      categoria_id, 
-      sku, 
-      precio_base, 
-      stock,           // ✅ AHORA SÍ INCLUYE STOCK
-      stock_minimo, 
-      imagen_url, 
-      estado_activo 
-    } = req.body;
+    const { nombre, descripcion, categoria_id, sku, precio_base, stock, stock_minimo, imagen_url, estado_activo } = req.body;
 
-    console.log('🔄 Campos a actualizar:');
-    console.log('   nombre:', nombre);
-    console.log('   stock (recibido):', stock);
-    console.log('   stock_minimo:', stock_minimo);
-    console.log('   precio_base:', precio_base);
-
-    // Construir objeto de actualización
     const dataUpdate: any = {};
 
-    if (nombre?.trim()) {
-      dataUpdate.nombre = nombre.trim();
-      console.log('   ✓ nombre actualizado');
-    }
-    if (descripcion !== undefined) {
-      dataUpdate.descripcion = descripcion?.trim() || null;
-      console.log('   ✓ descripcion actualizada');
-    }
-    if (categoria_id) {
-      dataUpdate.categoria_id = Number(categoria_id);
-      console.log('   ✓ categoria_id actualizado');
-    }
-    if (sku?.trim()) {
-      dataUpdate.sku = sku.trim();
-      console.log('   ✓ sku actualizado');
-    }
-    if (precio_base !== undefined) {
-      dataUpdate.precio_base = parseFloat(precio_base);
-      console.log('   ✓ precio_base actualizado a:', dataUpdate.precio_base);
-    }
+    if (nombre?.trim()) dataUpdate.nombre = nombre.trim();
+    if (descripcion !== undefined) dataUpdate.descripcion = descripcion?.trim() || null;
+    if (categoria_id) dataUpdate.categoria_id = Number(categoria_id);
+    if (sku?.trim()) dataUpdate.sku = sku.trim();
+    if (precio_base !== undefined) dataUpdate.precio_base = parseFloat(precio_base);
+    if (stock_minimo !== undefined) dataUpdate.stock_minimo = parseInt(stock_minimo);
+    if (imagen_url !== undefined) dataUpdate.imagen_url = imagen_url?.trim() || null;
+    if (estado_activo !== undefined) dataUpdate.estado_activo = Boolean(estado_activo);
 
-    // ✅ AQUÍ ESTÁ LA CLAVE: Incluir stock si fue enviado
-    if (stock !== undefined && stock !== null && stock !== '') {
+    // Solo actualizar stock si no tiene variantes y fue enviado
+    if (existe.variantes_producto.length === 0 && stock !== undefined && stock !== null && stock !== '') {
       const stockParsed = parseInt(stock);
       if (!isNaN(stockParsed) && stockParsed >= 0) {
         dataUpdate.stock = stockParsed;
-        console.log('   ✓ stock actualizado a:', stockParsed);
-      } else {
-        console.warn('   ⚠️ Stock recibido pero no es válido:', stock);
       }
-    } else {
-      console.log('   ⚠️ Stock no fue enviado o es inválido');
     }
 
-    if (stock_minimo !== undefined) {
-      dataUpdate.stock_minimo = parseInt(stock_minimo);
-      console.log('   ✓ stock_minimo actualizado a:', dataUpdate.stock_minimo);
-    }
-    if (imagen_url !== undefined) {
-      dataUpdate.imagen_url = imagen_url?.trim() || null;
-      console.log('   ✓ imagen_url actualizada');
-    }
-    if (estado_activo !== undefined) {
-      dataUpdate.estado_activo = Boolean(estado_activo);
-      console.log('   ✓ estado_activo actualizado a:', dataUpdate.estado_activo);
-    }
-
-    console.log('\n🔧 Objeto de actualización final:', JSON.stringify(dataUpdate, null, 2));
-
-    // Ejecutar actualización
     const updated = await prisma.productos.update({
       where: { id },
       data: dataUpdate,
-      include: { variantes_producto: { where: { estado_activo: true } } }
     });
-
-    console.log('\n✅ ACTUALIZADO EXITOSAMENTE');
-    console.log('   Stock en BD después del update:', updated.stock);
-    console.log('   Estado activo:', updated.estado_activo);
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
 
     res.json({
-      message:  'Producto actualizado correctamente',
+      message: 'Producto actualizado correctamente',
       producto: { ...updated, precio_base: Number(updated.precio_base) },
     });
-  } catch (error) { 
-    console.error('\n❌ ERROR EN UPDATE PRODUCTO:', error);
-    next(error); 
-  }
+  } catch (error) { next(error); }
 };
 
 export const deleteProducto = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) throw new AppError('ID inválido', 400);
-
     await prisma.productos.update({ where: { id }, data: { estado_activo: false } });
+    res.status(204).send();
+  } catch (error) { next(error); }
+};
+
+export const deleteProductoPermanent = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id as string);
+    if (isNaN(id)) throw new AppError('ID inválido', 400);
+
+    const producto = await prisma.productos.findUnique({ where: { id }, include: { variantes_producto: true } });
+    if (!producto) throw new AppError('Producto no encontrado', 404);
+    if (producto.estado_activo) throw new AppError('No se puede eliminar un producto activo. Desactívalo primero.', 400);
+
+    if (producto.variantes_producto.length > 0) {
+      await prisma.variantes_producto.deleteMany({ where: { producto_id: id } });
+    }
+    await prisma.productos.delete({ where: { id } });
     res.status(204).send();
   } catch (error) { next(error); }
 };
@@ -391,46 +340,58 @@ export const updateStock = async (req: Request, res: Response, next: NextFunctio
     if (isNaN(cant) || cant < 0) throw new AppError('Cantidad inválida', 400);
 
     let nuevoStock = producto.stock;
-    if      (operacion === 'agregar')  nuevoStock += cant;
-    else if (operacion === 'restar')   nuevoStock -= cant;
-    else if (operacion === 'ajustar')  nuevoStock  = cant;
+    if (operacion === 'agregar') nuevoStock += cant;
+    else if (operacion === 'restar') nuevoStock -= cant;
+    else if (operacion === 'ajustar') nuevoStock = cant;
     else throw new AppError('Operación inválida. Use: agregar, restar, ajustar', 400);
 
     if (nuevoStock < 0) throw new AppError(`Stock insuficiente. Stock actual: ${producto.stock}`, 400);
 
     const updated = await prisma.productos.update({
       where: { id },
-      data:  { stock: nuevoStock },
+      data: { stock: nuevoStock },
     });
 
     res.json({
-      message:        `Stock actualizado a ${nuevoStock} unidades`,
+      message: `Stock actualizado a ${nuevoStock} unidades`,
       stock_anterior: producto.stock,
-      stock_nuevo:    nuevoStock,
-      diferencia:     nuevoStock - producto.stock,
-      alerta_bajo:    nuevoStock <= producto.stock_minimo,
-      agotado:        nuevoStock === 0,
-      motivo:         motivo || null,
+      stock_nuevo: nuevoStock,
+      diferencia: nuevoStock - producto.stock,
+      alerta_bajo: nuevoStock <= producto.stock_minimo,
+      agotado: nuevoStock === 0,
+      motivo: motivo || null,
     });
   } catch (error) { next(error); }
 };
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // IMAGEN – Subida desde PC
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 
 export const subirImagenProducto = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.file) throw new AppError('No se ha subido ningún archivo', 400);
-
     const url = `/fotos/productos/${req.file.filename}`;
     res.json({ url });
   } catch (error) { next(error); }
 };
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // VARIANTES
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+
+/** Sincroniza el stock del producto sumando el stock de sus variantes activas */
+async function syncProductStock(productoId: number) {
+  const variantes = await prisma.variantes_producto.findMany({
+    where: { producto_id: productoId, estado_activo: true },
+    select: { stock: true },
+  });
+  const total = variantes.reduce((sum, v) => sum + v.stock, 0);
+  await prisma.productos.update({
+    where: { id: productoId },
+    data: { stock: total },
+  });
+}
 
 export const getVariantesByProducto = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -441,7 +402,7 @@ export const getVariantesByProducto = async (req: Request, res: Response, next: 
     if (!producto) throw new AppError('Producto no encontrado', 404);
 
     const variantes = await prisma.variantes_producto.findMany({
-      where:   { producto_id: productoId },
+      where: { producto_id: productoId },
       orderBy: [{ atributo: 'asc' }, { valor: 'asc' }],
     });
 
@@ -449,6 +410,8 @@ export const getVariantesByProducto = async (req: Request, res: Response, next: 
       ...v,
       precio_extra: Number(v.precio_extra),
       precio_final: Number(producto.precio_base) + Number(v.precio_extra),
+      cantidad: v.cantidad !== null ? Number(v.cantidad) : null,
+      cantidad_actual: v.cantidad_actual !== null ? Number(v.cantidad_actual) : null,
     })));
   } catch (error) { next(error); }
 };
@@ -458,7 +421,7 @@ export const createVariante = async (req: Request, res: Response, next: NextFunc
     const productoId = parseInt(req.params.id as string);
     if (isNaN(productoId)) throw new AppError('ID inválido', 400);
 
-    const { atributo, valor, sku_variante, precio_extra, stock } = req.body;
+    const { atributo, valor, sku_variante, precio_extra, stock, estado_activo, cantidad, unidad_medida } = req.body;
 
     if (!atributo?.trim() || !valor?.trim() || !sku_variante?.trim()) {
       throw new AppError('Faltan campos obligatorios: atributo, valor, sku_variante', 400);
@@ -470,24 +433,37 @@ export const createVariante = async (req: Request, res: Response, next: NextFunc
     const producto = await prisma.productos.findUnique({ where: { id: productoId } });
     if (!producto) throw new AppError('Producto no encontrado', 404);
 
+    // Validar cantidad si se envía
+    if (cantidad !== undefined && cantidad !== null && cantidad !== '') {
+      if (isNaN(Number(cantidad)) || Number(cantidad) <= 0)
+        throw new AppError('La cantidad debe ser un número positivo', 400);
+    }
+
     const variante = await prisma.variantes_producto.create({
       data: {
-        producto_id:   productoId,
-        atributo:      atributo.trim(),
-        valor:         valor.trim(),
-        sku_variante:  sku_variante.trim(),
-        precio_extra:  precio_extra !== undefined ? parseFloat(precio_extra) : 0,
-        stock:         stock        !== undefined ? parseInt(stock)          : 0,
-        estado_activo: true,
+        producto_id: productoId,
+        atributo: atributo.trim(),
+        valor: valor.trim(),
+        sku_variante: sku_variante.trim(),
+        precio_extra: precio_extra !== undefined ? parseFloat(precio_extra) : 0,
+        stock: stock !== undefined ? parseInt(stock) : 0,
+        estado_activo: estado_activo ?? true,
+        cantidad: cantidad ? Number(cantidad) : null,
+        unidad_medida: unidad_medida?.trim() || null,
+        cantidad_actual: 0,
       },
     });
 
+    await syncProductStock(productoId);
+
     res.status(201).json({
-      message:  'Variante creada correctamente',
+      message: 'Variante creada correctamente',
       variante: {
         ...variante,
         precio_extra: Number(variante.precio_extra),
         precio_final: Number(producto.precio_base) + Number(variante.precio_extra),
+        cantidad: variante.cantidad !== null ? Number(variante.cantidad) : null,
+        cantidad_actual: 0,
       },
     });
   } catch (error) { next(error); }
@@ -498,7 +474,10 @@ export const createVariantesBatch = async (req: Request, res: Response, next: Ne
     const productoId = parseInt(req.params.id as string);
     if (isNaN(productoId)) throw new AppError('ID inválido', 400);
 
-    const producto = await prisma.productos.findUnique({ where: { id: productoId }, select: { id: true, precio_base: true } });
+    const producto = await prisma.productos.findUnique({
+      where: { id: productoId },
+      select: { id: true, precio_base: true },
+    });
     if (!producto) throw new AppError('Producto no encontrado', 404);
 
     const { variantes } = req.body;
@@ -525,17 +504,22 @@ export const createVariantesBatch = async (req: Request, res: Response, next: Ne
       variantes.map(v =>
         prisma.variantes_producto.create({
           data: {
-            producto_id:   productoId,
-            atributo:      v.atributo.trim(),
-            valor:         v.valor.trim(),
-            sku_variante:  v.sku_variante.trim(),
-            precio_extra:  v.precio_extra !== undefined ? parseFloat(v.precio_extra) : 0,
-            stock:         v.stock        !== undefined ? parseInt(v.stock)          : 0,
+            producto_id: productoId,
+            atributo: v.atributo.trim(),
+            valor: v.valor.trim(),
+            sku_variante: v.sku_variante.trim(),
+            precio_extra: v.precio_extra !== undefined ? parseFloat(v.precio_extra) : 0,
+            stock: v.stock !== undefined ? parseInt(v.stock) : 0,
             estado_activo: true,
+            cantidad: v.cantidad ? Number(v.cantidad) : null,
+            unidad_medida: v.unidad_medida?.trim() || null,
+            cantidad_actual: 0,
           },
         })
       )
     );
+
+    await syncProductStock(productoId);
 
     res.status(201).json({
       message: `${created.length} variante(s) creada(s) exitosamente`,
@@ -556,28 +540,47 @@ export const updateVariante = async (req: Request, res: Response, next: NextFunc
     const existe = await prisma.variantes_producto.findUnique({ where: { id } });
     if (!existe) throw new AppError('Variante no encontrada', 404);
 
-    const { atributo, valor, sku_variante, precio_extra, stock, estado_activo } = req.body;
+    const { atributo, valor, sku_variante, precio_extra, stock, estado_activo, cantidad, unidad_medida } = req.body;
 
     if (sku_variante && sku_variante.trim() !== existe.sku_variante) {
       const skuExiste = await prisma.variantes_producto.findUnique({ where: { sku_variante: sku_variante.trim() } });
       if (skuExiste) throw new AppError(`El SKU "${sku_variante}" ya está registrado`, 409);
     }
 
+    const data: any = {};
+
+    if (atributo?.trim()) data.atributo = atributo.trim();
+    if (valor?.trim()) data.valor = valor.trim();
+    if (sku_variante?.trim()) data.sku_variante = sku_variante.trim();
+    if (precio_extra !== undefined) data.precio_extra = parseFloat(precio_extra);
+    if (stock !== undefined) data.stock = parseInt(stock);
+    if (estado_activo !== undefined) data.estado_activo = Boolean(estado_activo);
+    if (cantidad !== undefined) {
+      const cantidadNum = Number(cantidad);
+      if (!isNaN(cantidadNum) && cantidadNum > 0) {
+        data.cantidad = cantidadNum;
+      } else {
+        data.cantidad = null;
+      }
+    }
+    if (unidad_medida !== undefined) data.unidad_medida = unidad_medida?.trim() || null;
+    // cantidad_actual no se modifica manualmente
+
     const updated = await prisma.variantes_producto.update({
       where: { id },
-      data: {
-        atributo:      atributo?.trim()      || undefined,
-        valor:         valor?.trim()         || undefined,
-        sku_variante:  sku_variante?.trim()  || undefined,
-        precio_extra:  precio_extra  !== undefined ? parseFloat(precio_extra) : undefined,
-        stock:         stock         !== undefined ? parseInt(stock)          : undefined,
-        estado_activo: estado_activo !== undefined ? Boolean(estado_activo)  : undefined,
-      },
+      data,
     });
 
+    await syncProductStock(existe.producto_id);
+
     res.json({
-      message:  'Variante actualizada',
-      variante: { ...updated, precio_extra: Number(updated.precio_extra) },
+      message: 'Variante actualizada',
+      variante: {
+        ...updated,
+        precio_extra: Number(updated.precio_extra),
+        cantidad: updated.cantidad !== null ? Number(updated.cantidad) : null,
+        cantidad_actual: updated.cantidad_actual !== null ? Number(updated.cantidad_actual) : null,
+      },
     });
   } catch (error) { next(error); }
 };
@@ -587,34 +590,37 @@ export const deleteVariante = async (req: Request, res: Response, next: NextFunc
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) throw new AppError('ID inválido', 400);
 
+    const variante = await prisma.variantes_producto.findUnique({ where: { id } });
+    if (!variante) throw new AppError('Variante no encontrada', 404);
+
     const enCarrito = await prisma.detalle_carrito.count({ where: { variante_id: id } });
-    if (enCarrito > 0) {
-      throw new AppError('No se puede eliminar: la variante está en carritos activos', 400);
-    }
+    if (enCarrito > 0) throw new AppError('No se puede eliminar: la variante está en carritos activos', 400);
 
     await prisma.variantes_producto.delete({ where: { id } });
+    await syncProductStock(variante.producto_id);
+
     res.status(204).send();
   } catch (error) { next(error); }
 };
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // ALERTAS DE INVENTARIO
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 
 export const getAlertasStock = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const productos = await prisma.productos.findMany({
-      where:   { estado_activo: true },
+      where: { estado_activo: true },
       include: { categorias_producto: { select: { nombre: true } } },
       orderBy: { stock: 'asc' },
     });
 
-    const agotados    = productos.filter(p => p.stock === 0);
-    const bajoStock   = productos.filter(p => p.stock > 0 && p.stock <= p.stock_minimo);
-    const enRiesgo    = productos.filter(p => p.stock > p.stock_minimo && p.stock <= p.stock_minimo * 1.5);
+    const agotados = productos.filter(p => p.stock === 0);
+    const bajoStock = productos.filter(p => p.stock > 0 && p.stock <= p.stock_minimo);
+    const enRiesgo = productos.filter(p => p.stock > p.stock_minimo && p.stock <= p.stock_minimo * 1.5);
 
     const variantesBajas = await prisma.variantes_producto.findMany({
-      where:   { estado_activo: true, stock: { lte: 3 } },
+      where: { estado_activo: true, stock: { lte: 3 } },
       include: { productos: { select: { id: true, nombre: true, sku: true } } },
       orderBy: { stock: 'asc' },
     });
@@ -623,55 +629,54 @@ export const getAlertasStock = async (_req: Request, res: Response, next: NextFu
     treintaDias.setDate(treintaDias.getDate() - 30);
 
     const altoConsumoRaw = await prisma.consumo_insumos_ficha.groupBy({
-      by:      ['producto_id'],
-      where:   { creado_en: { gte: treintaDias } },
-      _sum:    { cantidad: true },
+      by: ['producto_id'],
+      where: { creado_en: { gte: treintaDias } },
+      _sum: { cantidad: true },
     });
-
     altoConsumoRaw.sort((a, b) => Number(b._sum.cantidad ?? 0) - Number(a._sum.cantidad ?? 0));
     const top5 = altoConsumoRaw.slice(0, 5);
 
     const altoConsumo = await Promise.all(
       top5.map(async item => {
         const prod = await prisma.productos.findUnique({
-          where:  { id: item.producto_id },
+          where: { id: item.producto_id },
           select: { id: true, nombre: true, sku: true, stock: true, stock_minimo: true },
         });
         return {
           ...prod,
-          consumido_30d:     Number(item._sum.cantidad ?? 0),
+          consumido_30d: Number(item._sum.cantidad ?? 0),
           riesgo_agotamiento: prod ? prod.stock <= prod.stock_minimo : false,
         };
       }),
     );
 
     const formatProd = (p: any) => ({
-      id:                  p.id,
-      nombre:              p.nombre,
-      sku:                 p.sku,
-      stock:               p.stock,
-      stock_minimo:        p.stock_minimo,
-      categoria:           p.categorias_producto?.nombre ?? '—',
+      id: p.id,
+      nombre: p.nombre,
+      sku: p.sku,
+      stock: p.stock,
+      stock_minimo: p.stock_minimo,
+      categoria: p.categorias_producto?.nombre ?? '—',
       recomendacion_compra: Math.max(p.stock_minimo * 3 - p.stock, 0),
     });
 
     res.json({
       resumen: {
-        agotados:        agotados.length,
-        bajo_stock:      bajoStock.length,
-        en_riesgo:       enRiesgo.length,
+        agotados: agotados.length,
+        bajo_stock: bajoStock.length,
+        en_riesgo: enRiesgo.length,
         variantes_bajas: variantesBajas.length,
       },
-      agotados:        agotados.map(formatProd),
-      bajo_stock:      bajoStock.map(formatProd),
-      en_riesgo:       enRiesgo.map(formatProd),
+      agotados: agotados.map(formatProd),
+      bajo_stock: bajoStock.map(formatProd),
+      en_riesgo: enRiesgo.map(formatProd),
       variantes_bajas: variantesBajas.map(v => ({
-        id:         v.id,
-        sku:        v.sku_variante,
-        atributo:   v.atributo,
-        valor:      v.valor,
-        stock:      v.stock,
-        producto:   v.productos.nombre,
+        id: v.id,
+        sku: v.sku_variante,
+        atributo: v.atributo,
+        valor: v.valor,
+        stock: v.stock,
+        producto: v.productos.nombre,
         producto_id: v.productos.id,
       })),
       alto_consumo: altoConsumo,
@@ -679,16 +684,16 @@ export const getAlertasStock = async (_req: Request, res: Response, next: NextFu
   } catch (error) { next(error); }
 };
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // REPORTE DE INVENTARIO
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 
 export const getReporteInventario = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const productos = await prisma.productos.findMany({
       include: {
         categorias_producto: { select: { nombre: true } },
-        variantes_producto:  { where: { estado_activo: true }, select: { id: true, stock: true, precio_extra: true } },
+        variantes_producto: { where: { estado_activo: true }, select: { id: true, stock: true, precio_extra: true } },
       },
       orderBy: [{ categorias_producto: { nombre: 'asc' } }, { nombre: 'asc' }],
     });
@@ -703,62 +708,59 @@ export const getReporteInventario = async (_req: Request, res: Response, next: N
       if (!porCategoria[cat]) porCategoria[cat] = { productos: 0, valor: 0, bajo_stock: 0, agotados: 0 };
       porCategoria[cat].productos++;
       porCategoria[cat].valor += Number(p.precio_base) * p.stock;
-      if (p.stock === 0)              porCategoria[cat].agotados++;
+      if (p.stock === 0) porCategoria[cat].agotados++;
       else if (p.stock <= p.stock_minimo) porCategoria[cat].bajo_stock++;
     }
 
     const treintaDias = new Date();
     treintaDias.setDate(treintaDias.getDate() - 30);
-
     const consumoRaw = await prisma.consumo_insumos_ficha.groupBy({
-      by:    ['producto_id'],
+      by: ['producto_id'],
       where: { creado_en: { gte: treintaDias } },
-      _sum:  { cantidad: true },
+      _sum: { cantidad: true },
     });
-
     consumoRaw.sort((a, b) => Number(b._sum.cantidad ?? 0) - Number(a._sum.cantidad ?? 0));
-
     const consumo = await Promise.all(
       consumoRaw.slice(0, 10).map(async item => {
         const prod = await prisma.productos.findUnique({
-          where:  { id: item.producto_id },
+          where: { id: item.producto_id },
           select: { nombre: true, sku: true, stock: true, stock_minimo: true },
         });
         return {
-          producto:      prod?.nombre ?? 'N/A',
-          sku:           prod?.sku    ?? 'N/A',
-          stock_actual:  prod?.stock  ?? 0,
-          stock_minimo:  prod?.stock_minimo ?? 0,
+          producto: prod?.nombre ?? 'N/A',
+          sku: prod?.sku ?? 'N/A',
+          stock_actual: prod?.stock ?? 0,
+          stock_minimo: prod?.stock_minimo ?? 0,
           consumido_30d: Number(item._sum.cantidad ?? 0),
-          alerta:        prod ? prod.stock <= prod.stock_minimo : false,
+          alerta: prod ? prod.stock <= prod.stock_minimo : false,
         };
       }),
     );
 
     res.json({
-      generado_en:       new Date().toISOString(),
-      total_productos:   productos.length,
+      generado_en: new Date().toISOString(),
+      total_productos: productos.length,
       productos_activos: productos.filter(p => p.estado_activo).length,
-      valor_inventario:  Number(valorTotal.toFixed(2)),
-      por_categoria:     Object.entries(porCategoria).map(([categoria, data]) => ({
+      valor_inventario: Number(valorTotal.toFixed(2)),
+      por_categoria: Object.entries(porCategoria).map(([categoria, data]) => ({
         categoria,
         ...data,
         valor: Number(data.valor.toFixed(2)),
       })).sort((a, b) => b.valor - a.valor),
       consumo_30_dias: consumo,
       productos_lista: productos.map(p => ({
-        id:            p.id,
-        nombre:        p.nombre,
-        sku:           p.sku,
-        categoria:     p.categorias_producto.nombre,
-        precio_base:   Number(p.precio_base),
-        stock:         p.stock,
-        stock_minimo:  p.stock_minimo,
-        estado:        p.estado_activo ? 'Activo' : 'Inactivo',
-        bajo_stock:    p.stock <= p.stock_minimo,
-        agotado:       p.stock === 0,
-        valor_total:   Number((Number(p.precio_base) * p.stock).toFixed(2)),
-        variantes:     p.variantes_producto.length,
+        id: p.id,
+        nombre: p.nombre,
+        sku: p.sku,
+        categoria: p.categorias_producto.nombre,
+        precio_base: Number(p.precio_base),
+        stock: p.stock,
+        stock_minimo: p.stock_minimo,
+        estado: p.estado_activo ? 'Activo' : 'Inactivo',
+        bajo_stock: p.stock <= p.stock_minimo,
+        agotado: p.stock === 0,
+        valor_total: Number((Number(p.precio_base) * p.stock).toFixed(2)),
+        variantes: p.variantes_producto.length,
       })),
     });
   } catch (error) { next(error); }
@@ -854,7 +856,6 @@ export const getReportePDF = async (_req: Request, res: Response, next: NextFunc
       doc.text(precio, col4X, y, { width: colWidths.precio, align: 'right' });
       doc.text(stock, col5X, y, { width: colWidths.stock, align: 'center' });
       doc.text(valorTotalItem, col6X, y, { width: colWidths.valor, align: 'right' });
-
       y += 16;
     }
 
@@ -862,9 +863,9 @@ export const getReportePDF = async (_req: Request, res: Response, next: NextFunc
   } catch (error) { next(error); }
 };
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // ESTADÍSTICAS – Más vendidos / Más usados
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 
 export const getMasVendidos = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -872,20 +873,14 @@ export const getMasVendidos = async (req: Request, res: Response, next: NextFunc
     treintaDias.setDate(treintaDias.getDate() - 30);
 
     const pedidosValidos = await prisma.pedidos.findMany({
-      where: {
-        creado_en: { gte: treintaDias },
-        estado: { not: 'cancelado' },
-      },
+      where: { creado_en: { gte: treintaDias }, estado: { not: 'cancelado' } },
       select: { id: true },
     });
-
     const idsPedidos = pedidosValidos.map(p => p.id);
 
     const ventas = await prisma.detalle_pedido.groupBy({
       by: ['producto_id'],
-      where: {
-        pedido_id: { in: idsPedidos },
-      },
+      where: { pedido_id: { in: idsPedidos } },
       _sum: { cantidad: true },
     });
 
@@ -944,36 +939,5 @@ export const getMasUsados = async (req: Request, res: Response, next: NextFuncti
       .slice(0, 5);
 
     res.json(result);
-  } catch (error) { next(error); }
-};
-
-export const deleteProductoPermanent = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const id = parseInt(req.params.id as string);
-    if (isNaN(id)) throw new AppError('ID inválido', 400);
-
-    const producto = await prisma.productos.findUnique({ 
-      where: { id },
-      include: { variantes_producto: true }
-    });
-
-    if (!producto) throw new AppError('Producto no encontrado', 404);
-
-    if (producto.estado_activo) {
-      throw new AppError(
-        'No se puede eliminar un producto activo. Desactívalo primero desde el catálogo.',
-        400
-      );
-    }
-
-    if (producto.variantes_producto.length > 0) {
-      await prisma.variantes_producto.deleteMany({
-        where: { producto_id: id }
-      });
-    }
-
-    await prisma.productos.delete({ where: { id } });
-
-    res.status(204).send();
   } catch (error) { next(error); }
 };

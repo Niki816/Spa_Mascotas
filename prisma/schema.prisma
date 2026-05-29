@@ -690,6 +690,9 @@ model variantes_producto {
   producto_id           Int                     @db.UnsignedInt
   atributo              String                  @db.VarChar(60)
   valor                 String                  @db.VarChar(100)
+  cantidad              Decimal?                @db.Decimal(10,2)
+  cantidad_actual       Decimal?                @db.Decimal(10,2)
+  unidad_medida         String?                 @db.VarChar(20)   
   sku_variante          String                  @unique(map: "uq_variante_sku") @db.VarChar(80)
   precio_extra          Decimal                 @default(0.00) @db.Decimal(10, 2)
   stock                 Int                     @default(0) @db.UnsignedInt

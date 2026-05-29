@@ -967,6 +967,10 @@ async function loadVariantes() {
             Stock: <strong>${v.stock}</strong>
             ${v.stock <= 3 ? '<span class="badge-bajo" style="font-size:10px;margin-left:4px;">⚠️ Bajo</span>' : ''}
           </div>
+          ${v.cantidad ? `<div class="variante-stock" style="font-size:11px; color:var(--text-mid);">
+            Contenido: ${v.cantidad} ${v.unidad_medida || 'unid.'}
+            ${v.cantidad_actual > 0 ? ` · Restante: ${v.cantidad_actual} ${v.unidad_medida || ''}` : ''}
+          </div>` : ''}
         </div>
         <div class="variante-actions">
           <button class="btn btn-outline btn-sm" data-action="editar"   data-id="${v.id}">✏️</button>
@@ -995,13 +999,15 @@ function createVarianteRow(containerId, removeBtnClass) {
   row.className = 'form-row variante-row';
   row.style.marginBottom = '8px';
   row.innerHTML = `
-    <input type="text"   class="form-input" placeholder="Atributo (Marca)"     data-var="atributo" required>
-    <input type="text"   class="form-input" placeholder="Valor (1kg Carne)"     data-var="valor"    required>
-    <input type="text"   class="form-input" placeholder="SKU variante"          data-var="sku"      required>
-    <input type="number" class="form-input" placeholder="Precio extra" step="0.01" data-var="precio" value="0">
-    <input type="number" class="form-input" placeholder="Stock"    min="0"      data-var="stock"    value="0">
-    <button type="button" class="btn btn-danger btn-sm ${removeBtnClass}" style="align-self:center;">✕</button>
-  `;
+  <input type="text"   class="form-input" placeholder="Atributo" data-var="atributo" required>
+  <input type="text"   class="form-input" placeholder="Valor"     data-var="valor"    required>
+  <input type="text"   class="form-input" placeholder="SKU"       data-var="sku"      required>
+  <input type="number" class="form-input" placeholder="Precio extra" step="0.01" data-var="precio" value="0">
+  <input type="number" class="form-input" placeholder="Stock"     min="0" data-var="stock" value="0">
+  <input type="number" class="form-input" placeholder="Cantidad (1, 5…)" step="0.01" min="0.01" data-var="cantidad">
+  <input type="text"   class="form-input" placeholder="Unidad (L, kg…)" data-var="unidad">
+  <button type="button" class="btn btn-danger btn-sm ${removeBtnClass}">✕</button>
+`;
 
   // ── Autocompletado del SKU con el nuevo generador ──
   const attrInput = row.querySelector('[data-var="atributo"]');
@@ -1051,7 +1057,9 @@ function collectVarianteRows(selector) {
       valor,
       sku_variante: sku,
       precio_extra: parseFloat(get('precio')) || 0,
-      stock:        parseInt(get('stock'))    || 0,
+      stock: parseInt(get('stock')) || 0,
+      cantidad: parseFloat(get('cantidad')) || null,
+      unidad_medida: get('unidad') || null,
     });
   });
   return result;
@@ -1094,7 +1102,6 @@ async function openVarianteModal(varianteId = null, productoId = null) {
   document.getElementById('varianteId').value = '';
   document.getElementById('varianteAlert').className = 'alert';
   document.getElementById('varianteForm').dataset.productoId = pid;
-
   if (varianteId) {
     document.getElementById('varianteModalTitle').textContent = '✏️ Editar Variante';
     try {
@@ -1110,6 +1117,8 @@ async function openVarianteModal(varianteId = null, productoId = null) {
       document.getElementById('variantePrecioExtra').value = v.precio_extra;
       document.getElementById('varianteStock').value       = v.stock;
       document.getElementById('varianteEstado').value      = String(v.estado_activo);
+      document.getElementById('varianteCantidad').value     = v.cantidad ?? '';
+      document.getElementById('varianteUnidad').value       = v.unidad_medida ?? '';
     } catch (err) {
       alert(`Error: ${err.message}`);
       return;
@@ -1135,6 +1144,30 @@ document.getElementById('varianteForm')?.addEventListener('submit', async e => {
   const id  = document.getElementById('varianteId').value;
   const pid = e.target.dataset.productoId ?? state.variantesProductoId;
 
+  // ── Obtener valores de los nuevos campos ──
+  const cantidadInput = document.getElementById('varianteCantidad');
+  const unidadInput   = document.getElementById('varianteUnidad');
+  const cantidadVal   = cantidadInput?.value.trim() ?? '';
+  const unidadVal     = unidadInput?.value.trim() ?? '';
+
+  // ═══════════════════════════════════════════════════════════
+  // 🔍 VALIDACIÓN CRUZADA: ambos o ninguno
+  // ═══════════════════════════════════════════════════════════
+  if ((cantidadVal && !unidadVal) || (!cantidadVal && unidadVal)) {
+    showAlert('varianteAlert', '⚠️ Debes ingresar ambos: cantidad y unidad de medida, o dejarlos vacíos.', 'error');
+    return; // detener envío
+  }
+
+  // Validar que la cantidad sea un número positivo si fue proporcionada
+  if (cantidadVal !== '') {
+    const cantidadNum = parseFloat(cantidadVal);
+    if (isNaN(cantidadNum) || cantidadNum <= 0) {
+      showAlert('varianteAlert', '⚠️ La cantidad debe ser un número mayor que 0.', 'error');
+      return;
+    }
+  }
+
+  // ── Construir payload base ──
   const payload = {
     atributo:      document.getElementById('varianteAtributo').value.trim(),
     valor:         document.getElementById('varianteValor').value.trim(),
@@ -1143,6 +1176,12 @@ document.getElementById('varianteForm')?.addEventListener('submit', async e => {
     stock:         parseInt(document.getElementById('varianteStock').value) || 0,
     estado_activo: document.getElementById('varianteEstado').value === 'true',
   };
+
+  // Solo añadir cantidad y unidad_medida si ambos tienen valor
+  if (cantidadVal && unidadVal) {
+    payload.cantidad = parseFloat(cantidadVal);
+    payload.unidad_medida = unidadVal;
+  }
 
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
@@ -1235,6 +1274,10 @@ async function cargarVariantesDeProducto(productoId) {
           <div><strong>${escapeHtml(v.atributo)}:</strong> ${escapeHtml(v.valor)}</div>
           <div class="variante-sku"><code>${escapeHtml(v.sku_variante)}</code></div>
           <div>Precio extra: Bs ${Number(v.precio_extra).toFixed(2)} | Stock: ${v.stock}</div>
+          ${v.cantidad ? `<div style="font-size:11px; color:var(--text-mid); margin-top:2px;">
+            Contenido: ${v.cantidad} ${v.unidad_medida || 'unid.'}
+            ${v.cantidad_actual > 0 ? ` · Restante: ${v.cantidad_actual} ${v.unidad_medida || ''}` : ''}
+          </div>` : ''}
         </div>
         <div class="variante-actions">
           <button class="btn btn-outline btn-sm edit-var-cat" data-id="${v.id}">✏️</button>

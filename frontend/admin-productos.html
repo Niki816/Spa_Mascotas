@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Productos — Admin Pet Spa</title>
+  <title>Gestión de Productos — Pet Spa Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
+    /* ═══════════════════════════════════════════════
+       TOKENS & RESET
+    ═══════════════════════════════════════════════ */
     :root {
       --green-deep:  #1e3a2f;
       --green-mid:   #2d5a45;
@@ -13,22 +16,69 @@
       --green-light: #a8d5b5;
       --green-pale:  #e8f5ed;
       --cream:       #faf7f2;
+      --amber-db:    #d4845a;
+
+      /* Alias que usa el resto del código */
+      --forest:      #1e3a2f;
+      --pine:        #2d5a45;
+      --emerald:     #4a8c6f;
+      --sage:        #4a8c6f;
+      --mint:        #a8d5b5;
+      --foam:        #e8f5ed;
+      --snow:        #faf7f2;
       --amber:       #d4845a;
-      --text-dark:   #1a2e25;
-      --text-mid:    #4a6355;
-      --text-light:  #8aab97;
-      --border:      #e0ebe5;
-      --shadow-sm:   0 2px 8px rgba(30,58,47,.08);
-      --shadow-md:   0 4px 16px rgba(30,58,47,.12);
-      --radius:      16px;
+      --amber-light: #e0a07a;
+      --gold:        #f0a500;
+
+      --ink:         #1a2e25;
+      --dim:         #4a6355;
+      --muted:       #8aab97;
+      --ghost:       #c4dece;
+      --line:        #e0ebe5;
+
+      --danger:      #c0392b;
+      --danger-bg:   #fdf0ee;
+      --warn:        #b45309;
+      --warn-bg:     #fef3c7;
+      --ok:          #1e6f45;
+      --ok-bg:       #d1fae5;
+
+      --radius-xs:   6px;
       --radius-sm:   10px;
+      --radius:      16px;
+      --radius-lg:   24px;
+      --radius-xl:   32px;
+
+      --shadow-xs:   0 2px 8px rgba(30,58,47,.08);
+      --shadow-sm:   0 6px 24px rgba(30,58,47,.12);
+      --shadow:      0 4px 20px rgba(30,58,47,.13);
+      --shadow-lg:   0 8px 40px rgba(30,58,47,.18);
+
+      --sidebar-w:   240px;
+      --topbar-h:    72px;
+
+      --font-display: 'Playfair Display', serif;
+      --font-body:    'DM Sans', sans-serif;
+
+      --transition:   .2s ease;
     }
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-dark); display: flex; min-height: 100vh; }
- 
-    /* ─── SIDEBAR ─── */
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--cream);
+      color: var(--ink);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SIDEBAR  — estilo dashboard
+    ═══════════════════════════════════════════════ */
     .sidebar {
-      width: 240px;
+      width: var(--sidebar-w);
       height: 100vh;
       background: var(--green-deep);
       display: flex;
@@ -36,7 +86,7 @@
       padding: 28px 16px 20px;
       position: fixed;
       top: 0; left: 0;
-      z-index: 100;
+      z-index: 200;
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-width: thin;
@@ -45,1009 +95,1819 @@
     .sidebar::-webkit-scrollbar { width: 4px; }
     .sidebar::-webkit-scrollbar-track { background: transparent; }
     .sidebar::-webkit-scrollbar-thumb { background: var(--green-mid); border-radius: 4px; }
- 
-    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; padding: 0 8px; flex-shrink: 0; }
-    .logo-icon { width: 40px; height: 40px; background: var(--amber); border-radius: 12px; display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
-    .logo-text { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--cream); }
-    .logo-text span { display: block; font-size: 10px; font-family: 'DM Sans', sans-serif; color: var(--green-light); letter-spacing: .08em; text-transform: uppercase; }
- 
-    /* etiqueta estática */
-    .nav-label {
+
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: var(--amber-db);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .logo-name {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--cream);
+    }
+    .logo-sub {
+      display: block;
+      font-size: 10px;
+      font-family: var(--font-body);
+      color: var(--green-light);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-top: 0;
+    }
+
+    /* Nav labels (static) */
+    .nav-section { flex-shrink: 0; padding: 0; }
+    .nav-label-static {
       font-size: 11px;
       letter-spacing: .10em;
       text-transform: uppercase;
-      color: var(--text-light);
+      color: var(--muted);
       padding: 0 8px;
       margin: 16px 0 4px;
-      flex-shrink: 0;
+      display: block;
     }
- 
-    /* etiqueta acordeón */
-    .accordion-label {
-      cursor: pointer;
-      user-select: none;
+
+    /* Accordion trigger (replaces nav-label-btn) */
+    .nav-label-btn {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 11px;
       letter-spacing: .10em;
       text-transform: uppercase;
-      color: var(--text-light);
+      color: var(--muted);
       padding: 10px 8px;
       margin: 8px 0 0;
-      transition: color .2s;
+      cursor: pointer;
+      user-select: none;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: color var(--transition);
       flex-shrink: 0;
     }
-    .accordion-label:hover { color: white; }
- 
-    .accordion-arrow {
+    .nav-label-btn:hover { color: white; }
+
+    .nav-label-text { flex: 1; }
+
+    /* Arrow: rotates when open */
+    .nav-arrow {
       font-size: 9px;
       display: inline-block;
       transform: rotate(-90deg);
-      transition: transform .25s ease;
+      transition: transform .2s;
     }
-    .accordion-label.open .accordion-arrow { transform: rotate(0deg); }
- 
-    /* grupo acordeón */
-    .accordion-group {
+    .nav-label-btn.open .nav-arrow { transform: rotate(0deg); }
+
+    /* Accordion body */
+    .accordion-body {
       overflow: hidden;
       max-height: 0;
       opacity: 0;
       transition: max-height .35s ease, opacity .25s ease;
       flex-shrink: 0;
     }
-    .accordion-group.open { max-height: 600px; opacity: 1; }
- 
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: var(--radius-sm); color: var(--green-light); cursor: pointer; font-size: 13px; margin-bottom: 2px; transition: background .2s, color .2s; text-decoration: none; }
-    .nav-item:hover, .nav-item.active { background: var(--green-mid); color: white; }
-    .nav-icon { font-size: 16px; width: 18px; text-align: center; }
- 
-    .sidebar-footer { margin-top: 24px; padding: 14px; background: rgba(255,255,255,.05); border-radius: var(--radius-sm); flex-shrink: 0; }
-    .user-card { display: flex; align-items: center; gap: 10px; }
-    .user-avatar { width: 36px; height: 36px; background: var(--amber); border-radius: 50%; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+    .accordion-body.open { max-height: 600px; opacity: 1; }
+
+    /* Nav items */
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      color: var(--green-light);
+      cursor: pointer;
+      font-size: 13px;
+      margin-bottom: 2px;
+      transition: all var(--transition);
+      text-decoration: none;
+      position: relative;
+    }
+    .nav-item:hover { background: var(--green-mid); color: white; }
+    .nav-item.active { background: var(--green-mid); color: white; }
+    /* Remove the left-bar indicator from productos version */
+    .nav-item.active::before { display: none; }
+
+    .nav-icon {
+      font-size: 16px;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      margin-top: 24px;
+      padding: 14px;
+      background: rgba(255,255,255,.05);
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+    .user-row { display: flex; align-items: center; gap: 10px; }
+    .user-avatar {
+      width: 36px; height: 36px;
+      background: var(--amber-db);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
     .user-name { font-size: 12px; font-weight: 600; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-role { font-size: 10px; color: var(--green-light); }
-    .icon-btn { background: none; border: none; color: var(--green-light); cursor: pointer; font-size: 16px; margin-left: auto; line-height: 1; padding: 4px; border-radius: 6px; transition: color .2s; }
+    .user-role { font-size: 10px; color: var(--green-light); margin-top: 1px; }
+    .icon-btn {
+      background: none; border: none;
+      color: var(--green-light);
+      cursor: pointer;
+      font-size: 16px;
+      margin-left: auto;
+      transition: color var(--transition);
+      line-height: 1;
+      padding: 4px;
+      border-radius: 6px;
+    }
     .icon-btn:hover { color: #ff7b7b; }
- 
-    /* ─── MAIN ─── */
-    .main { margin-left: 240px; flex: 1; padding: 32px 36px; }
-    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-    .page-title { font-family: 'Playfair Display', serif; font-size: 26px; }
-    .page-sub { font-size: 13px; color: var(--text-light); margin-top: 2px; }
-    .badge-admin { background: rgba(212,132,90,.15); color: var(--amber); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-    .back-link { display: inline-flex; align-items: center; gap: 5px; color: var(--green-soft); text-decoration: none; font-size: 13px; margin-bottom: 16px; }
-    .back-link:hover { text-decoration: underline; }
- 
-    /* ─── CARDS ─── */
-    .card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
-    .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
-    .card-title { font-family: 'Playfair Display', serif; font-size: 18px; }
-    .card-title-sm { font-family: 'Playfair Display', serif; font-size: 15px; margin-bottom: 14px; }
- 
-    /* ─── STATS ─── */
-    .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 20px; }
-    .stats-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
-    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
-    .stat { background: white; border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); border-top: 3px solid var(--green-soft); }
-    .stat.danger { border-top-color: #dc2626; }
-    .stat.warn   { border-top-color: #f59e0b; }
-    .stat-icon   { font-size: 20px; margin-bottom: 4px; }
-    .stat-val    { font-family: 'Playfair Display', serif; font-size: 24px; line-height: 1; }
-    .stat-lbl    { font-size: 11px; color: var(--text-light); margin-top: 2px; }
- 
-    /* ─── FORMS ─── */
-    .form-group { margin-bottom: 13px; }
-    .form-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-mid); margin-bottom: 4px; letter-spacing: .05em; }
-    .form-input, .form-select { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--cream); outline: none; transition: border-color .2s, background .2s; }
-    .form-input:focus, .form-select:focus { border-color: var(--green-soft); background: white; }
-    textarea.form-input { resize: vertical; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .required { color: #dc2626; }
- 
-    /* ─── BTNS ─── */
-    .btn { padding: 8px 18px; border-radius: var(--radius-sm); border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s, opacity .2s, border-color .2s, color .2s; display: inline-flex; align-items: center; gap: 6px; }
-    .btn:disabled { opacity: .6; cursor: not-allowed; }
-    .btn-primary  { background: var(--green-deep); color: white; }
+
+    /* ═══════════════════════════════════════════════
+       MAIN LAYOUT
+    ═══════════════════════════════════════════════ */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Topbar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--topbar-h);
+      background: rgba(250,247,242,.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 36px;
+      gap: 16px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition);
+      border: 1px solid var(--line);
+    }
+    .back-link:hover { color: var(--green-soft); border-color: var(--ghost); background: var(--foam); }
+
+    .topbar-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--green-deep);
+    }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .badge-role {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--amber-db);
+      background: rgba(212,132,90,.15);
+      border: 1px solid rgba(212,132,90,.2);
+      padding: 5px 12px;
+      border-radius: 20px;
+      letter-spacing: .02em;
+    }
+
+    /* Content area */
+    .content { padding: 28px 36px 48px; flex: 1; }
+
+    /* ═══════════════════════════════════════════════
+       SECTION NAV (tabs under topbar)
+    ═══════════════════════════════════════════════ */
+    .section-nav {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: white;
+      padding: 6px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      width: fit-content;
+      box-shadow: var(--shadow-xs);
+    }
+    .section-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--dim);
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+    .section-tab:hover { color: var(--green-soft); background: var(--foam); }
+    .section-tab.active {
+      background: var(--green-deep);
+      color: white;
+      box-shadow: 0 2px 8px rgba(30,58,47,.22);
+    }
+    .section-tab .tab-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .5;
+    }
+    .section-tab.active .tab-dot { opacity: 1; }
+
+    /* ═══════════════════════════════════════════════
+       STAT CARDS
+    ═══════════════════════════════════════════════ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6,1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stats-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    @media (max-width:1280px) { .stats-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (max-width:900px)  { .stats-grid { grid-template-columns: repeat(2,1fr); } .stats-grid-4 { grid-template-columns: repeat(2,1fr); } }
+
+    .stat-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-xs);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+    .stat-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--green-soft);
+    }
+    .stat-card::after { display: none; }
+    .stat-card.danger::before { background: var(--danger); }
+    .stat-card.warn::before   { background: #f59e0b; }
+    .stat-card.amber::before  { background: var(--amber-db); }
+
+    .stat-icon { font-size: 22px; margin-bottom: 6px; line-height: 1; }
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green-deep);
+      line-height: 1.1;
+    }
+    .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* ═══════════════════════════════════════════════
+       CARDS
+    ═══════════════════════════════════════════════ */
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-xs);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--green-deep);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .title-icon {
+      width: 32px; height: 32px;
+      background: var(--foam);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+    }
+    .card-body { padding: 20px 24px; }
+    .card-body-sm { padding: 16px 24px; }
+
+    /* ═══════════════════════════════════════════════
+       TOOLBAR / FILTERS
+    ═══════════════════════════════════════════════ */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 14px 24px;
+      background: var(--cream);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 8px 12px 8px 36px;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 13px;
+      background: white;
+      color: var(--ink);
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .search-wrap input:focus { border-color: var(--green-soft); }
+    .search-wrap::before {
+      content: '🔍';
+      position: absolute;
+      left: 10px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .form-select-sm {
+      padding: 8px 30px 8px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 13px;
+      background: white;
+      color: var(--ink);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%238aab97' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
+      transition: border-color var(--transition);
+    }
+    .form-select-sm:focus { border-color: var(--green-soft); }
+
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--dim);
+      cursor: pointer;
+      padding: 8px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: white;
+      transition: all var(--transition);
+      user-select: none;
+      white-space: nowrap;
+    }
+    .check-label:has(input:checked) {
+      border-color: var(--green-soft);
+      background: var(--foam);
+      color: var(--green-soft);
+    }
+    .check-label input { accent-color: var(--green-soft); width: 14px; height: 14px; }
+
+    .toolbar-divider { width: 1px; height: 28px; background: var(--line); flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 20px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition);
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-primary {
+      background: var(--green-deep);
+      color: white;
+    }
     .btn-primary:hover:not(:disabled) { background: var(--green-mid); }
-    .btn-outline  { background: transparent; border: 1.5px solid #d0e4da; color: var(--text-mid); }
-    .btn-outline:hover:not(:disabled) { border-color: var(--green-soft); color: var(--green-soft); }
-    .btn-danger   { background: #fee2e2; color: #dc2626; }
-    .btn-danger:hover:not(:disabled) { background: #fecaca; }
-    .btn-amber    { background: var(--amber); color: white; }
-    .btn-amber:hover:not(:disabled) { opacity: .9; }
+    .btn-secondary {
+      background: transparent;
+      color: var(--dim);
+      border: 1.5px solid var(--line);
+    }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--green-soft); color: var(--green-soft); }
+    .btn-amber {
+      background: var(--amber-db);
+      color: white;
+    }
+    .btn-amber:hover:not(:disabled) { background: #c0714a; }
+    .btn-danger-soft {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid rgba(192,57,43,.15);
+    }
+    .btn-danger-soft:hover:not(:disabled) { background: #fbd9d7; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--line);
+    }
+    .btn-ghost:hover:not(:disabled) { color: var(--green-soft); border-color: var(--ghost); background: var(--foam); }
     .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .btn-xs { padding: 3px 9px; font-size: 11px; border-radius: var(--radius-xs); }
+    .btn-icon { padding: 7px 8px; border-radius: var(--radius-sm); }
     .btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
- 
-    /* ─── ALERTS ─── */
-    .alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px; margin-top: 12px; display: none; }
-    .alert.show    { display: block; }
-    .alert-success { background: #e8f5ed; color: #2d5a45; border: 1px solid #a8d5b5; }
-    .alert-error   { background: #fdecea; color: #c0392b; border: 1px solid #f5c6c0; }
-    .alert-info    { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
- 
-    /* ─── TABLES ─── */
+
+    /* ═══════════════════════════════════════════════
+       TABLE
+    ═══════════════════════════════════════════════ */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; color: var(--text-light); border-bottom: 1.5px solid #f0f5f2; }
-    td { padding: 11px 12px; border-bottom: 1px solid #f8f9fa; vertical-align: middle; }
-    tr:hover td { background: #fafffe; }
- 
-    /* ─── BADGES STOCK ─── */
-    .badge-ok      { background: #e8f5ed; color: #2d5a45; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
-    .badge-bajo    { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
-    .badge-agotado { background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
- 
-    /* ─── TOOLBAR ─── */
-    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-    .toolbar .form-select { width: auto; }
-    .toolbar .form-input  { width: 220px; }
-    .toolbar-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-mid); cursor: pointer; user-select: none; }
-    .toolbar-check input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--green-soft); }
- 
-    /* ─── MODALES ─── */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.48); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: white; border-radius: var(--radius); padding: 28px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.2); }
-    .modal-title { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 16px; color: var(--green-deep); }
-    .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
- 
-    /* ─── PANEL LATERAL VARIANTES ─── */
-    .side-panel { display: none; position: fixed; right: 0; top: 0; width: 440px; height: 100vh; background: white; z-index: 400; box-shadow: -4px 0 24px rgba(0,0,0,.12); flex-direction: column; overflow: hidden; }
+    thead th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      background: var(--cream);
+      border-bottom: 1.5px solid var(--line);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      color: var(--ink);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background var(--transition); }
+    tbody tr:hover td { background: #fafffe; }
+    tbody tr.row-inactive { opacity: .6; }
+
+    .product-img {
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      margin-right: 8px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .product-img-placeholder {
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      background: var(--foam);
+      display: inline-grid;
+      place-items: center;
+      font-size: 16px;
+      margin-right: 8px;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .product-cell { display: flex; align-items: center; }
+    .product-info {}
+    .product-name { font-weight: 600; color: var(--green-deep); font-size: 13px; }
+    .product-sku  { font-size: 11px; color: var(--muted); margin-top: 1px; font-family: 'Courier New', monospace; }
+
+    .actions-cell { display: flex; gap: 4px; flex-wrap: wrap; }
+
+    /* ═══════════════════════════════════════════════
+       BADGES
+    ═══════════════════════════════════════════════ */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-ok      { background: var(--ok-bg); color: var(--ok); }
+    .badge-bajo    { background: var(--warn-bg); color: var(--warn); }
+    .badge-agotado { background: var(--danger-bg); color: var(--danger); }
+    .badge-active  { background: var(--ok-bg); color: var(--ok); }
+    .badge-inactive{ background: #f1f5f9; color: #64748b; }
+    .badge-neutral { background: var(--foam); color: var(--green-soft); }
+
+    /* ═══════════════════════════════════════════════
+       ALERT MESSAGES
+    ═══════════════════════════════════════════════ */
+    .alert {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      line-height: 1.5;
+      display: none;
+      margin-top: 10px;
+    }
+    .alert.show { display: block; }
+    .alert-success { background: var(--ok-bg); color: var(--ok); border: 1px solid #a8d5b5; }
+    .alert-error   { background: var(--danger-bg); color: var(--danger); border: 1px solid #f5c6c0; }
+    .alert-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .alert-warn    { background: var(--warn-bg); color: var(--warn); border: 1px solid #fcd34d; }
+
+    /* Stock alert banner */
+    .stock-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--danger-bg);
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: var(--danger);
+      border: 1px solid rgba(192,57,43,.15);
+    }
+    .stock-banner a { color: var(--danger); font-weight: 600; }
+
+    /* ═══════════════════════════════════════════════
+       FORMS
+    ═══════════════════════════════════════════════ */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--dim);
+      margin-bottom: 5px;
+    }
+    .required { color: var(--danger); }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 13px;
+      background: var(--cream);
+      color: var(--ink);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--green-soft);
+      box-shadow: 0 0 0 3px rgba(74,140,111,.12);
+      background: white;
+    }
+    .form-input::placeholder { color: var(--ghost); }
+    textarea.form-input { resize: vertical; min-height: 72px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .form-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    .radio-group { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+    .radio-opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      cursor: pointer;
+      padding: 10px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      flex: 1;
+      min-width: 200px;
+      transition: all var(--transition);
+    }
+    .radio-opt:has(input:checked) { border-color: var(--green-soft); background: var(--foam); }
+    .radio-opt input { accent-color: var(--green-soft); margin-top: 2px; flex-shrink: 0; }
+    .radio-opt-label { font-size: 12px; font-weight: 600; color: var(--dim); }
+    .radio-opt-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    .variante-notice {
+      background: var(--foam);
+      border: 1px solid var(--ghost);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--green-soft);
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    #imgPreview {
+      width: 100%; max-height: 100px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MODALS
+    ═══════════════════════════════════════════════ */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      backdrop-filter: blur(4px);
+      z-index: 400;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn .18s ease; }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp .22s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(16px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 28px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--green-deep);
+    }
+    .modal-close {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: var(--cream);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      display: grid;
+      place-items: center;
+      transition: all var(--transition);
+    }
+    .modal-close:hover { background: var(--foam); color: var(--green-deep); }
+    .modal-body { padding: 20px 28px; }
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      padding: 16px 28px 24px;
+      border-top: 1px solid var(--line);
+      margin-top: 4px;
+    }
+
+    /* Stock modal */
+    .stock-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: var(--cream);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      border: 1px solid var(--line);
+      margin-bottom: 20px;
+    }
+    .stock-item-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .stock-item-val { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--green-deep); margin-top: 2px; }
+    .stock-item-val.warn { color: #f59e0b; }
+
+    /* ═══════════════════════════════════════════════
+       SIDE PANEL (Variants)
+    ═══════════════════════════════════════════════ */
+    .side-panel {
+      display: none;
+      position: fixed;
+      right: 0; top: 0;
+      width: 460px;
+      height: 100vh;
+      background: white;
+      z-index: 350;
+      box-shadow: -8px 0 40px rgba(30,58,47,.15);
+      flex-direction: column;
+      animation: slideFromRight .22s ease;
+    }
+    @keyframes slideFromRight { from { transform:translateX(32px); opacity:0 } to { transform:translateX(0); opacity:1 } }
     .side-panel.open { display: flex; }
-    .side-panel-header { padding: 20px 24px; border-bottom: 1px solid #f0f5f2; display: flex; align-items: center; justify-content: space-between; background: var(--green-pale); flex-shrink: 0; }
-    .side-panel-title { font-family: 'Playfair Display', serif; font-size: 17px; }
-    .side-panel-subtitle { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
-    .side-panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
-    .side-panel-footer { padding: 14px 24px; border-top: 1px solid #f0f5f2; background: #fafffe; flex-shrink: 0; }
- 
-    /* ─── VARIANTE CARDS ─── */
-    .variante-card { background: var(--green-pale); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; border-left: 3px solid var(--green-soft); }
-    .variante-inactiva { opacity: .6; border-left-color: #9ca3af; }
-    .variante-info     { flex: 1; min-width: 0; }
-    .variante-atributo { font-size: 13px; margin-bottom: 2px; }
-    .variante-sku      { font-size: 11px; color: var(--text-light); }
-    .variante-precio   { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
-    .variante-stock    { font-size: 12px; margin-top: 3px; }
-    .variante-actions  { display: flex; gap: 5px; flex-shrink: 0; }
- 
-    /* ─── FORM RÁPIDO VARIANTES ─── */
-    .variante-form-rapida { background: #f0f5f2; padding: 12px; border-radius: var(--radius-sm); margin-bottom: 16px; }
-    .variante-form-rapida h4 { margin: 0 0 8px; font-size: 13px; color: var(--text-mid); }
-    .variante-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 40px; gap: 6px; align-items: center; margin-bottom: 8px; }
-    .variante-row .form-input { padding: 6px 8px; font-size: 12px; }
- 
-    /* ─── ALERTAS STOCK SECCIÓN ─── */
-    .alert-section { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 16px; border-left: 4px solid #f59e0b; }
-    .alert-section-title { font-family: 'Playfair Display', serif; font-size: 16px; margin-bottom: 14px; color: var(--text-dark); }
- 
-    /* ─── REPORTE ─── */
-    .reporte-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
- 
-    /* ─── OVERVIEW ─── */
-    .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-    @media (max-width: 900px) { .overview-grid { grid-template-columns: 1fr; } .main { padding: 20px 16px; } }
-    @media (max-width: 700px) { .sidebar { display: none; } .main { margin-left: 0; } }
- 
-    /* ─── PREVIEW IMAGEN ─── */
-    #imgPreview { width: 100%; max-height: 120px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); margin-top: 8px; display: none; }
- 
-    /* ─── STOCK DISPLAY MODAL ─── */
-    .stock-display { display: flex; gap: 20px; background: var(--green-pale); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px; }
-    .stock-display-item .lbl { font-size: 11px; color: var(--text-light); }
-    .stock-display-item .val { font-size: 22px; font-weight: 700; line-height: 1.2; }
-    .stock-display-item .val.warn { color: var(--amber); }
+
+    .panel-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+      background: var(--cream);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .panel-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--green-deep); }
+    .panel-sub   { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+    .panel-footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--line);
+      background: var(--cream);
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════════
+       VARIANT CARDS
+    ═══════════════════════════════════════════════ */
+    .var-card {
+      background: var(--cream);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: box-shadow var(--transition);
+    }
+    .var-card:hover { box-shadow: var(--shadow-xs); }
+    .var-card.inactive { opacity: .6; }
+    .var-card-accent { width: 3px; height: 40px; background: var(--green-soft); border-radius: 3px; flex-shrink: 0; }
+    .var-card.inactive .var-card-accent { background: var(--ghost); }
+    .var-info { flex: 1; min-width: 0; }
+    .var-name { font-size: 13px; font-weight: 600; color: var(--green-deep); }
+    .var-sku  { font-size: 11px; color: var(--muted); font-family: 'Courier New', monospace; margin-top: 2px; }
+    .var-meta { font-size: 12px; color: var(--dim); margin-top: 3px; }
+    .var-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+    /* Batch form for variants */
+    .var-batch {
+      background: var(--cream);
+      border: 1px dashed var(--ghost);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .var-batch h4 { font-size: 12px; font-weight: 700; color: var(--dim); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .05em; }
+    .var-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr .8fr .8fr .8fr .8fr 30px;
+      gap: 6px;
+      margin-bottom: 7px;
+      align-items: center;
+    }
+    .var-row .form-input { padding: 6px 8px; font-size: 12px; }
+    .remove-row-btn {
+      width: 26px; height: 26px;
+      border-radius: 6px;
+      border: none;
+      background: var(--danger-bg);
+      color: var(--danger);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      transition: background var(--transition);
+    }
+    .remove-row-btn:hover { background: #fbd9d7; }
+
+    /* ═══════════════════════════════════════════════
+       ALERTS SECTION (stock alerts page)
+    ═══════════════════════════════════════════════ */
+    .alert-section-card {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .alert-section-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .alert-section-hdr.danger { background: var(--danger-bg); }
+    .alert-section-hdr.warn   { background: var(--warn-bg); }
+    .alert-section-hdr.yellow { background: #fffbeb; }
+    .alert-section-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .alert-section-hdr.danger .alert-section-title { color: var(--danger); }
+    .alert-section-hdr.warn .alert-section-title   { color: var(--warn); }
+    .alert-section-hdr.yellow .alert-section-title { color: #92400e; }
+
+    /* ═══════════════════════════════════════════════
+       REPORT PAGE
+    ═══════════════════════════════════════════════ */
+    .report-stats {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .divider { height: 1px; background: var(--line); margin: 8px 0; }
+
+    /* ═══════════════════════════════════════════════
+       OVERVIEW GRID
+    ═══════════════════════════════════════════════ */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    @media (max-width:960px) { .overview-grid { grid-template-columns: 1fr; } }
+
+    /* ═══════════════════════════════════════════════
+       EMPTY STATE
+    ═══════════════════════════════════════════════ */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-icon { font-size: 36px; margin-bottom: 10px; }
+    .empty-text { font-size: 14px; }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width:768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .content { padding: 20px 16px 40px; }
+      .topbar { padding: 0 16px; }
+      .side-panel { width: 100%; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 4px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--ghost); border-radius: 6px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════════════════
+<!-- ════════════════════════════════════════════════════════
      SIDEBAR
-════════════════════════════════════════════════════════════ -->
+════════════════════════════════════════════════════════ -->
 <aside class="sidebar" aria-label="Menú de navegación">
+
+  <!-- Logo -->
   <div class="logo">
     <div class="logo-icon" aria-hidden="true">🐾</div>
-    <div class="logo-text">Pet Spa <span>Administrador</span></div>
+    <div class="logo-name">Pet Spa <span class="logo-sub">Administrador</span></div>
   </div>
- 
-  <!-- INICIO -->
-  <div class="nav-label">Inicio</div>
-  <a class="nav-item" href="admin-dashboard.html">
-    <span class="nav-icon">🏠</span> Dashboard
-  </a>
- 
-  <!-- PERSONAL & CLIENTES -->
-  <div class="nav-label accordion-label" data-group="personal">
-    <span class="accordion-arrow">▼</span> Personal &amp; Clientes
+
+  <!-- Inicio -->
+  <div class="nav-section">
+    <span class="nav-label-static">Inicio</span>
+    <a class="nav-item" href="admin-dashboard.html">
+      <span class="nav-icon">🏠</span> Dashboard
+    </a>
   </div>
-  <div class="accordion-group" id="group-personal">
-    <a class="nav-item" href="admin-dashboard.html" data-section="crear-groomer"><span class="nav-icon">✂️</span> Crear Groomer</a>
-    <a class="nav-item" href="admin-dashboard.html" data-section="crear-recepcion"><span class="nav-icon">📞</span> Crear Recepcionista</a>
-    <a class="nav-item" href="admin-dashboard.html" data-section="crear-cliente"><span class="nav-icon">🐶</span> Crear Cliente</a>
-    <a class="nav-item" href="admin-dashboard.html" data-section="usuarios"><span class="nav-icon">👥</span> Ver Usuarios</a>
+
+  <!-- Personal & Clientes -->
+  <div class="nav-section">
+    <button class="nav-label-btn" data-group="personal" aria-expanded="false">
+      <span class="nav-arrow">▼</span>
+      <span class="nav-label-text">Personal &amp; Clientes</span>
+    </button>
+    <div class="accordion-body" id="group-personal">
+      <a class="nav-item" href="admin-dashboard.html" data-section="crear-groomer"><span class="nav-icon">✂️</span> Crear Groomer</a>
+      <a class="nav-item" href="admin-dashboard.html" data-section="crear-recepcion"><span class="nav-icon">📞</span> Crear Recepcionista</a>
+      <a class="nav-item" href="admin-dashboard.html" data-section="crear-cliente"><span class="nav-icon">🐶</span> Crear Cliente</a>
+      <a class="nav-item" href="admin-dashboard.html" data-section="usuarios"><span class="nav-icon">👥</span> Ver Usuarios</a>
+    </div>
   </div>
- 
-  <!-- PRODUCTOS (abierto por defecto, es la página activa) -->
-  <div class="nav-label accordion-label open" data-group="productos">
-    <span class="accordion-arrow">▼</span> Productos
+
+  <!-- Productos -->
+  <div class="nav-section">
+    <button class="nav-label-btn open" data-group="productos" aria-expanded="true">
+      <span class="nav-arrow">▼</span>
+      <span class="nav-label-text">Productos</span>
+    </button>
+    <div class="accordion-body open" id="group-productos">
+      <a class="nav-item" href="#" data-section="inicio"><span class="nav-icon">📊</span> Overview</a>
+      <a class="nav-item" href="#" data-section="productos"><span class="nav-icon">📦</span> Catálogo</a>
+      <a class="nav-item" href="#" data-section="categorias"><span class="nav-icon">🗂️</span> Categorías</a>
+      <a class="nav-item" href="#" data-section="alertas"><span class="nav-icon">🔔</span> Alertas de Stock</a>
+      <a class="nav-item" href="#" data-section="reporte"><span class="nav-icon">📋</span> Reporte</a>
+    </div>
   </div>
-  <div class="accordion-group open" id="group-productos">
-    <a class="nav-item" href="#" data-section="inicio"><span class="nav-icon">📊</span> Overview</a>
-    <a class="nav-item" href="#" data-section="productos"><span class="nav-icon">📦</span> Catálogo</a>
-    <a class="nav-item" href="#" data-section="categorias"><span class="nav-icon">🗂️</span> Categorías</a>
-    <a class="nav-item" href="#" data-section="alertas"><span class="nav-icon">🔔</span> Alertas de Stock</a>
-    <a class="nav-item" href="#" data-section="reporte"><span class="nav-icon">📋</span> Reporte Inventario</a>
+
+  <!-- Auditoría -->
+  <div class="nav-section">
+    <button class="nav-label-btn" data-group="auditoria" aria-expanded="false">
+      <span class="nav-arrow">▼</span>
+      <span class="nav-label-text">Auditoría</span>
+    </button>
+    <div class="accordion-body" id="group-auditoria">
+      <a class="nav-item" href="admin-dashboard.html" data-section="auth-logs"><span class="nav-icon">🔍</span> Auth Logs</a>
+    </div>
   </div>
- 
-  <!-- AUDITORÍA -->
-  <div class="nav-label accordion-label" data-group="auditoria">
-    <span class="accordion-arrow">▼</span> Auditoría
+
+  <!-- Disponibilidad -->
+  <div class="nav-section">
+    <button class="nav-label-btn" data-group="disponibilidad" aria-expanded="false">
+      <span class="nav-arrow">▼</span>
+      <span class="nav-label-text">Disponibilidad</span>
+    </button>
+    <div class="accordion-body" id="group-disponibilidad">
+      <a class="nav-item" href="admin-availability.html"><span class="nav-icon">📆</span> Horarios &amp; Bloques</a>
+    </div>
   </div>
-  <div class="accordion-group" id="group-auditoria">
-    <a class="nav-item" href="admin-dashboard.html" data-section="auth-logs"><span class="nav-icon">🔍</span> Auth Logs</a>
+
+  <!-- Servicios -->
+  <div class="nav-section">
+    <button class="nav-label-btn" data-group="servicios" aria-expanded="false">
+      <span class="nav-arrow">▼</span>
+      <span class="nav-label-text">Servicios</span>
+    </button>
+    <div class="accordion-body" id="group-servicios">
+      <a class="nav-item" href="admin-dashboard.html" data-section="servicios"><span class="nav-icon">💇</span> Servicios</a>
+    </div>
   </div>
- 
-  <!-- DISPONIBILIDAD -->
-  <div class="nav-label accordion-label" data-group="disponibilidad">
-    <span class="accordion-arrow">▼</span> Disponibilidad
+
+  <!-- Checklist -->
+  <div class="nav-section">
+    <button class="nav-label-btn" data-group="checklist" aria-expanded="false">
+      <span class="nav-arrow">▼</span>
+      <span class="nav-label-text">Checklist</span>
+    </button>
+    <div class="accordion-body" id="group-checklist">
+      <a class="nav-item" href="admin-checklist.html" data-section="resumen"><span class="nav-icon">📊</span> Resumen</a>
+      <a class="nav-item" href="admin-checklist.html" data-section="items"><span class="nav-icon">📦</span> Ítems</a>
+      <a class="nav-item" href="admin-checklist.html" data-section="templates"><span class="nav-icon">🗂️</span> Templates</a>
+      <a class="nav-item" href="admin-checklist.html" data-section="fichas"><span class="nav-icon">🔔</span> Fichas</a>
+      <a class="nav-item" href="admin-checklist.html" data-section="consumo"><span class="nav-icon">📋</span> Consumo</a>
+    </div>
   </div>
-  <div class="accordion-group" id="group-disponibilidad">
-    <a class="nav-item" href="admin-availability.html"><span class="nav-icon">📆</span> Horarios &amp; Bloques</a>
+
+  <!-- Cuenta -->
+  <div class="nav-section">
+    <button class="nav-label-btn" data-group="cuenta" aria-expanded="false">
+      <span class="nav-arrow">▼</span>
+      <span class="nav-label-text">Cuenta</span>
+    </button>
+    <div class="accordion-body" id="group-cuenta">
+      <a class="nav-item" href="admin-dashboard.html" data-section="seguridad"><span class="nav-icon">🔐</span> Seguridad &amp; 2FA</a>
+      <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
+    </div>
   </div>
- 
-  <!-- SERVICIOS -->
-  <div class="nav-label accordion-label" data-group="servicios">
-    <span class="accordion-arrow">▼</span> Servicios
-  </div>
-  <div class="accordion-group" id="group-servicios">
-    <a class="nav-item" href="admin-dashboard.html" data-section="servicios"><span class="nav-icon">💇</span> Servicios</a>
-  </div>
-  <!-- CHECKLIST (NUEVA SECCIÓN) -->
-  <div class="nav-label accordion-label" data-group="checklist">
-    <span class="accordion-arrow">▼</span> Checklist
-  </div>
-  <div class="accordion-group" id="group-checklist">
-    <a class="nav-item" href="admin-checklist.html" data-section="resumen"><span class="nav-icon">📊</span> Resumen</a>
-    <a class="nav-item" href="admin-checklist.html" data-section="items"><span class="nav-icon">📦</span> Ítems</a>
-    <a class="nav-item" href="admin-checklist.html" data-section="templates"><span class="nav-icon">🗂️</span> Templates</a>
-    <a class="nav-item" href="admin-checklist.html" data-section="fichas"><span class="nav-icon">🔔</span> Fichas Completadas</a>
-    <a class="nav-item" href="admin-checklist.html" data-section="consumo"><span class="nav-icon">📋</span> Consumo Insumos</a>
-  </div>
- 
-  <!-- CUENTA -->
-  <div class="nav-label accordion-label" data-group="cuenta">
-    <span class="accordion-arrow">▼</span> Cuenta
-  </div>
-  <div class="accordion-group" id="group-cuenta">
-    <a class="nav-item" href="admin-dashboard.html" data-section="seguridad"><span class="nav-icon">🔐</span> Seguridad &amp; 2FA</a>
-    <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
-  </div>
- 
+
+  <!-- Footer -->
   <div class="sidebar-footer">
-    <div class="user-card">
+    <div class="user-row">
       <div class="user-avatar" aria-hidden="true">🛡️</div>
       <div style="flex:1;min-width:0;">
         <div class="user-name" id="sidebarName">—</div>
         <div class="user-role">Administrador</div>
       </div>
-      <button class="icon-btn" id="logoutBtn2" aria-label="Cerrar sesión">✕</button>
+      <button class="icon-btn" id="logoutBtn2" aria-label="Cerrar sesión" title="Cerrar sesión">✕</button>
     </div>
   </div>
+
 </aside>
 
-<!-- ════════════════════════════════════════════════════════════
-     CONTENIDO PRINCIPAL
-════════════════════════════════════════════════════════════ -->
-<main class="main">
-  <a href="admin-dashboard.html" class="back-link">← Volver al dashboard</a>
+<!-- ════════════════════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════════════════ -->
+<div class="main">
 
-  <div class="topbar">
-    <div>
-      <h1 class="page-title">📦 Gestión de Productos</h1>
-      <p class="page-sub">Catálogo, stock, variantes y reportes de inventario</p>
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <div class="topbar-left">
+      <a href="admin-dashboard.html" class="back-link" aria-label="Volver al dashboard">
+        ← Volver
+      </a>
+      <h1 class="topbar-title">Gestión de Productos</h1>
     </div>
-    <span class="badge-admin" aria-label="Rol: Administrador">🛡️ Administrador</span>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════
-       SECCIÓN: OVERVIEW / INICIO
-  ══════════════════════════════════════════════════════════ -->
-  <section id="section-inicio" aria-label="Overview de inventario">
-    <div class="stats-grid" role="list" aria-label="Estadísticas generales">
-      <div class="stat" role="listitem">
-        <div class="stat-icon" aria-hidden="true">📦</div>
-        <div class="stat-val" id="statTotalProductos">—</div>
-        <div class="stat-lbl">Total productos</div>
-      </div>
-      <div class="stat" role="listitem">
-        <div class="stat-icon" aria-hidden="true">✅</div>
-        <div class="stat-val" id="statActivos">—</div>
-        <div class="stat-lbl">Productos activos</div>
-      </div>
-      <div class="stat" role="listitem">
-        <div class="stat-icon" aria-hidden="true">🗂️</div>
-        <div class="stat-val" id="statCategorias">—</div>
-        <div class="stat-lbl">Categorías</div>
-      </div>
-      <div class="stat" role="listitem">
-        <div class="stat-icon" aria-hidden="true">💰</div>
-        <div class="stat-val" id="statValorInv">—</div>
-        <div class="stat-lbl">Valor inventario</div>
-      </div>
-      <div class="stat danger" role="listitem">
-        <div class="stat-icon" aria-hidden="true">⛔</div>
-        <div class="stat-val" id="statAgotados">—</div>
-        <div class="stat-lbl">Agotados</div>
-      </div>
-      <div class="stat warn" role="listitem">
-        <div class="stat-icon" aria-hidden="true">⚠️</div>
-        <div class="stat-val" id="statBajoStock">—</div>
-        <div class="stat-lbl">Bajo stock</div>
-      </div>
+    <div class="topbar-right">
+      <span class="badge-role" aria-label="Rol: Administrador">🛡️ Administrador</span>
     </div>
+  </header>
 
-    <!-- Top vendidos y más usados -->
-    <div class="overview-grid">
-      <div class="card">
-        <div class="card-head">
-          <h2 class="card-title">🏆 Más Vendidos</h2>
-          <span style="font-size:11px;color:var(--text-light);">Últimos 30 días</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Producto</th><th>Unidades</th><th>Ingreso</th></tr>
-            </thead>
-            <tbody id="topVendidosBody">
-              <tr><td colspan="4" style="text-align:center;color:var(--text-light);">Cargando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+  <!-- Content -->
+  <div class="content">
 
-      <div class="card">
-        <div class="card-head">
-          <h2 class="card-title">🧴 Más Usados (Grooming)</h2>
-          <span style="font-size:11px;color:var(--text-light);">Consumo en servicios</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Producto</th><th>Consumo</th><th>Stock</th><th>Estado</th></tr>
-            </thead>
-            <tbody id="topUsadosBody">
-              <tr><td colspan="5" style="text-align:center;color:var(--text-light);">Cargando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <!-- Section tabs -->
+    <nav class="section-nav" aria-label="Secciones de productos">
+      <button class="section-tab active" data-section="inicio">
+        <span>📊</span> Overview
+      </button>
+      <button class="section-tab" data-section="productos">
+        <span>📦</span> Catálogo
+      </button>
+      <button class="section-tab" data-section="categorias">
+        <span>🗂️</span> Categorías
+      </button>
+      <button class="section-tab" data-section="alertas">
+        <span>🔔</span> Alertas
+      </button>
+      <button class="section-tab" data-section="reporte">
+        <span>📋</span> Reporte
+      </button>
+    </nav>
 
-    <!-- Alertas urgentes -->
-    <div class="card">
-      <div class="card-head">
-        <h2 class="card-title">🚨 Alertas urgentes</h2>
-        <a href="#" class="btn btn-outline btn-sm" onclick="showSection('alertas');return false;">
-          Ver todas →
-        </a>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Producto</th><th>SKU</th><th>Categoría</th><th>Stock</th><th>Mínimo</th></tr>
-          </thead>
-          <tbody id="alertasUrgentesList">
-            <tr><td colspan="5" style="text-align:center;padding:16px;">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN: OVERVIEW
+    ══════════════════════════════════════════════ -->
+    <section id="section-inicio" aria-label="Overview de inventario">
 
-  <!-- ══════════════════════════════════════════════════════════
-       SECCIÓN: CATÁLOGO DE PRODUCTOS
-  ══════════════════════════════════════════════════════════ -->
-  <section id="section-productos" style="display:none;" aria-label="Catálogo de productos">
-
-    <!-- Banner de alertas de stock (se rellena dinámicamente) -->
-    <div id="catalogoAlertas" role="alert" aria-live="polite"></div>
-
-    <!-- Tabla principal del catálogo -->
-    <div class="card">
-      <div class="card-head">
-        <h2 class="card-title">📦 Catálogo de Productos</h2>
-        <button class="btn btn-primary" id="btnNuevoProducto">➕ Nuevo producto</button>
-      </div>
-
-      <div class="toolbar" role="search" aria-label="Filtros del catálogo">
-        <select id="filtroCategoriaProducto" class="form-select" aria-label="Filtrar por categoría">
-          <option value="">Todas las categorías</option>
-        </select>
-        <select id="filtroEstadoProducto" class="form-select" aria-label="Filtrar por estado">
-          <option value="">Todos los estados</option>
-          <option value="activo">✅ Activos</option>
-          <option value="inactivo">❌ Inactivos</option>
-        </select>
-        <input type="search" id="buscarProductoInput" class="form-input"
-               placeholder="Buscar por nombre o SKU..." aria-label="Buscar producto">
-        <button class="btn btn-outline btn-sm" id="buscarProductoBtn">🔍 Buscar</button>
-        <label class="toolbar-check">
-          <input type="checkbox" id="filtroBajoStock"> Solo bajo stock
-        </label>
-        <button class="btn btn-outline btn-sm" id="btnRefrescarProductos" aria-label="Refrescar lista">🔄</button>
-      </div>
-
-      <div class="alert" id="productosMessage" role="status"></div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Producto</th>
-              <th>Categoría</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Variantes</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="productosTableBody">
-            <tr><td colspan="8" style="text-align:center;padding:24px;">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Gestión de variantes desde el catálogo -->
-    <div class="card">
-      <div class="card-head">
-        <h2 class="card-title">🔀 Variantes de Productos</h2>
-      </div>
-
-      <div class="toolbar">
-        <select id="filtroCatVariantes" class="form-select" aria-label="Filtrar por categoría">
-          <option value="">Todas las categorías</option>
-        </select>
-        <select id="selectProductoVariante" class="form-select" style="width:260px;"
-                aria-label="Seleccionar producto">
-          <option value="">— Seleccionar producto —</option>
-        </select>
-        <button class="btn btn-outline btn-sm" id="btnAddVarianteCatalogoRow">+ Añadir variante</button>
-        <button class="btn btn-primary btn-sm" id="btnGuardarVariantesCatalogo">💾 Guardar todas</button>
-      </div>
-
-      <div class="alert" id="variantesCatalogoAlert" role="status"></div>
-
-      <!-- Formulario rápido de nuevas variantes -->
-      <div class="variante-form-rapida">
-        <h4>Nuevas variantes</h4>
-        <div id="varianteCatalogoRows"></div>
-      </div>
-
-      <!-- Lista de variantes existentes del producto seleccionado -->
-      <div id="variantesCatalogoList">
-        <div style="text-align:center;color:var(--text-light);padding:16px;">
-          Selecciona un producto para ver sus variantes
-        </div>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════════
-       SECCIÓN: CATEGORÍAS
-  ══════════════════════════════════════════════════════════ -->
-  <section id="section-categorias" style="display:none;" aria-label="Gestión de categorías">
-    <div class="card">
-      <div class="card-head">
-        <h2 class="card-title">🗂️ Categorías de Productos</h2>
-        <button class="btn btn-primary" id="btnNuevaCategoría">➕ Nueva categoría</button>
-      </div>
-
-      <div class="alert" id="categoriasMessage" role="status"></div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Categoría padre</th>
-              <th>Productos</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="categoriasTableBody">
-            <tr><td colspan="5" style="text-align:center;padding:24px;">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════════
-       SECCIÓN: ALERTAS DE STOCK
-  ══════════════════════════════════════════════════════════ -->
-  <section id="section-alertas" style="display:none;" aria-label="Alertas de stock">
-    <div class="stats-grid-4" role="list" aria-label="Resumen de alertas">
-      <div class="stat danger" role="listitem">
-        <div class="stat-icon" aria-hidden="true">⛔</div>
-        <div class="stat-val" id="alertaCountAgotados">—</div>
-        <div class="stat-lbl">Agotados</div>
-      </div>
-      <div class="stat warn" role="listitem">
-        <div class="stat-icon" aria-hidden="true">⚠️</div>
-        <div class="stat-val" id="alertaCountBajoStock">—</div>
-        <div class="stat-lbl">Bajo stock</div>
-      </div>
-      <div class="stat" role="listitem">
-        <div class="stat-icon" aria-hidden="true">🟡</div>
-        <div class="stat-val" id="alertaCountEnRiesgo">—</div>
-        <div class="stat-lbl">En riesgo</div>
-      </div>
-      <div class="stat warn" role="listitem">
-        <div class="stat-icon" aria-hidden="true">🔀</div>
-        <div class="stat-val" id="alertaCountVariantes">—</div>
-        <div class="stat-lbl">Variantes bajas</div>
-      </div>
-    </div>
-
-    <div id="alertasContainer" aria-live="polite">
-      <div style="text-align:center;padding:32px;color:var(--text-light);">Cargando alertas...</div>
-    </div>
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════════
-       SECCIÓN: REPORTE DE INVENTARIO
-  ══════════════════════════════════════════════════════════ -->
-  <section id="section-reporte" style="display:none;" aria-label="Reporte de inventario">
-    <div class="card">
-      <div class="card-head">
-        <h2 class="card-title">📋 Reporte de Inventario</h2>
-        <div class="btn-group">
-          <button class="btn btn-outline btn-sm" id="btnVistaPreviaPDF">👁️ Vista previa PDF</button>
-          <button class="btn btn-amber btn-sm"   id="btnDescargarPDF">⬇️ Descargar PDF</button>
-          <button class="btn btn-amber"           id="btnExportarCSV">⬇️ Exportar CSV</button>
-        </div>
-      </div>
-
-      <!-- Stats del reporte -->
-      <div class="reporte-stats">
-        <div class="stat">
-          <div class="stat-icon" aria-hidden="true">📦</div>
-          <div class="stat-val" id="reporteTotalProd">—</div>
+      <div class="stats-grid" role="list">
+        <div class="stat-card" role="listitem">
+          <div class="stat-icon">📦</div>
+          <div class="stat-val" id="statTotalProductos">—</div>
           <div class="stat-lbl">Total productos</div>
         </div>
-        <div class="stat">
-          <div class="stat-icon" aria-hidden="true">✅</div>
-          <div class="stat-val" id="reporteActivos">—</div>
+        <div class="stat-card" role="listitem">
+          <div class="stat-icon">✅</div>
+          <div class="stat-val" id="statActivos">—</div>
           <div class="stat-lbl">Activos</div>
         </div>
-        <div class="stat">
-          <div class="stat-icon" aria-hidden="true">💰</div>
-          <div class="stat-val" id="reporteValor">—</div>
-          <div class="stat-lbl">Valor total</div>
+        <div class="stat-card" role="listitem">
+          <div class="stat-icon">🗂️</div>
+          <div class="stat-val" id="statCategorias">—</div>
+          <div class="stat-lbl">Categorías</div>
+        </div>
+        <div class="stat-card amber" role="listitem">
+          <div class="stat-icon">💰</div>
+          <div class="stat-val" id="statValorInv">—</div>
+          <div class="stat-lbl">Valor inventario</div>
+        </div>
+        <div class="stat-card danger" role="listitem">
+          <div class="stat-icon">⛔</div>
+          <div class="stat-val" id="statAgotados">—</div>
+          <div class="stat-lbl">Agotados</div>
+        </div>
+        <div class="stat-card warn" role="listitem">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-val" id="statBajoStock">—</div>
+          <div class="stat-lbl">Bajo stock</div>
         </div>
       </div>
 
-      <!-- Contenedor del reporte (las cards internas se ocultan/muestran desde JS) -->
-      <div id="reporteContainer">
-        <div class="card" style="margin-bottom:16px;">
-          <h3 class="card-title-sm">Por categoría</h3>
+      <div class="overview-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="title-icon">🏆</span> Más Vendidos
+            </div>
+            <span style="font-size:11px;color:var(--muted);">Últimos 30 días</span>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Categoría</th>
-                  <th>Productos</th>
-                  <th>Valor</th>
-                  <th>Bajo stock</th>
-                  <th>Agotados</th>
+                  <th>#</th>
+                  <th>Producto</th>
+                  <th style="text-align:center">Unids</th>
+                  <th style="text-align:right">Ingreso</th>
                 </tr>
               </thead>
-              <tbody id="reporteCategoriaBody">
-                <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
+              <tbody id="topVendidosBody">
+                <tr><td colspan="4"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Cargando...</div></div></td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
         <div class="card">
-          <h3 class="card-title-sm">Lista completa de productos</h3>
+          <div class="card-header">
+            <div class="card-title">
+              <span class="title-icon">🧴</span> Más Usados
+            </div>
+            <span style="font-size:11px;color:var(--muted);">Consumo en grooming</span>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nombre / SKU</th>
-                  <th>Categoría</th>
-                  <th>Precio</th>
-                  <th>Stock</th>
-                  <th>Mínimo</th>
-                  <th>Valor</th>
+                  <th>#</th>
+                  <th>Producto</th>
+                  <th style="text-align:center">Consumo</th>
+                  <th style="text-align:center">Stock</th>
                   <th>Estado</th>
                 </tr>
               </thead>
-              <tbody id="reporteListaBody">
-                <tr><td colspan="8" style="text-align:center;">Cargando...</td></tr>
+              <tbody id="topUsadosBody">
+                <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Cargando...</div></div></td></tr>
               </tbody>
             </table>
           </div>
         </div>
-      </div><!-- /#reporteContainer -->
-
-    </div>
-  </section>
-
-</main><!-- /.main -->
-
-<!-- ════════════════════════════════════════════════════════════
-     MODAL: NUEVO / EDITAR PRODUCTO
-════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="productoModal" role="dialog" aria-modal="true"
-     aria-labelledby="productoModalTitle">
-  <div class="modal">
-    <h2 class="modal-title" id="productoModalTitle">➕ Nuevo Producto</h2>
-    <form id="productoForm" novalidate>
-      <input type="hidden" id="productoId">
-
-      <div class="form-group">
-        <label class="form-label" for="productoNombre">
-          Nombre <span class="required" aria-hidden="true">*</span>
-        </label>
-        <input type="text" id="productoNombre" class="form-input" required
-               placeholder="Ej: Shampoo Canino Premium" autocomplete="off">
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="productoCategoria">
-            Categoría <span class="required" aria-hidden="true">*</span>
+      <!-- Alertas urgentes -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="title-icon">🚨</span> Alertas urgentes</div>
+          <button class="btn btn-secondary btn-sm" onclick="showSection('alertas')">Ver todas →</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Categoría</th>
+                <th style="text-align:center">Stock</th>
+                <th style="text-align:center">Mínimo</th>
+              </tr>
+            </thead>
+            <tbody id="alertasUrgentesList">
+              <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Cargando...</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN: CATÁLOGO
+    ══════════════════════════════════════════════ -->
+    <section id="section-productos" style="display:none;" aria-label="Catálogo de productos">
+
+      <div id="catalogoAlertas" role="alert" aria-live="polite"></div>
+
+      <!-- Tabla de productos -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="title-icon">📦</span> Catálogo de Productos</div>
+          <button class="btn btn-primary" id="btnNuevoProducto">➕ Nuevo producto</button>
+        </div>
+
+        <div class="toolbar" role="search">
+          <select id="filtroCategoriaProducto" class="form-select-sm" aria-label="Filtrar por categoría">
+            <option value="">Todas las categorías</option>
+          </select>
+          <select id="filtroEstadoProducto" class="form-select-sm" aria-label="Filtrar por estado">
+            <option value="">Todos los estados</option>
+            <option value="activo">✅ Activos</option>
+            <option value="inactivo">❌ Inactivos</option>
+          </select>
+          <div class="search-wrap">
+            <input type="search" id="buscarProductoInput" placeholder="Buscar por nombre o SKU…" aria-label="Buscar producto">
+          </div>
+          <button class="btn btn-secondary btn-sm" id="buscarProductoBtn">Buscar</button>
+          <label class="check-label">
+            <input type="checkbox" id="filtroBajoStock"> Solo bajo stock
           </label>
-          <select id="productoCategoria" class="form-select" required>
-            <option value="">— Seleccionar —</option>
+          <div class="toolbar-divider"></div>
+          <button class="btn btn-ghost btn-icon btn-sm" id="btnRefrescarProductos" aria-label="Refrescar" title="Refrescar">🔄</button>
+        </div>
+
+        <div class="alert" id="productosMessage" role="status"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Producto</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th style="text-align:center">Stock</th>
+                <th style="text-align:center">Variantes</th>
+                <th>Estado</th>
+                <th style="text-align:right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productosTableBody">
+              <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Cargando productos…</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Gestión de variantes inline -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="title-icon">🔀</span> Variantes por Producto</div>
+        </div>
+        <div class="toolbar">
+          <select id="filtroCatVariantes" class="form-select-sm" aria-label="Filtrar por categoría">
+            <option value="">Todas las categorías</option>
+          </select>
+          <select id="selectProductoVariante" class="form-select-sm" style="min-width:240px;" aria-label="Seleccionar producto">
+            <option value="">— Seleccionar producto —</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" id="btnAddVarianteCatalogoRow">+ Añadir fila</button>
+          <button class="btn btn-primary btn-sm" id="btnGuardarVariantesCatalogo">💾 Guardar todas</button>
+        </div>
+
+        <div class="card-body-sm">
+          <div class="alert" id="variantesCatalogoAlert" role="status"></div>
+
+          <div class="var-batch">
+            <h4>➕ Nuevas variantes</h4>
+            <div id="varianteCatalogoRows"></div>
+          </div>
+
+          <div id="variantesCatalogoList">
+            <div class="empty-state" style="padding:24px 0;">
+              <div class="empty-icon">🔀</div>
+              <div class="empty-text">Selecciona un producto para ver sus variantes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN: CATEGORÍAS
+    ══════════════════════════════════════════════ -->
+    <section id="section-categorias" style="display:none;" aria-label="Gestión de categorías">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="title-icon">🗂️</span> Categorías de Productos</div>
+          <button class="btn btn-primary" id="btnNuevaCategoría">➕ Nueva categoría</button>
+        </div>
+
+        <div class="alert" id="categoriasMessage" role="status" style="margin:0 24px 4px;"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Categoría padre</th>
+                <th style="text-align:center">Productos</th>
+                <th style="text-align:right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="categoriasTableBody">
+              <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Cargando…</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN: ALERTAS DE STOCK
+    ══════════════════════════════════════════════ -->
+    <section id="section-alertas" style="display:none;" aria-label="Alertas de stock">
+      <div class="stats-grid-4" role="list">
+        <div class="stat-card danger" role="listitem">
+          <div class="stat-icon">⛔</div>
+          <div class="stat-val" id="alertaCountAgotados">—</div>
+          <div class="stat-lbl">Agotados</div>
+        </div>
+        <div class="stat-card warn" role="listitem">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-val" id="alertaCountBajoStock">—</div>
+          <div class="stat-lbl">Bajo stock</div>
+        </div>
+        <div class="stat-card" role="listitem">
+          <div class="stat-icon">🟡</div>
+          <div class="stat-val" id="alertaCountEnRiesgo">—</div>
+          <div class="stat-lbl">En riesgo</div>
+        </div>
+        <div class="stat-card warn" role="listitem">
+          <div class="stat-icon">🔀</div>
+          <div class="stat-val" id="alertaCountVariantes">—</div>
+          <div class="stat-lbl">Variantes bajas</div>
+        </div>
+      </div>
+
+      <div id="alertasContainer" aria-live="polite">
+        <div class="empty-state" style="padding:40px;"><div class="empty-icon">⏳</div><div class="empty-text">Cargando alertas…</div></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         SECCIÓN: REPORTE
+    ══════════════════════════════════════════════ -->
+    <section id="section-reporte" style="display:none;" aria-label="Reporte de inventario">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="title-icon">📋</span> Reporte de Inventario</div>
+          <div class="btn-group">
+            <button class="btn btn-secondary btn-sm" id="btnVistaPreviaPDF">👁️ Vista previa</button>
+            <button class="btn btn-secondary btn-sm" id="btnDescargarPDF">⬇️ PDF</button>
+            <button class="btn btn-amber btn-sm" id="btnExportarCSV">⬇️ CSV</button>
+          </div>
+        </div>
+
+        <div class="card-body-sm">
+          <div class="report-stats">
+            <div class="stat-card" style="margin-bottom:0;">
+              <div class="stat-icon">📦</div>
+              <div class="stat-val" id="reporteTotalProd">—</div>
+              <div class="stat-lbl">Total productos</div>
+            </div>
+            <div class="stat-card" style="margin-bottom:0;">
+              <div class="stat-icon">✅</div>
+              <div class="stat-val" id="reporteActivos">—</div>
+              <div class="stat-lbl">Activos</div>
+            </div>
+            <div class="stat-card amber" style="margin-bottom:0;">
+              <div class="stat-icon">💰</div>
+              <div class="stat-val" id="reporteValor">—</div>
+              <div class="stat-lbl">Valor total</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="reporteContainer">
+          <!-- Por categoría -->
+          <div class="card" style="margin:0 24px 16px;border:1px solid var(--line);">
+            <div class="card-header" style="padding:14px 18px 12px;">
+              <div class="card-title" style="font-size:14px;"><span class="title-icon">🗂️</span> Por categoría</div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Categoría</th>
+                    <th style="text-align:center">Productos</th>
+                    <th>Valor</th>
+                    <th style="text-align:center">Bajo stock</th>
+                    <th style="text-align:center">Agotados</th>
+                  </tr>
+                </thead>
+                <tbody id="reporteCategoriaBody">
+                  <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">Cargando…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Lista completa -->
+          <div class="card" style="margin:0 24px 24px;border:1px solid var(--line);">
+            <div class="card-header" style="padding:14px 18px 12px;">
+              <div class="card-title" style="font-size:14px;"><span class="title-icon">📦</span> Lista completa</div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre / SKU</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th style="text-align:center">Stock</th>
+                    <th style="text-align:center">Mínimo</th>
+                    <th>Valor</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="reporteListaBody">
+                  <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);">Cargando…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /.content -->
+</div><!-- /.main -->
+
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL: NUEVO / EDITAR PRODUCTO
+════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="productoModal" role="dialog" aria-modal="true" aria-labelledby="productoModalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="productoModalTitle">➕ Nuevo Producto</h2>
+      <button class="modal-close" id="closeProductoModalBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="productoForm" novalidate>
+        <input type="hidden" id="productoId">
+
+        <div class="form-group">
+          <label class="form-label" for="productoNombre">Nombre <span class="required">*</span></label>
+          <input type="text" id="productoNombre" class="form-input" required placeholder="Ej: Shampoo Canino Premium" autocomplete="off">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="productoCategoria">Categoría <span class="required">*</span></label>
+            <select id="productoCategoria" class="form-select" required>
+              <option value="">— Seleccionar —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="productoSKU">SKU <span class="required">*</span></label>
+            <input type="text" id="productoSKU" class="form-input" required placeholder="SHAMP-001" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="productoPrecio">Precio base (Bs) <span class="required">*</span></label>
+            <input type="number" id="productoPrecio" class="form-input" required min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="productoStockMin">Stock mínimo</label>
+            <input type="number" id="productoStockMin" class="form-input" min="0" value="5">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="productoDescripcion">Descripción</label>
+          <textarea id="productoDescripcion" class="form-input" placeholder="Descripción del producto…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">¿Tendrá variantes?</label>
+          <div class="radio-group">
+            <label class="radio-opt">
+              <input type="radio" name="tieneVariantes" id="siVariantes" value="si">
+              <div>
+                <div class="radio-opt-label">Sí, con variantes</div>
+                <div class="radio-opt-desc">El stock lo manejan las variantes</div>
+              </div>
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="tieneVariantes" id="noVariantes" value="no" checked>
+              <div>
+                <div class="radio-opt-label">No, stock directo</div>
+                <div class="radio-opt-desc">Gestión de stock manual</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" id="stockInicialGroup">
+          <label class="form-label" for="productoStockInicial">Stock inicial</label>
+          <input type="number" id="productoStockInicial" class="form-input" min="0" value="0">
+          <p class="form-hint">Puedes ajustarlo después desde el botón 📦 en el catálogo</p>
+        </div>
+
+        <div class="variante-notice" id="stockVariantesAviso">
+          ℹ️ El stock se calculará sumando el stock de cada variante. No ingreses stock aquí.
+        </div>
+
+        <div class="form-group" id="estadoProductoGroup" style="display:none;">
+          <label class="form-label" for="productoEstado">Estado</label>
+          <select id="productoEstado" class="form-select">
+            <option value="true">✅ Activo</option>
+            <option value="false">❌ Inactivo</option>
           </select>
         </div>
+
         <div class="form-group">
-          <label class="form-label" for="productoSKU">
-            SKU <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input type="text" id="productoSKU" class="form-input" required
-                 placeholder="SHAMP-001" autocomplete="off">
+          <label class="form-label" for="productoImagenFile">Imagen del producto</label>
+          <input type="file" id="productoImagenFile" accept="image/*" style="font-size:13px;">
+          <input type="hidden" id="productoImagenUrl">
+          <img id="imgPreview" alt="Vista previa">
         </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="productoPrecio">
-            Precio base (Bs) <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input type="number" id="productoPrecio" class="form-input" required
-                 min="0" step="0.01" placeholder="0.00">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="productoStockMin">Stock mínimo</label>
-          <input type="number" id="productoStockMin" class="form-input" min="0" value="5">
-        </div>
-      </div>
-
-      <!-- El stock inicial se eliminó porque ahora se gestiona con variantes -->
-
-      <div class="form-group">
-        <label class="form-label" for="productoDescripcion">Descripción</label>
-        <textarea id="productoDescripcion" class="form-input" rows="2"
-                  placeholder="Descripción del producto..."></textarea>
-      </div>
-
-      <!-- DESPUÉS del form-group de descripción, ANTES del de imagen -->
-      <div class="form-group">
-        <label class="form-label">¿Este producto tendrá variantes?</label>
-        <div style="display:flex;gap:16px;align-items:center;margin-top:4px;">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-            <input type="radio" name="tieneVariantes" id="siVariantes" value="si">
-            Sí, tendrá variantes (el stock lo manejan las variantes)
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-            <input type="radio" name="tieneVariantes" id="noVariantes" value="no" checked>
-            No, stock directo
-          </label>
-        </div>
-      </div>
-
-      <!-- Stock inicial — solo visible si NO tiene variantes -->
-      <div class="form-group" id="stockInicialGroup">
-        <label class="form-label" for="productoStockInicial">Stock inicial</label>
-        <input type="number" id="productoStockInicial" class="form-input" min="0" value="0">
-        <small style="color:var(--text-light);font-size:11px;">
-          Puedes ajustarlo después desde el botón 📦 en el catálogo
-        </small>
-      </div>
-
-      <!-- Aviso cuando SÍ tiene variantes -->
-      <div id="stockVariantesAviso" style="display:none;background:#e8f5ed;border:1px solid #a8d5b5;
-          border-radius:10px;padding:10px 14px;font-size:12px;color:#2d5a45;margin-bottom:12px;">
-        ℹ️ El stock se calculará automáticamente sumando el stock de cada variante que agregues.
-        No necesitas ingresar stock aquí.
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="productoImagenFile">Imagen del producto</label>
-        <input type="file" id="productoImagenFile" accept="image/*">
-        <input type="hidden" id="productoImagenUrl">
-        <img id="imgPreview" alt="Vista previa de la imagen seleccionada"
-             onerror="this.style.display='none'">
-      </div>
-
-      <!-- Solo visible al editar (oculto al crear vía JS) -->
-      <div class="form-group" id="estadoProductoGroup" style="display:none;">
-        <label class="form-label" for="productoEstado">Estado</label>
-        <select id="productoEstado" class="form-select">
-          <option value="true">✅ Activo</option>
-          <option value="false">❌ Inactivo</option>
-        </select>
-      </div>
-
-      <div class="alert" id="productoAlert" role="alert"></div>
-
-      <div class="modal-actions">
-        <button type="submit" class="btn btn-primary">💾 Guardar producto</button>
-        <button type="button" class="btn btn-outline" id="closeProductoModalBtn">Cancelar</button>
-      </div>
-    </form>
+        <div class="alert" id="productoAlert" role="alert"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" form="productoForm" class="btn btn-primary">💾 Guardar producto</button>
+      <button type="button" class="btn btn-secondary" id="closeProductoModalBtn2">Cancelar</button>
+    </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
-     MODAL: INFO DE STOCK (antes Ajustar Stock)
-════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="stockModal" role="dialog" aria-modal="true"
-     aria-labelledby="stockModalTitle">
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL: STOCK
+════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="stockModal" role="dialog" aria-modal="true" aria-labelledby="stockModalTitle">
   <div class="modal" style="max-width:420px;">
-    <h2 class="modal-title" id="stockModalTitle">📦 Stock del Producto</h2>
-
-    <div class="stock-display" aria-label="Stock actual del producto">
-      <div class="stock-display-item">
-        <div class="lbl">Stock actual</div>
-        <div class="val" id="stockActualDisplay">—</div>
+    <div class="modal-header">
+      <h2 class="modal-title" id="stockModalTitle">📦 Stock del Producto</h2>
+      <button class="modal-close" id="closeStockModalBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="stock-summary">
+        <div>
+          <div class="stock-item-lbl">Stock actual</div>
+          <div class="stock-item-val" id="stockActualDisplay">—</div>
+        </div>
+        <div>
+          <div class="stock-item-lbl">Mínimo</div>
+          <div class="stock-item-val warn" id="stockMinimoDisplay">—</div>
+        </div>
       </div>
-      <div class="stock-display-item">
-        <div class="lbl">Mínimo</div>
-        <div class="val warn" id="stockMinimoDisplay">—</div>
+      <div class="alert alert-info show">
+        ℹ️ El stock se calcula automáticamente sumando el stock de las variantes activas.<br>
+        <strong>Para modificar el stock, edita las variantes.</strong>
       </div>
     </div>
-
-    <!-- Aviso de que el stock se gestiona mediante variantes -->
-    <div class="alert alert-info show" style="margin-bottom: 16px; text-align: center;">
-      ℹ️ El stock de este producto se calcula automáticamente sumando el stock de sus variantes activas.<br>
-      <strong>Para modificar el stock, edita las variantes.</strong>
-    </div>
-
-    <div class="modal-actions" style="justify-content: center;">
-      <button type="button" class="btn btn-outline" id="closeStockModalBtn">Cerrar</button>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="closeStockModalBtn2">Cerrar</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
+
+<!-- ════════════════════════════════════════════════════════
      MODAL: NUEVA / EDITAR CATEGORÍA
-════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="categoriaModal" role="dialog" aria-modal="true"
-     aria-labelledby="categoriaModalTitle">
-  <div class="modal" style="max-width:440px;">
-    <h2 class="modal-title" id="categoriaModalTitle">➕ Nueva Categoría</h2>
-    <form id="categoriaForm" novalidate>
-      <input type="hidden" id="categoriaId">
+════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="categoriaModal" role="dialog" aria-modal="true" aria-labelledby="categoriaModalTitle">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="categoriaModalTitle">➕ Nueva Categoría</h2>
+      <button class="modal-close" id="closeCategoriaModalBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="categoriaForm" novalidate>
+        <input type="hidden" id="categoriaId">
 
-      <div class="form-group">
-        <label class="form-label" for="categoriaNombre">
-          Nombre <span class="required" aria-hidden="true">*</span>
-        </label>
-        <input type="text" id="categoriaNombre" class="form-input" required
-               placeholder="Ej: Alimentos, Higiene..." autocomplete="off">
-      </div>
+        <div class="form-group">
+          <label class="form-label" for="categoriaNombre">Nombre <span class="required">*</span></label>
+          <input type="text" id="categoriaNombre" class="form-input" required placeholder="Ej: Alimentos, Higiene…">
+        </div>
 
-      <div class="form-group">
-        <label class="form-label" for="categoriaDescripcion">Descripción</label>
-        <input type="text" id="categoriaDescripcion" class="form-input"
-               placeholder="Descripción breve...">
-      </div>
+        <div class="form-group">
+          <label class="form-label" for="categoriaDescripcion">Descripción</label>
+          <input type="text" id="categoriaDescripcion" class="form-input" placeholder="Descripción breve…">
+        </div>
 
-      <div class="form-group">
-        <label class="form-label" for="categoriaPadre">Categoría padre (opcional)</label>
-        <select id="categoriaPadre" class="form-select">
-          <option value="">— Sin padre (raíz) —</option>
-        </select>
-      </div>
+        <div class="form-group">
+          <label class="form-label" for="categoriaPadre">Categoría padre (opcional)</label>
+          <select id="categoriaPadre" class="form-select">
+            <option value="">— Sin padre (raíz) —</option>
+          </select>
+        </div>
 
-      <div class="alert" id="categoriaModalAlert" role="alert"></div>
-
-      <div class="modal-actions">
-        <button type="submit" class="btn btn-primary">💾 Guardar</button>
-        <button type="button" class="btn btn-outline" id="closeCategoriaModalBtn">Cancelar</button>
-      </div>
-    </form>
+        <div class="alert" id="categoriaModalAlert" role="alert"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" form="categoriaForm" class="btn btn-primary">💾 Guardar</button>
+      <button type="button" class="btn btn-secondary" id="closeCategoriaModalBtn2">Cancelar</button>
+    </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
-     PANEL LATERAL: VARIANTES DE UN PRODUCTO
-════════════════════════════════════════════════════════════ -->
-<div id="variantesPanel" class="side-panel" role="complementary"
-     aria-label="Panel de variantes del producto">
-  <div class="side-panel-header">
+
+<!-- ════════════════════════════════════════════════════════
+     PANEL LATERAL: VARIANTES
+════════════════════════════════════════════════════════ -->
+<div id="variantesPanel" class="side-panel" role="complementary" aria-label="Panel de variantes">
+  <div class="panel-header">
     <div>
-      <div class="side-panel-title" id="variantesPanelTitle">Variantes</div>
-      <div class="side-panel-subtitle" id="variantesPrecioBase">—</div>
+      <div class="panel-title" id="variantesPanelTitle">Variantes</div>
+      <div class="panel-sub" id="variantesPrecioBase">—</div>
     </div>
-    <button class="icon-btn" id="closeVariantesPanelBtn" aria-label="Cerrar panel de variantes">✕</button>
+    <button class="modal-close" id="closeVariantesPanelBtn" aria-label="Cerrar panel">✕</button>
   </div>
 
-  <div class="side-panel-body">
-    <!-- Formulario de creación por lotes -->
-    <div class="variante-form-rapida">
-      <h4>➕ Agregar variantes</h4>
+  <div class="panel-body">
+    <div class="var-batch">
+      <h4>➕ Agregar variantes en lote</h4>
       <div id="varianteRows"></div>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button type="button" class="btn btn-outline btn-sm" id="btnAddVarianteRow">
-          + Añadir otra
-        </button>
-        <button type="button" class="btn btn-primary btn-sm" id="btnSaveVariantesBatch">
-          💾 Guardar todas
-        </button>
+      <div class="btn-group" style="margin-top:8px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAddVarianteRow">+ Añadir fila</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnSaveVariantesBatch">💾 Guardar todas</button>
       </div>
     </div>
 
     <div class="alert" id="variantesAlert" role="alert"></div>
 
-    <!-- Lista de variantes existentes -->
     <div id="variantesList">
-      <div style="text-align:center;padding:20px;color:var(--text-light);">Cargando...</div>
+      <div class="empty-state" style="padding:24px 0;"><div class="empty-icon">⏳</div><div class="empty-text">Cargando…</div></div>
     </div>
   </div>
 
-  <div class="side-panel-footer">
-    <button class="btn btn-primary" id="btnNuevaVariante" style="width:100%;">
-      ➕ Agregar variante (individual)
-    </button>
+  <div class="panel-footer">
+    <button class="btn btn-primary" id="btnNuevaVariante" style="width:100%;">➕ Agregar variante individual</button>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
-     MODAL: NUEVA / EDITAR VARIANTE (z-index mayor que el panel)
-════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="varianteModal" style="z-index:500;"
-     role="dialog" aria-modal="true" aria-labelledby="varianteModalTitle">
-  <div class="modal" style="max-width:460px;">
-    <h2 class="modal-title" id="varianteModalTitle">➕ Nueva Variante</h2>
-    <form id="varianteForm" novalidate>
-      <input type="hidden" id="varianteId">
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="varianteAtributo">
-            Marca / Atributo <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input type="text" id="varianteAtributo" class="form-input" required
-                 placeholder="Dog Chow, Pedigree..." autocomplete="off">
+<!-- ════════════════════════════════════════════════════════
+     MODAL: NUEVA / EDITAR VARIANTE  (z-index: 500)
+════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="varianteModal" style="z-index:500;" role="dialog" aria-modal="true" aria-labelledby="varianteModalTitle">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="varianteModalTitle">➕ Nueva Variante</h2>
+      <button class="modal-close" id="closeVarianteModalBtn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="varianteForm" novalidate>
+        <input type="hidden" id="varianteId">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="varianteAtributo">Marca / Atributo <span class="required">*</span></label>
+            <input type="text" id="varianteAtributo" class="form-input" required placeholder="Dog Chow, Pedigree…">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="varianteValor">Valor <span class="required">*</span></label>
+            <input type="text" id="varianteValor" class="form-input" required placeholder="1kg Carne, 5kg Pollo…">
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="varianteValor">
-            Valor <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input type="text" id="varianteValor" class="form-input" required
-                 placeholder="1kg Carne, 5kg Pollo..." autocomplete="off">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="varianteCantidad">Cantidad por unidad</label>
+            <input type="number" id="varianteCantidad" class="form-input" step="0.01" min="0.01" placeholder="1, 5, 0.5…">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="varianteUnidad">Unidad de medida</label>
+            <input type="text" id="varianteUnidad" class="form-input" placeholder="L, ml, kg, unid.">
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label class="form-label" for="varianteSKU">
-          SKU variante <span class="required" aria-hidden="true">*</span>
-        </label>
-        <input type="text" id="varianteSKU" class="form-input" required
-               placeholder="DOG-1K-CAR-001" autocomplete="off">
-      </div>
-
-      <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="variantePrecioExtra">Precio extra (Bs)</label>
-          <input type="number" id="variantePrecioExtra" class="form-input"
-                 min="0" step="0.01" value="0">
-          <small style="color:var(--text-light);font-size:11px;">Se suma al precio base</small>
+          <label class="form-label" for="varianteSKU">SKU variante <span class="required">*</span></label>
+          <input type="text" id="varianteSKU" class="form-input" required placeholder="DOG-1K-CAR-001">
         </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="variantePrecioExtra">Precio extra (Bs)</label>
+            <input type="number" id="variantePrecioExtra" class="form-input" min="0" step="0.01" value="0">
+            <p class="form-hint">Se suma al precio base</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="varianteStock">Stock</label>
+            <input type="number" id="varianteStock" class="form-input" min="0" value="0">
+          </div>
+        </div>
+
         <div class="form-group">
-          <label class="form-label" for="varianteStock">Stock</label>
-          <input type="number" id="varianteStock" class="form-input" min="0" value="0">
+          <label class="form-label" for="varianteEstado">Estado</label>
+          <select id="varianteEstado" class="form-select">
+            <option value="true">✅ Activo</option>
+            <option value="false">❌ Inactivo</option>
+          </select>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label class="form-label" for="varianteEstado">Estado</label>
-        <select id="varianteEstado" class="form-select">
-          <option value="true">✅ Activo</option>
-          <option value="false">❌ Inactivo</option>
-        </select>
-      </div>
-
-      <div class="alert" id="varianteAlert" role="alert"></div>
-
-      <div class="modal-actions">
-        <button type="submit" class="btn btn-primary">💾 Guardar variante</button>
-        <button type="button" class="btn btn-outline" id="closeVarianteModalBtn">Cancelar</button>
-      </div>
-    </form>
+        <div class="alert" id="varianteAlert" role="alert"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" form="varianteForm" class="btn btn-primary">💾 Guardar variante</button>
+      <button type="button" class="btn btn-secondary" id="closeVarianteModalBtn2">Cancelar</button>
+    </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
+
+<!-- ════════════════════════════════════════════════════════
      SCRIPTS
-════════════════════════════════════════════════════════════ -->
+════════════════════════════════════════════════════════ -->
 <script type="module" src="js/admin-productos.js"></script>
+
 <script>
-  // ── ACORDEÓN ──
-  document.addEventListener('DOMContentLoaded', () => {
-    const labels = document.querySelectorAll('.accordion-label');
- 
-    labels.forEach(label => {
-      label.addEventListener('click', () => {
-        const groupId = 'group-' + label.dataset.group;
-        const group = document.getElementById(groupId);
-        if (!group) return;
- 
-        const isOpen = group.classList.contains('open');
- 
-        // Cerrar todos
-        document.querySelectorAll('.accordion-group.open').forEach(g => g.classList.remove('open'));
-        document.querySelectorAll('.accordion-label.open').forEach(l => l.classList.remove('open'));
- 
-        // Abrir el actual si estaba cerrado
-        if (!isOpen) {
-          group.classList.add('open');
-          label.classList.add('open');
-          setTimeout(() => {
-            group.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }, 50);
-        }
-      });
+document.addEventListener('DOMContentLoaded', () => {
+
+  /* ── Acordeón del sidebar (estilo dashboard) ── */
+  document.querySelectorAll('.nav-label-btn[data-group]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const groupId = 'group-' + btn.dataset.group;
+      const body = document.getElementById(groupId);
+      if (!body) return;
+      const isOpen = body.classList.contains('open');
+
+      // Cerrar todos
+      document.querySelectorAll('.accordion-body.open').forEach(b => b.classList.remove('open'));
+      document.querySelectorAll('.nav-label-btn.open').forEach(b => { b.classList.remove('open'); b.setAttribute('aria-expanded','false'); });
+
+      // Abrir si estaba cerrado
+      if (!isOpen) {
+        body.classList.add('open');
+        btn.classList.add('open');
+        btn.setAttribute('aria-expanded','true');
+        setTimeout(() => body.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+      }
     });
- 
-    // ── Marcar item activo según sección cargada ──
-    function markActiveNavItem(section) {
-      document.querySelectorAll('.nav-item[data-section]').forEach(el => el.classList.remove('active'));
-      const active = document.querySelector(`.nav-item[data-section="${section}"]`);
-      if (active) active.classList.add('active');
-    }
- 
-    // ── Leer sección guardada en localStorage (desde el dashboard) ──
-    const seccionGuardada = localStorage.getItem('productos_seccion');
-    if (seccionGuardada) {
-      localStorage.removeItem('productos_seccion');
-      // Dejar que admin-productos.js maneje el showSection,
-      // pero marcamos el nav item aquí
-      markActiveNavItem(seccionGuardada);
-    } else {
-      markActiveNavItem('inicio');
-    }
- 
-    // ── Sincronizar activo al hacer clic en links de sección ──
-    document.querySelectorAll('.nav-item[data-section]').forEach(el => {
-      el.addEventListener('click', () => {
-        document.querySelectorAll('.nav-item[data-section]').forEach(x => x.classList.remove('active'));
-        el.classList.add('active');
-      });
-    });
- 
-    // ── Modal producto: mostrar/ocultar campo estado ──
-    const overlay   = document.getElementById('productoModal');
-    const estadoGrp = document.getElementById('estadoProductoGroup');
-    if (overlay && estadoGrp) {
-      new MutationObserver(() => {
-        const isEditing = Boolean(document.getElementById('productoId')?.value);
-        estadoGrp.style.display = isEditing ? 'block' : 'none';
-      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
-    }
   });
+
+  /* ── Section tabs (topbar + sidebar nav) ── */
+  function markActive(sec) {
+    document.querySelectorAll('.nav-item[data-section]').forEach(el => el.classList.toggle('active', el.dataset.section === sec));
+    document.querySelectorAll('.section-tab[data-section]').forEach(el => el.classList.toggle('active', el.dataset.section === sec));
+  }
+
+  document.querySelectorAll('.section-tab[data-section]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const sec = tab.dataset.section;
+      markActive(sec);
+      if (window.showSection) window.showSection(sec);
+    });
+  });
+
+  document.querySelectorAll('.nav-item[data-section]').forEach(el => {
+    el.addEventListener('click', e => {
+      if (el.getAttribute('href') === '#') {
+        e.preventDefault();
+        const sec = el.dataset.section;
+        markActive(sec);
+        if (window.showSection) window.showSection(sec);
+      }
+    });
+  });
+
+  // Sección guardada
+  const savedSec = localStorage.getItem('productos_seccion');
+  if (savedSec) { localStorage.removeItem('productos_seccion'); markActive(savedSec); }
+  else markActive('inicio');
+
+  /* ── Modal de producto: mostrar/ocultar campo estado ── */
+  const overlay   = document.getElementById('productoModal');
+  const estadoGrp = document.getElementById('estadoProductoGroup');
+  if (overlay && estadoGrp) {
+    new MutationObserver(() => {
+      estadoGrp.style.display = document.getElementById('productoId')?.value ? 'block' : 'none';
+    }).observe(overlay, { attributes:true, attributeFilter:['class'] });
+  }
+
+  /* ── Cerrar modales con botones duplicados ── */
+  document.getElementById('closeProductoModalBtn2')?.addEventListener('click', () =>
+    document.getElementById('productoModal')?.classList.remove('open'));
+  document.getElementById('closeStockModalBtn2')?.addEventListener('click', () =>
+    document.getElementById('stockModal')?.classList.remove('open'));
+  document.getElementById('closeCategoriaModalBtn2')?.addEventListener('click', () =>
+    document.getElementById('categoriaModal')?.classList.remove('open'));
+  document.getElementById('closeVarianteModalBtn2')?.addEventListener('click', () =>
+    document.getElementById('varianteModal')?.classList.remove('open'));
+
+  /* ── Cerrar modales al click en overlay ── */
+  ['productoModal','stockModal','categoriaModal','varianteModal'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', e => {
+      if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+    });
+  });
+});
 </script>
+
 </body>
 </html>

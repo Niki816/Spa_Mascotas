@@ -232,6 +232,9 @@ export const getProductosConsumibles = async (req: AuthRequest, res: Response, n
         sku: v.sku_variante,
         precio_extra: Number(v.precio_extra),
         stock: v.stock,
+        cantidad: v.cantidad !== null ? Number(v.cantidad) : null,
+        unidad_medida: v.unidad_medida,
+        cantidad_actual: v.cantidad_actual !== null ? Number(v.cantidad_actual) : null,
       })),
     }));
 
@@ -422,33 +425,94 @@ export const registrarConsumo = async (req: AuthRequest, res: Response, next: Ne
     });
     if (!cita || !cita.fichas_grooming) throw new AppError('Ficha no encontrada', 404);
 
-    const { producto_id, variante_id, cantidad } = req.body;
-    if (!producto_id || !cantidad || Number(cantidad) <= 0) {
+    const ficha = cita.fichas_grooming;
+    const { producto_id, variante_id, cantidad: cantidadStr } = req.body;
+    const cantidadConsumida = Number(cantidadStr);
+
+    if (!producto_id || !cantidadConsumida || cantidadConsumida <= 0) {
       throw new AppError('Producto y cantidad requeridos', 400);
     }
 
-    // Validar producto
     const producto = await prisma.productos.findUnique({ where: { id: producto_id } });
     if (!producto) throw new AppError('Producto no existe', 404);
 
-    // Validar variante si se proporciona
+    let descontado = false; // se pondrá a true si se descuenta inmediatamente
+
     if (variante_id) {
+      // ── CON VARIANTE ──
       const variante = await prisma.variantes_producto.findUnique({ where: { id: variante_id } });
       if (!variante) throw new AppError('Variante no existe', 404);
+
+      // Validar que la variante tenga configurados los nuevos campos
+      if (variante.cantidad === null || variante.unidad_medida === null) {
+        throw new AppError(
+          `La variante "${variante.atributo}: ${variante.valor}" no tiene configurada la cantidad/unidad. Contacte al administrador.`,
+          400
+        );
+      }
+
+      const cantidadUnidad = Number(variante.cantidad);
+      let cantidadActual = variante.cantidad_actual !== null ? Number(variante.cantidad_actual) : 0;
+      const unidad = variante.unidad_medida!; // "L", "ml", "kg", "g", etc.
+
+      // Asegurarse de que cantidad_actual nunca sea mayor que cantidad (por consistencia)
+      if (cantidadActual > cantidadUnidad) {
+        cantidadActual = cantidadUnidad; // corregir inconsistencia
+      }
+
+      // Si no hay unidad abierta (cantidad_actual <= 0) → abrir una nueva
+      if (cantidadActual <= 0) {
+        if (variante.stock <= 0) {
+          throw new AppError(`Sin stock disponible de la variante "${variante.atributo}: ${variante.valor}"`, 400);
+        }
+
+        // Descontar una unidad del stock
+        await prisma.variantes_producto.update({
+          where: { id: variante_id },
+          data: { stock: { decrement: 1 } },
+        });
+
+        cantidadActual = cantidadUnidad; // unidad recién abierta
+      }
+
+      // Validar que la cantidad consumida no supere la disponible en la unidad abierta
+      if (cantidadConsumida > cantidadActual) {
+        throw new AppError(
+          `Solo hay ${cantidadActual} ${unidad} disponibles en la unidad abierta de "${variante.atributo}: ${variante.valor}".`,
+          400
+        );
+      }
+
+      const nuevaCantidadActual = cantidadActual - cantidadConsumida;
+
+      // Actualizar el remanente
+      await prisma.variantes_producto.update({
+        where: { id: variante_id },
+        data: { cantidad_actual: nuevaCantidadActual },
+      });
+
+      descontado = true; // ya se aplicó el descuento inmediato
+    } else {
+      // ── SIN VARIANTE → el descuento se hará al cerrar la ficha (como antes) ──
+      // No se descuenta ahora, solo se registra
     }
 
-    // Registrar consumo (SIN descontar stock aún)
+    // Registrar el consumo
     await prisma.consumo_insumos_ficha.create({
       data: {
-        ficha_id: cita.fichas_grooming.id,
+        ficha_id: ficha.id,
         producto_id,
         variante_id: variante_id || null,
-        cantidad: parseFloat(cantidad as string),
-        descontado: false, // Se descontará al cerrar la ficha
+        cantidad: cantidadConsumida,
+        descontado: descontado,
       },
     });
 
-    res.status(201).json({ message: 'Consumo registrado (se descontará al cerrar ficha)' });
+    res.status(201).json({
+      message: variante_id
+        ? `Consumo registrado y descontado de la unidad abierta (${descontado ? 'descontado' : 'pendiente'})`
+        : 'Consumo registrado (se descontará al cerrar la ficha)',
+    });
   } catch (error) {
     next(error);
   }
@@ -566,9 +630,7 @@ export const cerrarFicha = async (req: AuthRequest, res: Response, next: NextFun
     const template = await prisma.template_checklist.findMany({
       where: { servicio_id: cita.servicio_id, obligatorio: true },
     });
-    const checklist = await prisma.ficha_checklist.findMany({
-      where: { ficha_id: ficha.id },
-    });
+    const checklist = await prisma.ficha_checklist.findMany({ where: { ficha_id: ficha.id } });
     const pendientes = template.filter(
       t => !checklist.some(cl => cl.item_id === t.item_id && cl.completado)
     );
@@ -582,117 +644,31 @@ export const cerrarFicha = async (req: AuthRequest, res: Response, next: NextFun
       throw new AppError('Debes subir fotos de "antes" y "después"', 400);
     }
 
-    // =============================================================
-    // DESCUENTO DE INVENTARIO (SIN MODIFICAR "valor" NI ESQUEMA)
-    // =============================================================
-    const consumos = await prisma.consumo_insumos_ficha.findMany({
-      where: { ficha_id: ficha.id, descontado: false },
-      include: { productos: true, variantes_producto: true },
+    // ✓ DESCONTAR SOLO PRODUCTOS SIN VARIANTE (los que no se descontaron al registrar)
+    const consumosPendientes = await prisma.consumo_insumos_ficha.findMany({
+      where: { ficha_id: ficha.id, descontado: false, variante_id: null },
+      include: { productos: true },
     });
 
-    // Agrupar consumos por variante para procesar acumulados
-    const gruposPorVariante = new Map<number, typeof consumos>();
-    for (const cons of consumos) {
-      if (cons.variante_id && cons.variantes_producto) {
-        const arr = gruposPorVariante.get(cons.variante_id) || [];
-        arr.push(cons);
-        gruposPorVariante.set(cons.variante_id, arr);
+    for (const cons of consumosPendientes) {
+      const cantidad = Number(cons.cantidad);
+      const stockDisponible = Number(cons.productos.stock);
+      if (stockDisponible < cantidad) {
+        throw new AppError(
+          `Stock insuficiente de "${cons.productos.nombre}": disponible ${stockDisponible}, necesita ${cantidad}`,
+          400
+        );
       }
-    }
 
-    // Procesar cada variante
-    for (const [varianteId, lista] of gruposPorVariante) {
-      // Obtener todos los consumos NO descontados de esta variante (de cualquier ficha)
-      const todosPendientes = await prisma.consumo_insumos_ficha.findMany({
-        where: { variante_id: varianteId, descontado: false },
-        orderBy: { creado_en: 'asc' },
+      await prisma.productos.update({
+        where: { id: cons.producto_id },
+        data: { stock: { decrement: Math.floor(cantidad) } },
       });
-      if (todosPendientes.length === 0) continue;
 
-      const variante = lista[0].variantes_producto!;
-
-      // Parsear la cantidad de una unidad del texto "valor"
-      const parsed = parsearValorVariante(variante.valor);
-      if (!parsed) {
-        throw new AppError(`No se pudo interpretar la cantidad del valor "${variante.valor}"`, 400);
-      }
-      const unidadBase = aUnidadBase(parsed.cantidad, parsed.unidad).valor; // en gramos o ml
-
-      // Sumar todas las cantidades (asumimos que el groomer ingresa en la misma unidad que el valor)
-      let totalConsumido = 0;
-      for (const c of todosPendientes) {
-        const cantidad = Number(c.cantidad);
-        // Si el número es muy grande comparado con el tamaño de la unidad, asumir que está en gramos/ml
-        if (cantidad > parsed.cantidad * 5 && (parsed.unidad === 'kg' || parsed.unidad === 'l')) {
-          totalConsumido += cantidad; // ya está en base
-        } else {
-          const enBase = aUnidadBase(cantidad, parsed.unidad).valor;
-          totalConsumido += enBase;
-        }
-      }
-
-      const unidadesCompletas = Math.floor(totalConsumido / unidadBase);
-      if (unidadesCompletas > 0) {
-        // Verificar stock suficiente
-        if (variante.stock < unidadesCompletas) {
-          throw new AppError(
-            `Stock insuficiente para la variante "${variante.atributo}: ${variante.valor}". ` +
-            `Necesario: ${unidadesCompletas}, disponible: ${variante.stock}`,
-            400
-          );
-        }
-
-        // Descontar stock de la variante (solo unidades enteras)
-        await prisma.variantes_producto.update({
-          where: { id: varianteId },
-          data: { stock: { decrement: unidadesCompletas } },
-        });
-
-        let pendiente = unidadesCompletas * unidadBase;
-        const idsADescontar: number[] = [];
-        for (const c of todosPendientes) {
-          if (pendiente <= 0) break;
-          const cantidad = Number(c.cantidad);
-          const enBase = (cantidad > parsed.cantidad * 5 && (parsed.unidad === 'kg' || parsed.unidad === 'l'))
-            ? cantidad
-            : aUnidadBase(cantidad, parsed.unidad).valor;
-          if (enBase <= pendiente) {
-            idsADescontar.push(c.id);
-            pendiente -= enBase;
-          } else {
-            
-            break;
-          }
-        }
-        if (idsADescontar.length > 0) {
-          await prisma.consumo_insumos_ficha.updateMany({
-            where: { id: { in: idsADescontar } },
-            data: { descontado: true },
-          });
-        }
-      }
-    }
-
-    // Consumos sin variante: descuento directo del stock del producto (sin cambios)
-    for (const cons of consumos) {
-      if (!cons.variante_id) {
-        const producto = cons.productos;
-        const cantidad = Number(cons.cantidad);
-        if (Number(producto.stock) < cantidad) {
-          throw new AppError(
-            `Stock insuficiente para "${producto.nombre}": disponible ${producto.stock}, necesitas ${cantidad}`,
-            400
-          );
-        }
-        await prisma.productos.update({
-          where: { id: cons.producto_id },
-          data: { stock: { decrement: Math.floor(cantidad) } }, // solo enteros
-        });
-        await prisma.consumo_insumos_ficha.update({
-          where: { id: cons.id },
-          data: { descontado: true },
-        });
-      }
+      await prisma.consumo_insumos_ficha.update({
+        where: { id: cons.id },
+        data: { descontado: true },
+      });
     }
 
     // ✓ CERRAR FICHA Y CAMBIAR ESTADO
