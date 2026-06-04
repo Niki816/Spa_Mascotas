@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vincular WhatsApp - Pet Spa</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:sans-serif;">
+  <h2>📱 Vincular WhatsApp del Spa</h2>
+  <div id="qrcode"></div>
+  <p id="status">Obteniendo QR...</p>
+  <script>
+    async function fetchQR() {
+      try {
+        const res = await fetch('/api/admin/whatsapp/qr');
+        const data = await res.json();
+        if (data.connected) {
+          document.getElementById('status').textContent = '✅ WhatsApp ya está conectado.';
+          return;
+        }
+        if (!data.qr) {
+          document.getElementById('status').textContent = 'QR no disponible. Reinicia el servidor.';
+          return;
+        }
+        // Generar QR con la librería qrcodejs
+        new QRCode(document.getElementById('qrcode'), { text: data.qr, width: 256, height: 256 });
+        document.getElementById('status').textContent = 'Escanea este código con tu WhatsApp (Dispositivos vinculados > Vincular un dispositivo)';
+        // Refrescar cada 10 segundos para ver si ya se conectó
+        setTimeout(fetchQR, 10000);
+      } catch (err) {
+        document.getElementById('status').textContent = 'Error al obtener QR';
+      }
+    }
+    fetchQR();
+  </script>
+</body>
+</html>

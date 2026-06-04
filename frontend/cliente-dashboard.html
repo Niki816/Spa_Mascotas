@@ -6,6 +6,20 @@
   <title>Mi Panel — Pet Spa</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #eee; }
+.tab { padding: 8px 16px; cursor: pointer; border-radius: 8px 8px 0 0; background: #f5f5f5; font-size: 13px; }
+.tab.active { background: var(--green-pale); color: var(--green-soft); font-weight: 600; }
+.badge-nivel { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-bronce { background: #cd7f32; color: white; }
+.badge-plata { background: #aaa; color: white; }
+.badge-oro { background: #ffd700; color: #333; }
+    .galeria {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;
+    }
+    .galeria img {
+      width: 120px; height: 120px; object-fit: cover; border-radius: 8px;
+      cursor: pointer; border: 1px solid #e0e0e0;
+    }
     :root{--green-deep:#1e3a2f;--green-mid:#2d5a45;--green-soft:#4a8c6f;--green-light:#a8d5b5;--green-pale:#e8f5ed;--cream:#faf7f2;--amber:#d4845a;--text-dark:#1a2e25;--text-mid:#4a6355;--text-light:#8aab97;--shadow-sm:0 2px 8px rgba(30,58,47,.08);--radius:16px;--radius-sm:10px;}
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);display:flex;min-height:100vh;}
@@ -63,6 +77,244 @@
     .empty-state .icon{font-size:48px;margin-bottom:12px;}
     .paw-bg{position:fixed;right:-60px;bottom:-60px;font-size:220px;opacity:.03;pointer-events:none;}
     @media(max-width:700px){.sidebar{display:none;}.main{margin-left:0;padding:20px 16px;}.stats{grid-template-columns:1fr;}.grid-2{grid-template-columns:1fr;}}
+    .modal {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center;
+      z-index:200;
+    }
+    .modal-content {
+      background: white; border-radius: var(--radius); padding: 28px;
+      max-width: 500px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 12px; right: 18px; font-size: 24px; cursor: pointer;
+      color: var(--text-light);
+    }
+    .mascota-card {
+      padding:14px; border:1px solid #f0f5f2; border-radius:10px;
+      margin-bottom:10px;
+    }
+    .mascota-info {
+      display:flex;align-items:center;gap:14px;
+    }
+    .mascota-emoji {
+      font-size:32px;
+    }
+    .mascota-details {
+      flex:1;
+    }
+    .mascota-nombre {
+      font-weight:600;font-size:15px;
+    }
+    .mascota-desc {
+      font-size:12px;color:var(--text-light);
+    }
+    .mascota-buttons {
+      display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;
+    }
+    .carnet-thumb {
+      cursor:pointer; font-size:12px; color:var(--green-soft);
+      background:var(--green-pale); padding:4px 10px; border-radius:8px;
+    }
+    .carnet-thumb:hover { background:var(--green-light); }
+    .btn-upload-carnet {
+      font-size:11px; cursor:pointer; background:none; border:1px dashed var(--text-light);
+      color:var(--text-light); padding:4px 8px; border-radius:6px;
+    }
+    .btn-upload-carnet:hover { border-color:var(--green-soft); color:var(--green-soft); }
+    .btn-small {
+      background:var(--green-pale);color:var(--green-soft);font-size:11px;padding:4px 8px;border:none;border-radius:6px;
+    }
+    .btn-small:hover { background:var(--green-light); }
+    #citaHora:disabled {
+      background: #f0f0f0;
+    }
+
+    /* ── Product Grid ─────────────────────────────────────── */
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.producto-card {
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.producto-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(30,58,47,0.12);
+}
+
+.producto-card .img-container {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--green-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: var(--green-soft);
+  overflow: hidden;
+}
+
+.producto-card .img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.producto-card .card-body {
+  padding: 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.producto-card .card-body .nombre {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.producto-card .card-body .categoria {
+  font-size: 11px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.producto-card .card-body .precio {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  color: var(--green-deep);
+  margin-bottom: 12px;
+}
+
+.producto-card .card-body .precio .precio-extra {
+  font-size: 12px;
+  color: var(--amber);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.producto-card .card-body select,
+.producto-card .card-body input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #e0ebe5;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-bottom: 8px;
+  background: var(--cream);
+  outline: none;
+}
+
+.producto-card .card-body select:focus,
+.producto-card .card-body input:focus {
+  border-color: var(--green-soft);
+}
+
+.producto-card .card-body .stock-info {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.producto-card .card-body .btn-agregar {
+  margin-top: auto;
+  background: var(--green-soft);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 13px;
+}
+
+.producto-card .card-body .btn-agregar:hover {
+  background: var(--green-deep);
+}
+
+/* ── Carrito mejorado ─────────────────────────────────── */
+.carrito-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f5f2;
+}
+
+.carrito-item:last-child {
+  border-bottom: none;
+}
+
+.carrito-item .item-info {
+  flex: 1;
+}
+
+.carrito-item .item-info .nombre {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.carrito-item .item-info .variante {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.carrito-item .item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carrito-item .item-actions input[type="number"] {
+  width: 50px;
+  padding: 5px;
+  border: 1px solid #e0ebe5;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.carrito-item .item-actions .btn-delete {
+  background: none;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-pedir {
+  width: 100%;
+  margin-top: 16px;
+  background: var(--green-deep);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-pedir:hover {
+  background: var(--green-mid);
+}
   </style>
 </head>
 <body>
@@ -76,6 +328,8 @@
   <a class="nav-item active" href="#" data-section="inicio"><span class="nav-icon">🏠</span> Inicio</a>
   <a class="nav-item" href="#" data-section="mascotas"><span class="nav-icon">🐶</span> Mis mascotas</a>
   <a class="nav-item" href="#" data-section="citas"><span class="nav-icon">📅</span> Mis citas</a>
+  <a class="nav-item" href="#" data-section="tienda"><span class="nav-icon">🛒</span> Tienda</a>
+  <a class="nav-item" href="#" data-section="facturas"><span class="nav-icon">🧾</span> Mis Facturas</a>
   <a class="nav-item" href="#" data-section="perfil"><span class="nav-icon">👤</span> Mi perfil</a>
   <a class="nav-item" href="#" id="logoutBtn"><span class="nav-icon">🚪</span> Cerrar sesión</a>
   <div class="sidebar-footer">
@@ -91,6 +345,7 @@
 </aside>
 
 <main class="main">
+  <div id="global" class="alert" style="margin-bottom:16px;"></div>
   <div class="topbar">
     <div>
       <div class="page-title">¡Hola, <span id="userName">—</span>! 🐾</div>
@@ -118,21 +373,212 @@
 
   <!-- MASCOTAS -->
   <div id="section-mascotas" style="display:none;">
-    <div class="card">
-      <div class="card-head"><div class="card-title">Mis Mascotas</div><span class="card-badge" id="mascotasCount">0</span></div>
-      <div id="mascotasList">
-        <div class="empty-state"><div class="icon">🐶</div><p>Aún no tienes mascotas registradas.</p><p style="font-size:12px;margin-top:4px;">Contacta con groomer para registrar tu mascota.</p></div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Mis Mascotas</div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span class="card-badge" id="mascotasCount">0</span>
+        <button class="btn btn-primary" id="btnNuevaMascota" style="width:auto;">➕ Nueva mascota</button>
       </div>
     </div>
+    <div id="mascotasList">
+      <!-- vacío, llenado por JS -->
+    </div>
+  </div>
+
+  <!-- MODAL DE REGISTRO -->
+  <div id="modalMascota" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="modal-close" id="closeModalMascota">&times;</span>
+      <h2 style="font-family:'Playfair Display',serif; margin-bottom:18px;">🐾 Registrar nueva mascota</h2>
+      <form id="formRegistrarMascota">
+        <div class="form-group">
+          <label class="form-label">Nombre *</label>
+          <input type="text" id="petNombre" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Especie *</label>
+          <select id="petEspecie" class="form-input" required>
+            <option value="">Seleccionar...</option>
+            <option value="perro">🐶 Perro</option>
+            <option value="gato">🐱 Gato</option>
+            <option value="otro">🐾 Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Raza</label>
+          <input type="text" id="petRaza" class="form-input" placeholder="Ej: Labrador, Persa...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tamaño</label>
+          <select id="petTamanio" class="form-input">
+            <option value="">Seleccionar...</option>
+            <option value="pequeño">🐾 Pequeño</option>
+            <option value="mediano">🐕 Mediano</option>
+            <option value="grande">🐩 Grande</option>
+            <option value="gigante">🦮 Gigante</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de nacimiento</label>
+          <input type="date" id="petFechaNac" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temperamento</label>
+          <select id="petTemperamento" class="form-input">
+            <option value="">Seleccionar...</option>
+            <option value="tranquilo">😌 Tranquilo</option>
+            <option value="jugueton">🐶 Juguetón</option>
+            <option value="agresivo">😠 Agresivo</option>
+            <option value="ansioso">😟 Ansioso</option>
+            <option value="otro">❓ Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alergias / Restricciones</label>
+          <textarea id="petAlergias" class="form-input" rows="3" placeholder="Ej: alergia al shampoo X, no usar secador caliente..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Carnet de vacunas (PDF / imagen)</label>
+          <input type="file" id="petCarnet" class="form-input" accept=".pdf,image/*">
+          <small style="color:var(--text-light);">Podrás subirlo en la tarjeta de tu mascota después de registrarla.</small>
+        </div>
+        <button type="submit" class="btn btn-primary">💾 Guardar mascota</button>
+        <div class="alert" id="petMessage"></div>
+      </form>
+    </div>
+  </div>
   </div>
 
   <!-- CITAS -->
   <div id="section-citas" style="display:none;">
     <div class="card">
-      <div class="card-head"><div class="card-title">Mis Citas</div><span class="card-badge" id="citasCount">0</span></div>
-      <div id="citasList">
-        <div class="empty-state"><div class="icon">📅</div><p>No tienes citas programadas.</p><p style="font-size:12px;margin-top:4px;">Llama o escribe a groomer para agendar.</p></div>
+      <div class="card-head">
+        <div class="card-title">Mis Citas</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span class="card-badge" id="citasCount">0</span>
+          <button class="btn btn-primary" id="btnNuevaCita" style="width:auto;">📅 Nueva cita</button>
+        </div>
       </div>
+      <div id="citasList">
+        <!-- vacío, llenado por JS -->
+      </div>
+    </div>
+
+    <!-- MODAL NUEVA CITA -->
+    <div id="modalCita" class="modal" style="display:none;">
+      <div class="modal-content" style="max-width:600px;">
+        <span class="modal-close" id="closeModalCita">&times;</span>
+        <h2 style="font-family:'Playfair Display',serif; margin-bottom:18px;">📅 Solicitar nueva cita</h2>
+        <form id="formNuevaCita">
+          <div class="form-group">
+            <label class="form-label">Mascota *</label>
+            <select id="citaMascota" class="form-input" required>
+              <option value="">Seleccionar mascota...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Servicio *</label>
+            <select id="citaServicio" class="form-input" required>
+              <option value="">Seleccionar servicio...</option>
+            </select>
+            <small id="servicioDuracion" style="color:var(--text-light);"></small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Groomer (opcional)</label>
+            <select id="citaGroomer" class="form-input">
+              <option value="">Cualquiera disponible</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha *</label>
+            <input type="date" id="citaFecha" class="form-input" required min="">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Horario disponible</label>
+            <select id="citaHora" class="form-input" required>
+              <option value="">Primero selecciona fecha y servicio</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notas adicionales</label>
+            <textarea id="citaNotas" class="form-input" rows="2" placeholder="Alguna preferencia o comentario..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">✅ Solicitar cita</button>
+          <div class="alert" id="citaMessage"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL CANCELAR CITA -->
+    <div id="modalCancelarCita" class="modal" style="display:none;">
+      <div class="modal-content" style="max-width:450px;">
+        <span class="modal-close" id="closeModalCancelar">&times;</span>
+        <h2 style="font-family:'Playfair Display',serif; margin-bottom:12px;">❌ Cancelar cita</h2>
+        <p id="cancelarInfo" style="font-size:13px; margin-bottom:16px; color:var(--text-mid);"></p>
+        <form id="formCancelarCita">
+          <input type="hidden" id="cancelarCitaId">
+          <div class="form-group">
+            <label class="form-label">Motivo de cancelación</label>
+            <select id="cancelarMotivo" class="form-input">
+              <option value="salud">Salud</option>
+              <option value="tiempo">Falta de tiempo</option>
+              <option value="emergencia">Emergencia</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group" style="display:flex;align-items:start;gap:8px;font-size:12px;">
+            <input type="checkbox" id="cancelarPolitica" required>
+            <label for="cancelarPolitica">Acepto la política de cancelación (mínimo 24 h de anticipación).</label>
+          </div>
+          <button type="submit" class="btn btn-primary">🗑️ Confirmar cancelación</button>
+          <div class="alert" id="cancelarMessage"></div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL HISTORIAL -->
+  <div id="modalHistorial" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:700px; max-height:80vh; overflow-y:auto;">
+      <span class="modal-close" id="closeModalHistorial">&times;</span>
+      <h2 style="font-family:'Playfair Display',serif; margin-bottom:18px;" id="historialTitulo">📜 Historial</h2>
+      <div id="historialContenido"></div>
+    </div>
+  </div>
+
+  <div id="section-tienda" style="display:none;">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🛍️ Productos</div>
+        </div>
+        <div class="productos-grid" id="catalogoProductos">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🛒 Mi Carrito</div>
+          <span id="carritoTotal" style="font-weight:600;"></span>
+        </div>
+        <div id="carritoItems"></div>
+        <button class="btn-pedir" id="btnPedirCarrito">📤 Pedir ahora</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalPedido" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:450px;">
+      <span class="modal-close" id="closeModalPedido">&times;</span>
+      <h2 style="font-family:'Playfair Display',serif; margin-bottom:18px;">📤 Realizar pedido</h2>
+      <div id="pedidoResumen"></div>
+      <form id="formPedido">
+        <!-- Ya NO hay selector de método -->
+        <button type="submit" class="btn btn-primary">✅ Confirmar y enviar resumen</button>
+        <div class="alert" id="pedidoMessage"></div>
+      </form>
     </div>
   </div>
 
@@ -156,6 +602,34 @@
       </div>
     </div>
   </div>
+  <div id="section-facturas" style="display:none;">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Mis Facturas</div>
+      <span class="card-badge" id="facturasCount">0</span>
+    </div>
+    <div id="facturasList">
+      <div class="empty-state"><div class="icon">🧾</div><p>Cargando facturas...</p></div>
+    </div>
+  </div>
+</div>
+
+<div id="modalReporte" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:750px; max-height:85vh; overflow-y:auto;">
+    <span class="modal-close" id="closeModalReporte">&times;</span>
+    <div id="reporteContenido"></div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE FACTURA -->
+<div id="modalFacturaDetalle" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:700px; max-height:85vh; overflow-y:auto;">
+    <span class="modal-close" id="closeModalFactura">&times;</span>
+    <h2 style="font-family:'Playfair Display',serif; margin-bottom:18px;">🧾 Detalle de Factura</h2>
+    <div id="facturaDetalleContenido"></div>
+  </div>
+</div>
+
 </main>
 
 <div class="paw-bg">🐾</div>

@@ -81,12 +81,9 @@ router.get   ('/productos',              getProductos);
 router.get   ('/productos/:id',          getProductoById);
 router.post  ('/productos',              createProducto);
 router.put   ('/productos/:id',          updateProducto);
-router.delete('/productos/:id',          deleteProducto);
 router.patch ('/productos/:id/stock',    updateStock);
-// Dentro del router, en la sección de PRODUCTOS
+// ⚠️ IMPORTANTE: Las rutas más específicas DEBEN ir ANTES que las genéricas
 router.delete('/productos/:id/permanent', deleteProductoPermanent);
-
-// Asegúrate que esté ANTES de esta línea:
 router.delete('/productos/:id',          deleteProducto);
 
 // ═══════════════════════════════════════════════════════════════════

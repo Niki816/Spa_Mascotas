@@ -276,7 +276,16 @@ export const updateProducto = async (req: Request, res: Response, next: NextFunc
     if (sku?.trim()) dataUpdate.sku = sku.trim();
     if (precio_base !== undefined) dataUpdate.precio_base = parseFloat(precio_base);
     if (stock_minimo !== undefined) dataUpdate.stock_minimo = parseInt(stock_minimo);
-    if (imagen_url !== undefined) dataUpdate.imagen_url = imagen_url?.trim() || null;
+    if (imagen_url !== undefined) {
+      let image = (imagen_url ?? '').toString().trim();
+      if (image === '') {
+        image = null;
+      } else if (image && !image.startsWith('http://') && !image.startsWith('https://') && !image.startsWith('/')) {
+        // Si no es URL absoluta ni ruta relativa con barra, forzamos que empiece con '/'
+        image = '/' + image.replace(/^\/+/, ''); // elimina barras iniciales extra si las tuviera
+      }
+      dataUpdate.imagen_url = image;
+    }
     if (estado_activo !== undefined) dataUpdate.estado_activo = Boolean(estado_activo);
 
     // Solo actualizar stock si no tiene variantes y fue enviado

@@ -3,6 +3,10 @@ import { AdminService } from '../services/admin.service';
 import { AppError } from '../utils/errors';
 import prisma from '../config/database';
 import { AvailabilityService } from '../services/availability.service';
+// Dentro de admin.controller.ts
+import { getCurrentQR } from '../services/whatsapp.service';
+
+
 const adminService = new AdminService();
 const availabilityService = new AvailabilityService();
 interface RequestWithUser extends Request {
@@ -157,4 +161,22 @@ export const getSucursales = async (_req: Request, res: Response, next: NextFunc
     });
     res.json(sucursales);
   } catch (error) { next(error); }
+};
+
+
+
+export const getWhatsAppQR = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { qr, connected, expiresIn  } = getCurrentQR();
+    if (connected) {
+      return res.json({ connected: true, message: 'WhatsApp ya está conectado.' });
+    }
+    if (!qr) {
+      return res.json({ connected: false, qr: null, message: 'Aún no se ha generado un QR. Reinicia el servidor.' });
+    }
+    // Opcional: comprobar si han pasado más de 60 segundos (el QR suele caducar)
+    res.json({ connected: false, qr, expiresIn  });
+  } catch (error) {
+    next(error);
+  }
 };

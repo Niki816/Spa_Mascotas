@@ -53,10 +53,21 @@ const state = {
 
 function showAlert(id, msg, type = 'success') {
   const el = document.getElementById(id);
-  if (!el) return;
+  if (!el) {
+    // Si no existe el elemento, mostrar en consola y alerta del navegador
+    console.error(`Alert no encontrado (${id}):`, msg);
+    alert(msg);
+    return;
+  }
   el.textContent = msg;
   el.className = `alert alert-${type} show`;
-  setTimeout(() => { el.className = 'alert'; }, 5000);
+  
+  // ✅ IMPORTANTE: No desaparece si es error (el usuario debe verlo)
+  if (type !== 'error') {
+    setTimeout(() => { el.className = 'alert'; }, 5000);
+  } else {
+    console.error('ERROR MOSTRADO EN UI:', msg);
+  }
 }
 
 function safeSetHTML(id, html) {
@@ -766,8 +777,17 @@ document.getElementById('productoForm')?.addEventListener('submit', async e => {
     stock_minimo:  parseInt(document.getElementById('productoStockMin').value),
     imagen_url:    imagenUrl,
     estado_activo: document.getElementById('productoEstado').value === 'true',
+    
   };
 
+   console.log('=== DEBUG CREAR PRODUCTO ===');
+  console.log('ID (edición):', id);
+  console.log('URL:', id ? `${ADMIN_API}/productos/${id}` : `${ADMIN_API}/productos`);
+  console.log('Método:', id ? 'PUT' : 'POST');
+  console.log('Payload completo:', JSON.stringify(payload, null, 2));
+  console.log('categoria_id tipo:', typeof payload.categoria_id, '| valor:', payload.categoria_id);
+  console.log('precio_base:', payload.precio_base, '| isNaN:', isNaN(payload.precio_base));
+  console.log('============================');
   // ✅ SIEMPRE INCLUIR STOCK (sea creación o edición)
   const productoStockInicial = document.getElementById('productoStockInicial');
   if (productoStockInicial) {
@@ -780,9 +800,27 @@ document.getElementById('productoForm')?.addEventListener('submit', async e => {
     return showAlert('productoAlert', '⚠️ Completa todos los campos obligatorios', 'error');
   }
 
-  const btn = e.target.querySelector('button[type="submit"]');
-  btn.disabled = true;
-  btn.textContent = '⏳ Guardando...';
+  // ✅ Encontrar el botón de forma robusta
+  let btn = null;
+  if (e.target.querySelector) {
+    btn = e.target.querySelector('button[type="submit"]');
+  }
+  if (!btn) {
+    // Buscar el botón en el formulario padre
+    const form = e.target.closest('form');
+    if (form) {
+      btn = form.querySelector('button[type="submit"]');
+    }
+  }
+  if (!btn) {
+    // Fallback: buscar en todo el documento
+    btn = document.querySelector('button[type="submit"]');
+  }
+  
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Guardando...';
+  }
 
   try {
     const url    = id ? `${ADMIN_API}/productos/${id}` : `${ADMIN_API}/productos`;
@@ -792,22 +830,39 @@ document.getElementById('productoForm')?.addEventListener('submit', async e => {
     console.log('Stock a guardar:', payload.stock);
 
     const res    = await authFetch(url, { method, body: JSON.stringify(payload) });
-    const data   = await res.json();
+    let data;
+    
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      console.error('Error parsing JSON:', parseErr);
+      console.error('Response status:', res.status);
+      console.error('Response text:', await res.text());
+      data = { message: 'Error al procesar respuesta del servidor' };
+    }
     
     console.log('Respuesta:', { status: res.status, data });
 
-    if (!res.ok) throw new Error(data.message);
+    if (!res.ok) {
+      const errorMsg = data?.message || `Error ${res.status}`;
+      throw new Error(errorMsg);
+    }
 
-    showAlert('productoAlert', `✅ ${data.message}`, 'success');
+    showAlert('productoAlert', `✅ ${data.message || 'Producto guardado correctamente'}`, 'success');
     setTimeout(() => { closeProductoModal(); loadProductos(); loadOverview(); }, 1000);
   } catch (err) {
-    console.error('Error:', err);
-    showAlert('productoAlert', `❌ ${err.message}`, 'error');
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error('❌ Error completo:', err);
+    console.error('Stack:', err instanceof Error ? err.stack : 'sin stack');
+    showAlert('productoAlert', `❌ ${errorMessage}`, 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = '💾 Guardar producto';
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '💾 Guardar producto';
+    }
     state.imagenSeleccionada = null;
   }
+  
 });
 
 async function toggleProductoEstado(id, activar) {
